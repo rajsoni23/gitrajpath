@@ -12,11 +12,11 @@
         <select id="p-gender"><option>Male</option><option>Female</option></select>
       </div>
     </div>
-    <div class="autocomplete-wrapper">
-      <label>Referred Doctor (Auto-Saves)</label>
-      <input type="text" id="p-doctor" placeholder="Type doctor name..." onkeyup="handleDoctorSearch(event)">
-      <div id="doctor-suggestions" class="autocomplete-list"></div>
-    </div>
+   <div class="autocomplete-wrapper">
+    <label>Referred Doctor (Auto-Saves)</label>
+    <input type="text" id="p-doctor" placeholder="Search or type Dr. name" onkeyup="handleDoctorSearch(event)" onkeydown="if(event.key==='Enter') event.preventDefault();">
+    <div id="doctor-suggestions" class="autocomplete-list"></div>
+</div>
     <div>
   <label>Test Shortcode (CBC / KFT / LFT)</label>
   <div class="autocomplete-wrapper">
