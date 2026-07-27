@@ -1,0 +1,34 @@
+<div class="card">
+  <h3>Patient & Doctor Details</h3>
+  <div class="grid-4">
+    <div>
+      <label>Patient Name</label>
+      <input type="text" id="p-name" placeholder="Full name..." autofocus>
+    </div>
+    <div>
+      <label>Age / Gender</label>
+      <div style="display: flex; gap: 5px;">
+        <input type="number" id="p-age" placeholder="Age" style="width: 70px;">
+        <select id="p-gender"><option>Male</option><option>Female</option></select>
+      </div>
+    </div>
+    <div class="autocomplete-wrapper">
+      <label>Referred Doctor (Auto-Saves)</label>
+      <input type="text" id="p-doctor" placeholder="Type doctor name..." onkeyup="handleDoctorSearch(event)">
+      <div id="doctor-suggestions" class="autocomplete-list"></div>
+    </div>
+    <div>
+      <label>Test Shortcode (CBC / KFT / LFT) + Enter</label>
+      <input type="text" id="test-code-input" placeholder="Type code..." onkeydown="handleTestCode(event)">
+    </div>
+  </div>
+  <div id="selected-tests-container" style="margin-top: 10px;"></div>
+</div>
+
+<div class="card">
+  <h3>Parameter Values Entry</h3>
+  <div id="test-inputs-container" style="max-height: 400px; overflow-y: auto;"></div>
+  <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+    <button class="btn" onclick="savePatientRecord()">💾 Save & Register Record</button>
+  </div>
+</div>
