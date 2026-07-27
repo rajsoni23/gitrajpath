@@ -1,157 +1,453 @@
 export const testCatalogue = {
-   'ESR': { 
-    name: 'Erythrocyte Sedimentation Rate (ESR)', 
-    price: 0, 
-    params: ['ESR'] 
+   'ESR': {
+    name: 'Erythrocyte Sedimentation Rate (ESR)',
+    price: 150,
+    params: [
+      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]' }
+    ]
   },
-  'CBC': { 
-    name: 'Complete Blood Count (CBC)', 
-    price: 0, 
-    params: ['Hemoglobin', 'RBC Count', 'Total WBC Count', 'Platelet Count', 'Hematocrit (PCV)', 'Packed Cell Volume', 'Mean Corpuscular Volume', 'Mean Corpuscular Hemoglobin', 'Mean Corpuscular Hemoglobin Concentration', 'Red Cell Distribution Width', 'Mean Platelet Volume', 'Platelet Distribution Width', 'Plateletcrit', 'Neutrophils', 'Absolute Neutrophil Count', 'Lymphocytes', 'Absolute Lymphocyte Count', 'Monocytes', 'Absolute Monocyte Count', 'Eosinophils', 'Absolute Eosinophil Count', 'Basophils', 'Absolute Basophil Count', 'Immature Granulocytes', 'Nucleated RBC', 'Reticulocyte Count', 'Peripheral Smear', 'RBC Morphology', 'WBC Morphology', 'Platelet Morphology'] 
+  'CBC': {
+    name: 'COMPLETE BLOOD COUNT (CBC)',
+    price: 350,
+    params: [
+      { name: 'Hemoglobin', unit: 'g/dL', range: '[M: 13.5-17.5] [F: 12.0-15.5]' },
+      { name: 'RBC Count', unit: 'million/µL', range: '[M: 4.5-5.9] [F: 4.1-5.1]' },
+      { name: 'Total WBC Count', unit: '/µL', range: '[4000-11000]' },
+      { name: 'Platelet Count', unit: '/µL', range: '[150000-450000]' },
+      { name: 'Hematocrit (PCV)', unit: '%', range: '[M: 41-53] [F: 36-46]' },
+      { name: 'Packed Cell Volume', unit: '%', range: '[M: 41-53] [F: 36-46]' },
+      { name: 'Mean Corpuscular Volume', unit: 'fL', range: '[80-100]' },
+      { name: 'Mean Corpuscular Hemoglobin', unit: 'pg', range: '[27-33]' },
+      { name: 'Mean Corpuscular Hemoglobin Concentration', unit: 'g/dL', range: '[32-36]' },
+      { name: 'Red Cell Distribution Width', unit: '%', range: '[11.5-14.5]' },
+      { name: 'Mean Platelet Volume', unit: 'fL', range: '[7.5-11.5]' },
+      { name: 'Platelet Distribution Width', unit: '%', range: '[9-17]' },
+      { name: 'Plateletcrit', unit: '%', range: '[0.22-0.24]' },
+      { name: 'Neutrophils', unit: '%', range: '[40-70%]' },
+      { name: 'Absolute Neutrophil Count', unit: '/µL', range: '[1500-8000]' },
+      { name: 'Lymphocytes', unit: '%', range: '[20-40%]' },
+      { name: 'Absolute Lymphocyte Count', unit: '/µL', range: '[1000-4800]' },
+      { name: 'Monocytes', unit: '%', range: '[2-8%]' },
+      { name: 'Absolute Monocyte Count', unit: '/µL', range: '[200-800]' },
+      { name: 'Eosinophils', unit: '%', range: '[1-6%]' },
+      { name: 'Absolute Eosinophil Count', unit: '/µL', range: '[40-400]' },
+      { name: 'Basophils', unit: '%', range: '[0-2%]' },
+      { name: 'Absolute Basophil Count', unit: '/µL', range: '[0-200]' },
+      { name: 'Immature Granulocytes', unit: '%', range: '[0-0.5%]' },
+      { name: 'Nucleated RBC', unit: '/100 WBC', range: '[0]' },
+      { name: 'Reticulocyte Count', unit: '%', range: '[0.5-2.5%]' },
+      { name: 'Peripheral Smear', unit: '', range: 'Normocytic Normochromic' },
+      { name: 'RBC Morphology', unit: '', range: 'Normal' },
+      { name: 'WBC Morphology', unit: '', range: 'Normal' },
+      { name: 'Platelet Morphology', unit: '', range: 'Adequate' }
+    ]
   },
-  'SUGAR': { 
-    name: 'Blood Sugar Profile', 
-    price: 0, 
-    params: ['Fasting Blood Sugar (FBS)', 'Post Prandial Blood Sugar (PPBS)', 'Random Blood Sugar (RBS)', 'HbA1c', 'Estimated Average Glucose', 'Fasting Insulin', 'C-Peptide'] 
+  'SUGAR': {
+    name: 'Blood Sugar Profile',
+    price: 250,
+    params: [
+      { name: 'Fasting Blood Sugar (FBS)', unit: 'mg/dL', range: '[70-99]' },
+      { name: 'Post Prandial Blood Sugar (PPBS)', unit: 'mg/dL', range: '[70-140]' },
+      { name: 'Random Blood Sugar (RBS)', unit: 'mg/dL', range: '[70-140]' },
+      { name: 'HbA1c', unit: '%', range: '[4.0-5.6%]' },
+      { name: 'Estimated Average Glucose', unit: 'mg/dL', range: '[70-126]' },
+      { name: 'Fasting Insulin', unit: 'µIU/mL', range: '[2-25]' },
+      { name: 'C-Peptide', unit: 'ng/mL', range: '[0.5-2.0]' }
+    ]
   },
-  'KFT': { 
-    name: 'Kidney Function Test (KFT)', 
-    price: 0, 
-    params: ['Blood Urea', 'Blood Urea Nitrogen', 'Serum Creatinine', 'Uric Acid', 'Sodium', 'Potassium', 'Chloride', 'Calcium', 'Ionized Calcium', 'Phosphorus', 'Magnesium', 'eGFR', 'BUN / Creatinine Ratio', 'Osmolality', 'Microalbumin', 'Urine Creatinine', 'Albumin / Creatinine Ratio', 'Urine Protein', 'Urine Albumin'] 
+  'KFT': {
+    name: 'KIDNEY FUNCTION TEST (KFT)',
+    price: 600,
+    params: [
+      { name: 'Blood Urea', unit: 'mg/dL', range: '[15-40]' },
+      { name: 'Blood Urea Nitrogen', unit: 'mg/dL', range: '[7-20]' },
+      { name: 'Serum Creatinine', unit: 'mg/dL', range: '[M: 0.7-1.3] [F: 0.6-1.1]' },
+      { name: 'Serum Uric Acid', unit: 'mg/dL', range: '[M: 3.4-7.0] [F: 2.4-6.0]' },
+      { name: 'Sodium', unit: 'mmol/L', range: '[135-145]' },
+      { name: 'Potassium', unit: 'mmol/L', range: '[3.5-5.1]' },
+      { name: 'Chloride', unit: 'mmol/L', range: '[98-107]' },
+      { name: 'Calcium', unit: 'mg/dL', range: '[8.5-10.5]' },
+      { name: 'Ionized Calcium', unit: 'mmol/L', range: '[1.12-1.32]' },
+      { name: 'Phosphorus', unit: 'mg/dL', range: '[2.5-4.5]' },
+      { name: 'Magnesium', unit: 'mg/dL', range: '[1.7-2.4]' },
+      { name: 'eGFR', unit: 'mL/min/1.73m²', range: '[90-150]' },
+      { name: 'BUN / Creatinine Ratio', unit: '', range: '[10-20]' },
+      { name: 'Osmolality', unit: 'mOsm/kg', range: '[275-295]' },
+      { name: 'Microalbumin', unit: 'mg/L', range: '[0-30]' },
+      { name: 'Urine Creatinine', unit: 'mg/dL', range: '[20-320]' },
+      { name: 'Albumin / Creatinine Ratio', unit: 'mg/g', range: '[0-30]' },
+      { name: 'Urine Protein', unit: '', range: 'Negative' },
+      { name: 'Urine Albumin', unit: '', range: 'Negative' }
+    ]
   },
-  'LFT': { 
-    name: 'Liver Function Test (LFT)', 
-    price: 0, 
-    params: ['Total Bilirubin', 'Direct Bilirubin', 'Indirect Bilirubin', 'SGOT (AST)', 'SGPT (ALT)', 'AST / ALT Ratio', 'Alkaline Phosphatase', 'Gamma Glutamyl Transferase', 'Lactate Dehydrogenase', 'Total Protein', 'Albumin', 'Globulin', 'Albumin / Globulin Ratio', 'Bile Acids', 'Ammonia', 'Prothrombin Time', 'INR'] 
+  'LFT': {
+    name: 'LIVER FUNCTION TEST (LFT)',
+    price: 700,
+    params: [
+      { name: 'Total Bilirubin', unit: 'mg/dL', range: '[0.3-1.2]' },
+      { name: 'Direct Bilirubin', unit: 'mg/dL', range: '[0.0-0.3]' },
+      { name: 'Indirect Bilirubin', unit: 'mg/dL', range: '[0.2-0.9]' },
+      { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]' },
+      { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-56]' },
+      { name: 'AST / ALT Ratio', unit: '', range: '[0.8-2.0]' },
+      { name: 'Alkaline Phosphatase', unit: 'U/L', range: '[44-147]' },
+      { name: 'Gamma Glutamyl Transferase', unit: 'U/L', range: '[9-48]' },
+      { name: 'Lactate Dehydrogenase', unit: 'U/L', range: '[140-280]' },
+      { name: 'Total Protein', unit: 'g/dL', range: '[6.0-8.3]' },
+      { name: 'Albumin', unit: 'g/dL', range: '[3.5-5.0]' },
+      { name: 'Globulin', unit: 'g/dL', range: '[2.0-3.5]' },
+      { name: 'Albumin / Globulin Ratio', unit: '', range: '[1.0-2.2]' },
+      { name: 'Bile Acids', unit: 'µmol/L', range: '[0-10]' },
+      { name: 'Ammonia', unit: 'µmol/L', range: '[15-45]' },
+      { name: 'Prothrombin Time', unit: 'sec', range: '[11-13.5]' },
+      { name: 'INR', unit: '', range: '[0.8-1.2]' }
+    ]
   },
-  'LIPID': { 
-    name: 'Lipid Profile', 
-    price: 0, 
-    params: ['Total Cholesterol', 'HDL Cholesterol', 'LDL Cholesterol', 'VLDL Cholesterol', 'Triglycerides', 'Non HDL Cholesterol', 'HDL / LDL Ratio', 'Total Cholesterol / HDL Ratio', 'Apolipoprotein A1', 'Apolipoprotein B', 'Lipoprotein (a)'] 
+  'LIPID': {
+    name: 'Lipid Profile',
+    price: 500,
+    params: [
+      { name: 'Total Cholesterol', unit: 'mg/dL', range: '[100-200]' },
+      { name: 'HDL Cholesterol', unit: 'mg/dL', range: '[40-60]' },
+      { name: 'LDL Cholesterol', unit: 'mg/dL', range: '[50-100]' },
+      { name: 'VLDL Cholesterol', unit: 'mg/dL', range: '[5-40]' },
+      { name: 'Triglycerides', unit: 'mg/dL', range: '[50-150]' },
+      { name: 'Non HDL Cholesterol', unit: 'mg/dL', range: '[70-130]' },
+      { name: 'HDL / LDL Ratio', unit: '', range: '[0.3-1.5]' },
+      { name: 'Total Cholesterol / HDL Ratio', unit: '', range: '[2-5]' },
+      { name: 'Apolipoprotein A1', unit: 'mg/dL', range: '[110-180]' },
+      { name: 'Apolipoprotein B', unit: 'mg/dL', range: '[55-140]' },
+      { name: 'Lipoprotein (a)', unit: 'mg/dL', range: '[0-30]' }
+    ]
   },
-  'THYROID': { 
-    name: 'Thyroid Profile', 
-    price: 0, 
-    params: ['TSH (Thyroid Stimulating Hormone)', 'Total T3', 'Total T4', 'Free T3', 'Free T4', 'Anti Thyroid Peroxidase Antibody (Anti-TPO)', 'Anti Thyroglobulin Antibody', 'Thyroglobulin', 'Calcitonin'] 
+  'THYROID': {
+    name: 'Thyroid Profile',
+    price: 450,
+    params: [
+      { name: 'TSH (Thyroid Stimulating Hormone)', unit: 'µIU/mL', range: '[0.4-4.0]' },
+      { name: 'Total T3', unit: 'ng/dL', range: '[80-200]' },
+      { name: 'Total T4', unit: 'µg/dL', range: '[5.0-12.0]' },
+      { name: 'Free T3', unit: 'pg/mL', range: '[2.3-4.2]' },
+      { name: 'Free T4', unit: 'ng/dL', range: '[0.8-1.8]' },
+      { name: 'Anti Thyroid Peroxidase Antibody (Anti-TPO)', unit: 'IU/mL', range: '[0-35]' },
+      { name: 'Anti Thyroglobulin Antibody', unit: 'IU/mL', range: '[0-40]' },
+      { name: 'Thyroglobulin', unit: 'ng/mL', range: '[3-40]' },
+      { name: 'Calcitonin', unit: 'pg/mL', range: '[M: 0-10] [F: 0-5]' }
+    ]
   },
-  'ELECTROLYTES': { 
-    name: 'Electrolytes Profile', 
-    price: 0, 
-    params: ['Sodium', 'Potassium', 'Chloride', 'Bicarbonate', 'Calcium', 'Ionized Calcium', 'Magnesium', 'Phosphorus'] 
+  'ELECTROLYTES': {
+    name: 'Electrolytes Profile',
+    price: 400,
+    params: [
+      { name: 'Sodium', unit: 'mmol/L', range: '[135-145]' },
+      { name: 'Potassium', unit: 'mmol/L', range: '[3.5-5.1]' },
+      { name: 'Chloride', unit: 'mmol/L', range: '[98-107]' },
+      { name: 'Bicarbonate', unit: 'mmol/L', range: '[22-29]' },
+      { name: 'Calcium', unit: 'mg/dL', range: '[8.5-10.5]' },
+      { name: 'Ionized Calcium', unit: 'mmol/L', range: '[1.12-1.32]' },
+      { name: 'Magnesium', unit: 'mg/dL', range: '[1.7-2.4]' },
+      { name: 'Phosphorus', unit: 'mg/dL', range: '[2.5-4.5]' }
+    ]
   },
-  'PANCREAS': { 
-    name: 'Pancreatic Function Test', 
-    price: 0, 
-    params: ['Serum Amylase', 'Serum Lipase', 'Pancreatic Elastase'] 
+  'PANCREAS': {
+    name: 'Pancreatic Function Test',
+    price: 650,
+    params: [
+      { name: 'Serum Amylase', unit: 'U/L', range: '[30-110]' },
+      { name: 'Serum Lipase', unit: 'U/L', range: '[13-60]' },
+      { name: 'Pancreatic Elastase', unit: 'µg/g', range: '[200-1000]' }
+    ]
   },
-  'URINE': { 
-    name: 'Urine Routine & Microscopy', 
-    price: 0, 
-    params: ['Color', 'Appearance', 'Specific Gravity', 'pH', 'Protein', 'Glucose', 'Ketone Bodies', 'Bilirubin', 'Urobilinogen', 'Blood', 'Nitrite', 'Leukocyte Esterase', 'RBC', 'WBC / Pus Cells', 'Epithelial Cells', 'Casts', 'Crystals', 'Bacteria', 'Yeast Cells', 'Mucus Threads'] 
+  'URINE': {
+    name: 'Urine Routine & Microscopy',
+    price: 200,
+    params: [
+      { name: 'Color', unit: '', range: 'Pale Yellow' },
+      { name: 'Appearance', unit: '', range: 'Clear' },
+      { name: 'Specific Gravity', unit: '', range: '[1.005-1.030]' },
+      { name: 'pH', unit: '', range: '[4.5-8.0]' },
+      { name: 'Protein', unit: '', range: 'Negative' },
+      { name: 'Glucose', unit: '', range: 'Negative' },
+      { name: 'Ketone Bodies', unit: '', range: 'Negative' },
+      { name: 'Bilirubin', unit: '', range: 'Negative' },
+      { name: 'Urobilinogen', unit: '', range: 'Normal' },
+      { name: 'Blood', unit: '', range: 'Negative' },
+      { name: 'Nitrite', unit: '', range: 'Negative' },
+      { name: 'Leukocyte Esterase', unit: '', range: 'Negative' },
+      { name: 'RBC', unit: '/HPF', range: '[0-2]' },
+      { name: 'WBC / Pus Cells', unit: '/HPF', range: '[0-5]' },
+      { name: 'Epithelial Cells', unit: '/HPF', range: 'Few' },
+      { name: 'Casts', unit: '/LPF', range: 'Not Seen' },
+      { name: 'Crystals', unit: '/HPF', range: 'Not Seen' },
+      { name: 'Bacteria', unit: '/HPF', range: 'Absent' },
+      { name: 'Yeast Cells', unit: '/HPF', range: 'Absent' },
+      { name: 'Mucus Threads', unit: '', range: 'Few' }
+    ]
   },
-  'STOOL': { 
-    name: 'Stool Routine Examination', 
-    price: 0, 
-    params: ['Color', 'Consistency', 'Mucus', 'Blood', 'Occult Blood', 'Reducing Sugar', 'Fat Globules', 'RBC', 'Pus Cells', 'Ova', 'Cysts', 'Parasites', 'Yeast'] 
+  'STOOL': {
+    name: 'Stool Routine Examination',
+    price: 200,
+    params: [
+      { name: 'Color', unit: '', range: 'Brown' },
+      { name: 'Consistency', unit: '', range: 'Soft' },
+      { name: 'Mucus', unit: '', range: 'Absent' },
+      { name: 'Blood', unit: '', range: 'Absent' },
+      { name: 'Occult Blood', unit: '', range: 'Negative' },
+      { name: 'Reducing Sugar', unit: '', range: 'Negative' },
+      { name: 'Fat Globules', unit: '', range: 'Absent' },
+      { name: 'RBC', unit: '/HPF', range: 'Absent' },
+      { name: 'Pus Cells', unit: '/HPF', range: '[0-2]' },
+      { name: 'Ova', unit: '', range: 'Not Seen' },
+      { name: 'Cysts', unit: '', range: 'Not Seen' },
+      { name: 'Parasites', unit: '', range: 'Not Seen' },
+      { name: 'Yeast', unit: '', range: 'Absent' }
+    ]
   },
-  'SEMEN': { 
-    name: 'Semen Analysis', 
-    price: 0, 
-    params: ['Volume', 'Liquefaction Time', 'pH', 'Sperm Count', 'Total Motility', 'Progressive Motility', 'Normal Morphology', 'Vitality', 'WBC'] 
+  'SEMEN': {
+    name: 'Semen Analysis',
+    price: 500,
+    params: [
+      { name: 'Volume', unit: 'mL', range: '[1.5-6.5]' },
+      { name: 'Liquefaction Time', unit: 'min', range: '[20-60]' },
+      { name: 'pH', unit: '', range: '[7.2-8.0]' },
+      { name: 'Sperm Count', unit: 'million/mL', range: '[15-300]' },
+      { name: 'Total Motility', unit: '%', range: '[40-100%]' },
+      { name: 'Progressive Motility', unit: '%', range: '[32-100%]' },
+      { name: 'Normal Morphology', unit: '%', range: '[4-100%]' },
+      { name: 'Vitality', unit: '%', range: '[58-100%]' },
+      { name: 'WBC', unit: 'million/mL', range: '[0-1]' }
+    ]
   },
-  'IRON': { 
-    name: 'Iron Studies / Anemia Profile', 
-    price: 0, 
-    params: ['Serum Iron', 'Ferritin', 'Total Iron Binding Capacity', 'Unsaturated Iron Binding Capacity', 'Transferrin', 'Transferrin Saturation'] 
+  'IRON': {
+    name: 'Iron Studies / Anemia Profile',
+    price: 800,
+    params: [
+      { name: 'Serum Iron', unit: 'µg/dL', range: '[60-170]' },
+      { name: 'Ferritin', unit: 'ng/mL', range: '[20-300]' },
+      { name: 'Total Iron Binding Capacity', unit: 'µg/dL', range: '[240-450]' },
+      { name: 'Unsaturated Iron Binding Capacity', unit: 'µg/dL', range: '[150-375]' },
+      { name: 'Transferrin', unit: 'mg/dL', range: '[200-360]' },
+      { name: 'Transferrin Saturation', unit: '%', range: '[20-50%]' }
+    ]
   },
-  'COAGULATION': { 
-    name: 'Coagulation Profile', 
-    price: 0, 
-    params: ['Prothrombin Time', 'INR', 'Activated Partial Thromboplastin Time', 'Thrombin Time', 'Fibrinogen', 'D-Dimer'] 
+  'COAGULATION': {
+    name: 'Coagulation Profile',
+    price: 700,
+    params: [
+      { name: 'Prothrombin Time', unit: 'sec', range: '[11-13.5]' },
+      { name: 'INR', unit: '', range: '[0.8-1.2]' },
+      { name: 'Activated Partial Thromboplastin Time', unit: 'sec', range: '[25-35]' },
+      { name: 'Thrombin Time', unit: 'sec', range: '[14-19]' },
+      { name: 'Fibrinogen', unit: 'mg/dL', range: '[200-400]' },
+      { name: 'D-Dimer', unit: 'µg/mL', range: '[0-0.5]' }
+    ]
   },
-  'CARDIAC': { 
-    name: 'Cardiac Markers', 
-    price: 0, 
-    params: ['Troponin I', 'Troponin T', 'CK-MB', 'Creatine Kinase (Total)', 'BNP', 'NT-proBNP', 'Myoglobin'] 
+  'CARDIAC': {
+    name: 'Cardiac Markers',
+    price: 1200,
+    params: [
+      { name: 'Troponin I', unit: 'ng/mL', range: '[0-0.04]' },
+      { name: 'Troponin T', unit: 'ng/L', range: '[0-14]' },
+      { name: 'CK-MB', unit: 'ng/mL', range: '[0-5]' },
+      { name: 'Creatine Kinase (Total)', unit: 'U/L', range: '[M: 30-200] [F: 30-170]' },
+      { name: 'BNP', unit: 'pg/mL', range: '[0-100]' },
+      { name: 'NT-proBNP', unit: 'pg/mL', range: '[0-125]' },
+      { name: 'Myoglobin', unit: 'ng/mL', range: '[M: 28-72] [F: 25-58]' }
+    ]
   },
-  'INFLAMMATORY': { 
-    name: 'Inflammatory Markers', 
-    price: 0, 
-    params: ['ESR', 'C-Reactive Protein', 'High Sensitivity CRP', 'Procalcitonin', 'Interleukin-6', 'Ferritin'] 
+  'INFLAMMATORY': {
+    name: 'Inflammatory Markers',
+    price: 900,
+    params: [
+      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]' },
+      { name: 'C-Reactive Protein', unit: 'mg/L', range: '[0-5]' },
+      { name: 'High Sensitivity CRP', unit: 'mg/L', range: '[0-3]' },
+      { name: 'Procalcitonin', unit: 'ng/mL', range: '[0-0.05]' },
+      { name: 'Interleukin-6', unit: 'pg/mL', range: '[0-7]' },
+      { name: 'Ferritin', unit: 'ng/mL', range: '[20-300]' }
+    ]
   },
-  'VITAMINS': { 
-    name: 'Vitamins Profile', 
-    price: 0, 
-    params: ['Vitamin D (25-OH)', 'Vitamin B12', 'Serum Folate', 'Vitamin A', 'Vitamin E', 'Vitamin K'] 
+  'VITAMINS': {
+    name: 'Vitamins Profile',
+    price: 1000,
+    params: [
+      { name: 'Vitamin D (25-OH)', unit: 'ng/mL', range: '[30-100]' },
+      { name: 'Vitamin B12', unit: 'pg/mL', range: '[200-900]' },
+      { name: 'Serum Folate', unit: 'ng/mL', range: '[4-20]' },
+      { name: 'Vitamin A', unit: 'µg/dL', range: '[20-60]' },
+      { name: 'Vitamin E', unit: 'mg/L', range: '[5-20]' },
+      { name: 'Vitamin K', unit: 'ng/mL', range: '[0.2-3.2]' }
+    ]
   },
-  'AUTOIMMUNE': { 
-    name: 'Rheumatology & Autoimmune Profile', 
-    price: 0, 
-    params: ['Rheumatoid Factor', 'Anti CCP', 'ANA', 'Anti dsDNA', 'ANCA', 'HLA B27', 'Complement C3', 'Complement C4'] 
+  'AUTOIMMUNE': {
+    name: 'Rheumatology & Autoimmune Profile',
+    price: 1500,
+    params: [
+      { name: 'Rheumatoid Factor', unit: 'IU/mL', range: '[0-20]' },
+      { name: 'Anti CCP', unit: '', range: 'Negative' },
+      { name: 'ANA', unit: '', range: 'Negative' },
+      { name: 'Anti dsDNA', unit: '', range: 'Negative' },
+      { name: 'ANCA', unit: '', range: 'Negative' },
+      { name: 'HLA B27', unit: '', range: 'Negative' },
+      { name: 'Complement C3', unit: 'mg/dL', range: '[90-180]' },
+      { name: 'Complement C4', unit: 'mg/dL', range: '[10-40]' }
+    ]
   },
-  'INFECTIOUS': { 
-    name: 'Infectious Disease Profile', 
-    price: 0, 
-    params: ['HBsAg', 'HCV Antibody', 'HIV I & II', 'VDRL', 'TPHA', 'Dengue NS1 Antigen', 'Dengue IgM', 'Dengue IgG', 'Malaria Parasite', 'Malaria Antigen', 'Typhidot IgM', 'Typhidot IgG', 'Widal Test', 'Leptospira IgM', 'COVID-19 Antigen', 'COVID-19 IgG'] 
+  'INFECTIOUS': {
+    name: 'Infectious Disease Profile',
+    price: 1100,
+    params: [
+      { name: 'HBsAg', unit: '', range: 'Negative' },
+      { name: 'HCV Antibody', unit: '', range: 'Negative' },
+      { name: 'HIV I & II', unit: '', range: 'Non Reactive' },
+      { name: 'VDRL', unit: '', range: 'Non Reactive' },
+      { name: 'TPHA', unit: '', range: 'Negative' },
+      { name: 'Dengue NS1 Antigen', unit: '', range: 'Negative' },
+      { name: 'Dengue IgM', unit: '', range: 'Negative' },
+      { name: 'Dengue IgG', unit: '', range: 'Negative' },
+      { name: 'Malaria Parasite', unit: '', range: 'Not Detected' },
+      { name: 'Malaria Antigen', unit: '', range: 'Negative' },
+      { name: 'Typhidot IgM', unit: '', range: 'Negative' },
+      { name: 'Typhidot IgG', unit: '', range: 'Negative' },
+      { name: 'Widal Test', unit: '', range: 'Negative' },
+      { name: 'Leptospira IgM', unit: '', range: 'Negative' },
+      { name: 'COVID-19 Antigen', unit: '', range: 'Negative' },
+      { name: 'COVID-19 IgG', unit: '', range: 'Negative' }
+    ]
   },
-  'TUMORMARKERS': { 
-    name: 'Tumor Markers', 
-    price: 0, 
-    params: ['PSA', 'Free PSA', 'CEA', 'AFP', 'CA 125', 'CA 19-9', 'CA 15-3', 'Beta hCG'] 
+  'TUMORMARKERS': {
+    name: 'Tumor Markers',
+    price: 1800,
+    params: [
+      { name: 'PSA', unit: 'ng/mL', range: '[0-4]' },
+      { name: 'Free PSA', unit: 'ng/mL', range: '[0-2]' },
+      { name: 'CEA', unit: 'ng/mL', range: '[0-5]' },
+      { name: 'AFP', unit: 'ng/mL', range: '[0-10]' },
+      { name: 'CA 125', unit: 'U/mL', range: '[0-35]' },
+      { name: 'CA 19-9', unit: 'U/mL', range: '[0-37]' },
+      { name: 'CA 15-3', unit: 'U/mL', range: '[0-30]' },
+      { name: 'Beta hCG', unit: 'mIU/mL', range: '[0-5]' }
+    ]
   },
-  'HORMONES': { 
-    name: 'Hormone Profile', 
-    price: 0, 
-    params: ['FSH', 'LH', 'Prolactin', 'Estradiol', 'Progesterone', 'Testosterone', 'Cortisol'] 
+  'HORMONES': {
+    name: 'Hormone Profile',
+    price: 1300,
+    params: [
+      { name: 'FSH', unit: 'mIU/mL', range: '[1.5-12.4]' },
+      { name: 'LH', unit: 'mIU/mL', range: '[1.7-8.6]' },
+      { name: 'Prolactin', unit: 'ng/mL', range: '[M: 4-15] [F: 5-25]' },
+      { name: 'Estradiol', unit: 'pg/mL', range: '[M: 10-40] [F: 20-350]' },
+      { name: 'Progesterone', unit: 'ng/mL', range: '[M: 0-1] [F: 0-25]' },
+      { name: 'Testosterone', unit: 'ng/dL', range: '[M: 300-1000] [F: 15-70]' },
+      { name: 'Cortisol', unit: 'µg/dL', range: '[5-25]' }
+    ]
   },
-  'ABG': { 
-    name: 'Arterial Blood Gas (ABG)', 
-    price: 0, 
-    params: ['pH', 'pCO₂', 'pO₂', 'HCO₃', 'Base Excess', 'Oxygen Saturation', 'Lactate'] 
+  'ABG': {
+    name: 'Arterial Blood Gas (ABG)',
+    price: 950,
+    params: [
+      { name: 'pH', unit: '', range: '[7.35-7.45]' },
+      { name: 'pCO₂', unit: 'mmHg', range: '[35-45]' },
+      { name: 'pO₂', unit: 'mmHg', range: '[80-100]' },
+      { name: 'HCO₃', unit: 'mmol/L', range: '[22-26]' },
+      { name: 'Base Excess', unit: 'mmol/L', range: '[-2 to +2]' },
+      { name: 'Oxygen Saturation', unit: '%', range: '[95-100%]' },
+      { name: 'Lactate', unit: 'mmol/L', range: '[0.5-2.2]' }
+    ]
   },
-  'MICROBIOLOGY': { 
-    name: 'Microbiology', 
-    price: 0, 
-    params: ['Gram Stain', 'AFB Smear', 'KOH Mount', 'Culture Result', 'Colony Count', 'Antibiotic Sensitivity'] 
+  'MICROBIOLOGY': {
+    name: 'Microbiology',
+    price: 400,
+    params: [
+      { name: 'Gram Stain', unit: '', range: 'No Organism Seen' },
+      { name: 'AFB Smear', unit: '', range: 'Negative' },
+      { name: 'KOH Mount', unit: '', range: 'No Fungal Elements' },
+      { name: 'Culture Result', unit: '', range: 'No Growth' },
+      { name: 'Colony Count', unit: '', range: 'No Growth' },
+      { name: 'Antibiotic Sensitivity', unit: '', range: 'As Per Chart' }
+    ]
   },
-  'BLOODGROUP': { 
-    name: 'Blood Group & Rh Typing', 
-    price: 0, 
-    params: ['ABO Group', 'Rh Type', 'Indirect Coombs Test', 'Direct Coombs Test'] 
+  'BLOODGROUP': {
+    name: 'Blood Group & Rh Typing',
+    price: 100,
+    params: [
+      { name: 'ABO Group', unit: '', range: 'A / B / AB / O' },
+      { name: 'Rh Type', unit: '', range: 'Positive / Negative' },
+      { name: 'Indirect Coombs Test', unit: '', range: 'Negative' },
+      { name: 'Direct Coombs Test', unit: '', range: 'Negative' }
+    ]
   },
-  'PREGNANCY': { 
-    name: 'Pregnancy Profile', 
-    price: 0, 
-    params: ['Urine Pregnancy Test', 'Serum β-hCG'] 
+  'PREGNANCY': {
+    name: 'Pregnancy Profile',
+    price: 300,
+    params: [
+      { name: 'Urine Pregnancy Test', unit: '', range: 'Negative' },
+      { name: 'Serum β-hCG', unit: 'mIU/mL', range: '[0-5]' }
+    ]
   },
-  'ALLERGY': { 
-    name: 'Allergy Profile', 
-    price: 0, 
-    params: ['Total IgE', 'Specific IgE', 'Eosinophil Count'] 
+  'ALLERGY': {
+    name: 'Allergy Profile',
+    price: 1200,
+    params: [
+      { name: 'Total IgE', unit: 'IU/mL', range: '[0-100]' },
+      { name: 'Specific IgE', unit: '', range: 'As Per Panel' },
+      { name: 'Eosinophil Count', unit: '/µL', range: '[40-400]' }
+    ]
   },
-  'ELECTROPHORESIS': { 
-    name: 'Protein Electrophoresis', 
-    price: 0, 
-    params: ['Albumin', 'Alpha-1 Globulin', 'Alpha-2 Globulin', 'Beta Globulin', 'Gamma Globulin', 'M Band'] 
+  'ELECTROPHORESIS': {
+    name: 'Protein Electrophoresis',
+    price: 1400,
+    params: [
+      { name: 'Albumin', unit: '%', range: '[55-65%]' },
+      { name: 'Alpha-1 Globulin', unit: '%', range: '[2-5%]' },
+      { name: 'Alpha-2 Globulin', unit: '%', range: '[7-13%]' },
+      { name: 'Beta Globulin', unit: '%', range: '[8-14%]' },
+      { name: 'Gamma Globulin', unit: '%', range: '[12-22%]' },
+      { name: 'M Band', unit: '', range: 'Absent' }
+    ]
   },
-  'TOXICOLOGY': { 
-    name: 'Toxicology', 
-    price: 0, 
-    params: ['Blood Alcohol', 'Urine Drug Screen', 'Lead', 'Mercury', 'Arsenic'] 
+  'TOXICOLOGY': {
+    name: 'Toxicology',
+    price: 2000,
+    params: [
+      { name: 'Blood Alcohol', unit: 'mg/dL', range: '[0-10]' },
+      { name: 'Urine Drug Screen', unit: '', range: 'Negative' },
+      { name: 'Lead', unit: 'µg/dL', range: '[0-5]' },
+      { name: 'Mercury', unit: 'µg/L', range: '[0-10]' },
+      { name: 'Arsenic', unit: 'µg/L', range: '[0-10]' }
+    ]
   },
-  'SPECIALBIOCHEMISTRY': { 
-    name: 'Special Biochemistry', 
-    price: 0, 
-    params: ['Homocysteine', 'Lipoprotein (a)', 'Apolipoprotein A1', 'Apolipoprotein B'] 
+  'SPECIALBIOCHEMISTRY': {
+    name: 'Special Biochemistry',
+    price: 1600,
+    params: [
+      { name: 'Homocysteine', unit: 'µmol/L', range: '[5-15]' },
+      { name: 'Lipoprotein (a)', unit: 'mg/dL', range: '[0-30]' },
+      { name: 'Apolipoprotein A1', unit: 'mg/dL', range: '[110-180]' },
+      { name: 'Apolipoprotein B', unit: 'mg/dL', range: '[55-140]' }
+    ]
   },
-  'FERTILITY': { 
-    name: 'Fertility Profile', 
-    price: 0, 
-    params: ['AMH', 'FSH', 'LH', 'Estradiol', 'Progesterone'] 
+  'FERTILITY': {
+    name: 'Fertility Profile',
+    price: 1700,
+    params: [
+      { name: 'AMH', unit: 'ng/mL', range: '[1-4]' },
+      { name: 'FSH', unit: 'mIU/mL', range: '[1.5-12.4]' },
+      { name: 'LH', unit: 'mIU/mL', range: '[1.7-8.6]' },
+      { name: 'Estradiol', unit: 'pg/mL', range: '[M: 10-40] [F: 20-350]' },
+      { name: 'Progesterone', unit: 'ng/mL', range: '[M: 0-1] [F: 0-25]' }
+    ]
   },
-  'GENETICS': { 
-    name: 'Genetic & Molecular Tests', 
-    price: 0, 
-    params: ['Karyotyping', 'BCR-ABL', 'JAK2 Mutation', 'BRCA1 / BRCA2', 'PCR Result'] 
+  'GENETICS': {
+    name: 'Genetic & Molecular Tests',
+    price: 3500,
+    params: [
+      { name: 'Karyotyping', unit: '', range: 'Normal' },
+      { name: 'BCR-ABL', unit: '', range: 'Negative' },
+      { name: 'JAK2 Mutation', unit: '', range: 'Negative' },
+      { name: 'BRCA1 / BRCA2', unit: '', range: 'Negative' },
+      { name: 'PCR Result', unit: '', range: 'As Per Analysis' }
+    ]
   }
+  
 };
