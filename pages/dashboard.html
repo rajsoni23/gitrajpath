@@ -2,107 +2,27 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <title>Pathology Lab Software (Modular)</title>
+  <title>Pathology Lab Software</title>
   <link rel="stylesheet" href="../styles/style.css">
 </head>
 <body>
   <div class="app-header no-print">    
-    <span>🔬 PATHOLOGY LAB SOFTWARE (Modular Mode)</span>    
-    <span>Status: 🟢 Local Storage Active</span>  </div>
+    <span>🔬 PATHOLOGY LAB SOFTWARE</span>    
+    <span>Status: 🟢 Local Storage Active</span>  
+  </div>
 
   <div class="nav-tabs no-print">    
     <button class="tab-btn active" onclick="switchTab('tab-register', event)">1. Registration & Testing</button>    
     <button class="tab-btn" onclick="switchTab('tab-doctors', event)">2. Doctor Referrals</button>    
-    <button class="tab-btn" onclick="switchTab('tab-billing', event)">3. Billing & Summary</button>  </div>
-
-  <!-- TAB 1 -->  
-  <div id="tab-register" class="tab-content active no-print">    
-    <div class="card">      
-      <h3>Patient & Doctor Details</h3>      
-      <div class="grid-4">        
-        <div>          
-          <label>Patient Name</label>          
-          <input type="text" id="p-name" placeholder="Full name..." autofocus>        
-        </div>        
-        <div>          
-          <label>Age / Gender</label>          
-          <div style="display: flex; gap: 5px;">            
-            <input type="number" id="p-age" placeholder="Age" style="width: 70px;">            
-            <select id="p-gender"><option>Male</option><option>Female</option></select>          
-          </div>        
-        </div>        
-        <div class="autocomplete-wrapper">          
-          <label>Referred Doctor (Auto-Saves)</label>          
-          <input type="text" id="p-doctor" placeholder="Type doctor name..." onkeyup="handleDoctorSearch(event)">          
-          <div id="doctor-suggestions" class="autocomplete-list"></div>        </div>        
-        <div>          
-          <label>Test Shortcode (CBC / KFT / LFT) + Enter</label>          
-          <input type="text" id="test-code-input" placeholder="Type code..." onkeydown="handleTestCode(event)">        </div>      
-      </div>      
-      <div id="selected-tests-container" style="margin-top: 10px;"></div>    
-    </div>
-
-    <div class="card">      
-      <h3>Parameter Values Entry</h3>      
-      <div id="test-inputs-container" style="max-height: 400px; overflow-y: auto;"></div>      
-      <div style="margin-top: 15px; display: flex; justify-content: flex-end;">        
-        <button class="btn" onclick="savePatientRecord()">💾 Save & Register Record</button>      
-      </div>    
-    </div>  
+    <button class="tab-btn" onclick="switchTab('tab-billing', event)">3. Billing & Summary</button>  
   </div>
 
-  <!-- TAB 2 -->  
-  <div id="tab-doctors" class="tab-content no-print">    
-    <div class="card">      
-      <h3>Doctor Referral Analytics</h3>      
-      <table>        
-        <thead>          
-          <tr>            
-            <th>Doctor Name</th>            
-            <th>Total Patients Referred</th>            
-            <th>Total Business Generated (₹)</th>          
-          </tr>        </thead>        
-        <tbody id="doctor-report-body">          
-          <tr><td colspan="3" style="text-align: center; color: #94a3b8;">No data found.</td></tr>        </tbody>      </table>    </div>  </div>
+  <!-- Dynamic Content Container -->
+  <main id="tab-content-container">
+    <!-- Component views will load here dynamically -->
+  </main>
 
-  <!-- TAB 3 -->  
-  <div id="tab-billing" class="tab-content no-print">    
-    <div class="card">      
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">        
-        <h3 style="margin:0; border:none;">Generated Bills & Patient List</h3>        
-        <input type="text" id="search-bill-input" placeholder="🔍 Search Patient Name or Bill ID..." onkeyup="filterBillsTable()" style="width: 280px;">      </div>      
-      <table>        
-        <thead>          
-          <tr>            
-            <th>Bill ID</th>            
-            <th>Patient Name</th>            
-            <th>Doctor</th>            
-            <th>Tests</th>            
-            <th>Net Amount</th>            
-            <th>Action</th>          
-          </tr>        </thead>        
-        <tbody id="billing-table-body">          
-          <tr><td colspan="6" style="text-align: center; color: #94a3b8;">No bills generated yet.</td></tr>        </tbody>      </table>    </div>
-
-    <div id="bill-view-card" class="card" style="display: none;">      
-      <h3>Test Summary & Bill Generator</h3>      
-      <div class="grid-2">        
-        <div>          
-          <p><b>Patient:</b> <span id="bill-patient-info"></span> (<span id="bill-age-gender"></span>)</p>          
-          <p><b>Referred By:</b> <span id="bill-doctor-info"></span></p>          
-          <p><b>Test Summary & Values:</b></p>          
-          <div id="bill-tests-summary-box" style="background: #0f172a; padding: 10px; border-radius: 4px; border: 1px solid #334155; font-size: 12px; max-height: 180px; overflow-y: auto;"></div>        </div>        
-        <div>          
-          <label>Subtotal Amount (₹)</label>          
-          <input type="number" id="bill-subtotal" readonly>                    
-          <label style="margin-top: 8px;">Flat Discount in Rupees (₹)</label>          
-          <input type="number" id="bill-discount" value="0" onkeyup="calculateFinalBill()" onchange="calculateFinalBill()">                    
-          <label style="margin-top: 8px;">Net Payable Amount (₹)</label>          
-          <input type="number" id="bill-net" readonly style="font-weight: bold; color: #38bdf8;">                    
-          <div style="margin-top: 15px;">            
-            <button class="btn" onclick="window.print()">🖨️ Print Final Bill / Report</button>          </div>        </div>      </div>    </div>  </div>
-
-  <!-- PRINTABLE TEMPLATE -->  
+  <!-- PRINTABLE TEMPLATE (Always keep in main shell) -->
   <div id="printable-bill" style="display: none; color: black; background: white; padding: 30px;">    
     <h2 style="text-align: center; margin: 0;">EXPRESS PATHOLOGY LABORATORY</h2>    
     <p style="text-align: center; font-size: 12px; margin: 4px 0;">Mirzapur, Uttar Pradesh | Helpline: 9876543210</p>    
@@ -110,12 +30,16 @@
     <table style="width: 100%; font-size: 13px; margin-bottom: 10px;">      
       <tr>        
         <td><b>Bill ID:</b> <span id="print-bill-id"></span></td>        
-        <td><b>Date:</b> <span id="print-date"></span></td>      </tr>      
+        <td><b>Date:</b> <span id="print-date"></span></td>      
+      </tr>      
       <tr>        
         <td><b>Patient Name:</b> <span id="print-p-name"></span></td>        
-        <td><b>Age/Gender:</b> <span id="print-p-age-gender"></span></td>      </tr>      
+        <td><b>Age/Gender:</b> <span id="print-p-age-gender"></span></td>      
+      </tr>      
       <tr>        
-        <td colspan="2"><b>Referred By:</b> <span id="print-doc-name"></span></td>      </tr>    </table>    
+        <td colspan="2"><b>Referred By:</b> <span id="print-doc-name"></span></td>      
+      </tr>    
+    </table>    
     <hr style="border: 0.5px solid #ccc;">    
     <h3>Test Results Summary</h3>    
     <div id="print-tests-container" style="font-size: 12px; line-height: 1.5;"></div>    
@@ -123,12 +47,13 @@
     <div style="float: right; width: 250px; font-size: 13px;">      
       <p>Subtotal: ₹<span id="print-sub"></span></p>      
       <p>Discount: -₹<span id="print-disc"></span></p>      
-      <h3 style="margin: 5px 0;">Net Payable: ₹<span id="print-net"></span></h3>    </div>    
+      <h3 style="margin: 5px 0;">Net Payable: ₹<span id="print-net"></span></h3>    
+    </div>    
     <div style="clear: both;"></div>    
     <hr style="border: 1px solid #000; margin-top: 30px;">    
-    <p style="text-align: center; font-size: 11px; margin-top: 20px;">Thank you for trusting us. Get well soon!</p>  </div>
+    <p style="text-align: center; font-size: 11px; margin-top: 20px;">Thank you for trusting us. Get well soon!</p>  
+  </div>
 
-  <!-- Link Main Logic Script -->
   <script type="module" src="../patients/patient.js"></script>
 </body>
 </html>
