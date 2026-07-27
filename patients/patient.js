@@ -159,7 +159,8 @@ function renderInputs() {
     if (target) target.innerHTML = containerHtml;
 }
 
-window.savePatientRecord = function() {
+// Direct Save & Print Functionality
+window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
     if (!nameEl || !nameEl.value.trim()) { alert("Please enter patient name"); return; }
 
@@ -180,11 +181,24 @@ window.savePatientRecord = function() {
         subtotal += testCatalogue[code].price;
         let paramValues = {};
         const inputs = document.querySelectorAll(`input[data-test="${code}"]`);
+        
         inputs.forEach(inp => {
-            paramValues[inp.dataset.param] = inp.value || "-";
+            const val = inp.value.trim();
+            // Skip empty/blank inputs and "-"
+            if (val !== "" && val !== "-") {
+                paramValues[inp.dataset.param] = val;
+            }
         });
-        testDetails.push({ testName: testCatalogue[code].name, values: paramValues });
+
+        if (Object.keys(paramValues).length > 0) {
+            testDetails.push({ testName: testCatalogue[code].name, values: paramValues });
+        }
     });
+
+    if (testDetails.length === 0) {
+        alert("Kripya kam se kam ek test parameter ki value enter karein!");
+        return;
+    }
 
     const newBill = {
         id: 'BILL-' + Math.floor(100000 + Math.random() * 900000),
@@ -202,7 +216,62 @@ window.savePatientRecord = function() {
     allBillsData.unshift(newBill);
     localStorage.setItem('path_bills', JSON.stringify(allBillsData));
 
-    alert("✅ Patient & Test Records Saved Successfully!");
+    // Populate Print Template
+    const printDate = document.getElementById('print-date');
+    const printPName = document.getElementById('print-p-name');
+    const printPAgeGender = document.getElementById('print-p-age-gender');
+    const printDocName = document.getElementById('print-doc-name');
+
+    if (printDate) printDate.innerText = new Date(newBill.createdAt).toLocaleDateString('en-GB');
+    if (printPName) printPName.innerText = newBill.patientName;
+    if (printPAgeGender) printPAgeGender.innerText = `${newBill.age}/${newBill.gender.charAt(0)}`;
+    if (printDocName) printDocName.innerText = newBill.doctorName;
+
+    let printTestsHtml = "";
+    newBill.tests.forEach(t => {
+        const codeKey = Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
+        const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
+
+        printTestsHtml += `
+            <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
+                ${t.testName}
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                <thead>
+                    <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left;">
+                        <th style="padding: 6px 0; width: 45%;">INVESTIGATION</th>
+                        <th style="padding: 6px 0; width: 20%;">RESULT</th>
+                        <th style="padding: 6px 0; width: 15%;">UNIT</th>
+                        <th style="padding: 6px 0; width: 20%;">NORMAL RANGE</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        for (const [pName, pVal] of Object.entries(t.values)) {
+            const paramObj = catalogueParams.find(p => (typeof p === 'object' ? p.name : p) === pName);
+            const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
+            const range = (paramObj && paramObj.range) ? paramObj.range : '';
+
+            printTestsHtml += `
+                <tr>
+                    <td style="padding: 4px 0; font-weight: bold; text-transform: uppercase;">${pName}</td>
+                    <td style="padding: 4px 0; font-weight: bold;">${pVal}</td>
+                    <td style="padding: 4px 0;">${unit}</td>
+                    <td style="padding: 4px 0;">${range}</td>
+                </tr>
+            `;
+        }
+        printTestsHtml += `</tbody></table>`;
+    });
+
+    const printContainer = document.getElementById('print-tests-container');
+    if (printContainer) printContainer.innerHTML = printTestsHtml;
+
+    // Trigger Print Window
+    window.print();
+
+    // Reset Form
     if (nameEl) nameEl.value = '';
     if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
     if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
@@ -211,6 +280,8 @@ window.savePatientRecord = function() {
     renderBadges();
     renderInputs();
 };
+
+window.savePatientRecord = window.saveAndPrintReport;
 
 function updateDoctorReferralTable() {
     const report = {};
@@ -285,7 +356,7 @@ window.openBill = function(index) {
     calculateFinalBill();
 };
 
-// Print Generator with Exact Table Format for Letterhead
+// Print Generator for Billing Tab
 window.calculateFinalBill = function() {
     const sub = parseFloat(document.getElementById('bill-subtotal')?.value) || 0;
     const disc = parseFloat(document.getElementById('bill-discount')?.value) || 0;
@@ -323,6 +394,9 @@ window.calculateFinalBill = function() {
             `;
 
             for (const [pName, pVal] of Object.entries(t.values)) {
+                // Skip if blank value exists in legacy records
+                if (!pVal || pVal === "-") continue;
+
                 const paramObj = catalogueParams.find(p => (typeof p === 'object' ? p.name : p) === pName);
                 const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
                 const range = (paramObj && paramObj.range) ? paramObj.range : '';
