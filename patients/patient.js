@@ -39,7 +39,7 @@ async function loadTabContent(tabId) {
             updateBillingTable();
         }
     } catch (err) {
-        if(container) {
+        if (container) {
             container.innerHTML = `<p style="color:red; text-align:center;">Error loading component template.</p>`;
         }
         console.error("Tab Load Error:", err);
@@ -54,6 +54,7 @@ window.switchTab = async function(tabId, evt) {
     await loadTabContent(tabId);
 };
 
+// Doctor Autocomplete Search
 window.handleDoctorSearch = function(e) {
     const val = e.target.value.toLowerCase().trim();
     const listContainer = document.getElementById('doctor-suggestions');
@@ -77,6 +78,41 @@ window.selectDoctor = function(name) {
     const docInput = document.getElementById('p-doctor');
     const listContainer = document.getElementById('doctor-suggestions');
     if (docInput) docInput.value = name;
+    if (listContainer) listContainer.style.display = 'none';
+};
+
+// Test Shortcode Autocomplete Suggestions
+window.handleTestSearch = function(e) {
+    const val = e.target.value.toUpperCase().trim();
+    const listContainer = document.getElementById('test-suggestions');
+    if (!listContainer) return;
+    if (val.length === 0) { listContainer.style.display = 'none'; return; }
+
+    const matches = Object.keys(testCatalogue).filter(code => 
+        code.includes(val) || testCatalogue[code].name.toUpperCase().includes(val)
+    );
+
+    if (matches.length > 0) {
+        let html = "";
+        matches.forEach(code => {
+            html += `<div class="autocomplete-item" onclick="selectTestCode('${code}')"><b>${code}</b> - ${testCatalogue[code].name}</div>`;
+        });
+        listContainer.innerHTML = html;
+        listContainer.style.display = 'block';
+    } else {
+        listContainer.style.display = 'none';
+    }
+};
+
+window.selectTestCode = function(code) {
+    if (!activeTests.includes(code)) {
+        activeTests.push(code);
+        renderBadges();
+        renderInputs();
+    }
+    const input = document.getElementById('test-code-input');
+    const listContainer = document.getElementById('test-suggestions');
+    if (input) input.value = '';
     if (listContainer) listContainer.style.display = 'none';
 };
 
@@ -107,13 +143,13 @@ function renderInputs() {
     let containerHtml = "";
     activeTests.forEach(code => {
         const testObj = testCatalogue[code];
-        containerHtml += `<div class="section-title">📌 ${testObj.name}</div>`;
-        containerHtml += `<div class="grid-4">`;
+        containerHtml += `<div class="section-title">📌 ${testObj.name}</div><div class="grid-4">`;
         testObj.params.forEach(param => {
+            const pName = typeof param === 'object' ? param.name : param;
             containerHtml += `
                 <div>
-                    <label>${param}</label>
-                    <input type="text" data-test="${code}" data-param="${param}" placeholder="Value">
+                    <label>${pName}</label>
+                    <input type="text" data-test="${code}" data-param="${pName}" placeholder="Value">
                 </div>
             `;
         });
@@ -249,9 +285,10 @@ window.openBill = function(index) {
     calculateFinalBill();
 };
 
+// Print Generator with Exact Table Format for Letterhead
 window.calculateFinalBill = function() {
-    const sub = parseFloat(document.getElementById('bill-subtotal').value) || 0;
-    const disc = parseFloat(document.getElementById('bill-discount').value) || 0;
+    const sub = parseFloat(document.getElementById('bill-subtotal')?.value) || 0;
+    const disc = parseFloat(document.getElementById('bill-discount')?.value) || 0;
     const net = Math.max(0, sub - disc);
     
     if (document.getElementById('bill-net')) {
@@ -259,23 +296,49 @@ window.calculateFinalBill = function() {
     }
 
     if (currentSelectedBill) {
-        document.getElementById('print-bill-id').innerText = currentSelectedBill.id;
-        document.getElementById('print-date').innerText = new Date(currentSelectedBill.createdAt).toLocaleDateString();
+        document.getElementById('print-date').innerText = new Date(currentSelectedBill.createdAt).toLocaleDateString('en-GB');
         document.getElementById('print-p-name').innerText = currentSelectedBill.patientName;
-        document.getElementById('print-p-age-gender').innerText = `${currentSelectedBill.age} Yrs / ${currentSelectedBill.gender}`;
+        document.getElementById('print-p-age-gender').innerText = `${currentSelectedBill.age}/${currentSelectedBill.gender.charAt(0)}`;
         document.getElementById('print-doc-name').innerText = currentSelectedBill.doctorName;
-        document.getElementById('print-sub').innerText = sub;
-        document.getElementById('print-disc').innerText = disc;
-        document.getElementById('print-net').innerText = net;
 
         let printTestsHtml = "";
         currentSelectedBill.tests.forEach(t => {
-            printTestsHtml += `<div style="margin-bottom: 8px;"><b>${t.testName}</b><table style="width:100%; border-collapse:collapse; margin-top:2px;">`;
+            const codeKey = Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
+            const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
+
+            printTestsHtml += `
+                <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
+                    ${t.testName}
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left;">
+                            <th style="padding: 6px 0; width: 45%;">INVESTIGATION</th>
+                            <th style="padding: 6px 0; width: 20%;">RESULT</th>
+                            <th style="padding: 6px 0; width: 15%;">UNIT</th>
+                            <th style="padding: 6px 0; width: 20%;">NORMAL RANGE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
             for (const [pName, pVal] of Object.entries(t.values)) {
-                printTestsHtml += `<tr><td style="border:1px solid #ddd; padding:4px;">${pName}</td><td style="border:1px solid #ddd; padding:4px;"><b>${pVal}</b></td></tr>`;
+                const paramObj = catalogueParams.find(p => (typeof p === 'object' ? p.name : p) === pName);
+                const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
+                const range = (paramObj && paramObj.range) ? paramObj.range : '';
+
+                printTestsHtml += `
+                    <tr>
+                        <td style="padding: 4px 0; font-weight: bold; text-transform: uppercase;">${pName}</td>
+                        <td style="padding: 4px 0; font-weight: bold;">${pVal}</td>
+                        <td style="padding: 4px 0;">${unit}</td>
+                        <td style="padding: 4px 0;">${range}</td>
+                    </tr>
+                `;
             }
-            printTestsHtml += `</table></div>`;
+            printTestsHtml += `</tbody></table>`;
         });
+
         document.getElementById('print-tests-container').innerHTML = printTestsHtml;
     }
 };
