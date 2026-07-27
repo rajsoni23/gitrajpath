@@ -3,7 +3,7 @@ import { testCatalogue } from '../config/config.js';
 let doctorsDirectory = JSON.parse(localStorage.getItem('path_doctors')) || ['Dr. A. K. Sharma', 'Dr. R. P. Gupta'];
 let allReportsData = JSON.parse(localStorage.getItem('path_reports')) || [];
 let allBillsData = JSON.parse(localStorage.getItem('path_bills')) || [];
-let activeTests = ['CBC'];
+let activeTests = [];
 let currentSelectedReport = null;
 
 // Tab Component File Mapping
@@ -223,7 +223,7 @@ window.saveAndPrintReport = function() {
     if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
     if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
     
-    activeTests = ['CBC'];
+    activeTests = [];
     renderBadges();
     renderInputs();
 };
