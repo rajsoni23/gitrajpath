@@ -6,27 +6,28 @@
   <table>
     <thead>
       <tr>
-        <th>Bill ID</th>
+        <th>Report ID</th>
         <th>Patient Name</th>
         <th>Doctor</th>
         <th>Tests</th>
-        <th>Net Amount</th>
-        <th>Action</th>
+        <th>Subtotal</th>
+        <th style="text-align: center;">Actions</th>
       </tr>
     </thead>
     <tbody id="billing-table-body">
-      <tr><td colspan="6" style="text-align: center; color: #94a3b8;">No bills generated yet.</td></tr>
+      <tr><td colspan="6" style="text-align: center; color: #94a3b8;">No records found.</td></tr>
     </tbody>
   </table>
 </div>
 
+<!-- Invoice Generator Card -->
 <div id="bill-view-card" class="card" style="display: none;">
   <h3>Test Summary & Bill Generator</h3>
   <div class="grid-2">
     <div>
       <p><b>Patient:</b> <span id="bill-patient-info"></span> (<span id="bill-age-gender"></span>)</p>
       <p><b>Referred By:</b> <span id="bill-doctor-info"></span></p>
-      <p><b>Test Summary & Values:</b></p>
+      <p><b>Tests Included:</b></p>
       <div id="bill-tests-summary-box" style="background: #0f172a; padding: 10px; border-radius: 4px; border: 1px solid #334155; font-size: 12px; max-height: 180px; overflow-y: auto;"></div>
     </div>
     <div>
@@ -36,8 +37,9 @@
       <input type="number" id="bill-discount" value="0" onkeyup="calculateFinalBill()" onchange="calculateFinalBill()">
       <label style="margin-top: 8px;">Net Payable Amount (₹)</label>
       <input type="number" id="bill-net" readonly style="font-weight: bold; color: #38bdf8;">
-      <div style="margin-top: 15px;">
-        <button class="btn" onclick="window.print()">🖨️ Print Final Bill / Report</button>
+      <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <button class="btn" style="background: #10b981;" onclick="confirmAndSaveBill()">💾 Print Cash Receipt</button>
+        <button class="btn" style="background: #64748b;" onclick="document.getElementById('bill-view-card').style.display='none'">Cancel</button>
       </div>
     </div>
   </div>
