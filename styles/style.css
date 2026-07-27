@@ -133,7 +133,7 @@ input:focus, select:focus {
   background: #1e293b; 
   border: 1px solid #38bdf8; 
   border-radius: 0 0 4px 4px; 
-  max-height: 120px; 
+  max-height: 150px; 
   overflow-y: auto; 
   z-index: 100; 
   display: none; 
@@ -145,6 +145,7 @@ input:focus, select:focus {
   border-bottom: 1px solid #334155; 
 }
 
+.autocomplete-item.active,
 .autocomplete-item:hover { 
   background: #0284c7; 
   color: white; 
@@ -182,16 +183,21 @@ th {
   background: #0369a1; 
 }
 
-.tab-content { 
-  display: none; 
+/* Hidden by default on normal screen */
+#print-template-container, #printable-report {
+  display: none;
 }
 
-.tab-content.active { 
-  display: block; 
-}
-
-/* CLEAN PRINT LAYOUT */
+/* STICKY LETTERHEAD PRINT ENGINE */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin-top: 4cm !important;     /* Top Space for Letterhead Pad */
+    margin-bottom: 4cm !important;  /* Bottom Space for Doctor Stamp/Sign */
+    margin-left: 1.5cm;
+    margin-right: 1.5cm;
+  }
+
   body {
     background: white !important;
     color: black !important;
@@ -199,7 +205,7 @@ th {
     padding: 0 !important;
   }
 
-  /* Hide Application UI Controls */
+  /* Hide Application UI completely during print */
   .app-header,
   .nav-tabs,
   .tab-btn,
@@ -214,37 +220,32 @@ th {
     display: none !important;
   }
 
-  /* Show and position printable report template */
-  #printable-report,
-  #print-template-container,
-  #printable-bill {
+  /* Force display print output container */
+  #print-template-container, #printable-report {
     display: block !important;
     visibility: visible !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    position: static !important;
     width: 100% !important;
     margin: 0 !important;
-    padding: 15px !important;
+    padding: 0 !important;
     color: black !important;
     background: white !important;
   }
 
-  /* Table styling for printed document */
-  #printable-report table,
-  #print-template-container table,
-  #printable-bill table {
+  .report-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  table {
     width: 100% !important;
     border-collapse: collapse !important;
     color: black !important;
   }
 
-  #printable-report th,
-  #printable-report td,
-  #print-template-container th,
-  #print-template-container td,
-  #printable-bill th,
-  #printable-bill td {
+  th, td {
     color: black !important;
     border-bottom: 1px solid #000 !important;
   }
