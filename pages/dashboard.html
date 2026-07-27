@@ -53,6 +53,25 @@
     <hr style="border: 1px solid #000; margin-top: 30px;">    
     <p style="text-align: center; font-size: 11px; margin-top: 20px;">Thank you for trusting us. Get well soon!</p>  
   </div>
+  <!-- PRINTABLE TEMPLATE (Only Middle Section Prints) -->
+<div id="printable-bill" style="display: none; width: 100%; color: #000; font-family: Arial, sans-serif; padding-top: 130px; padding-bottom: 90px; box-sizing: border-box;">
+  
+  <!-- Patient Header Details -->
+  <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px 0; margin-bottom: 15px; font-size: 13px; font-weight: bold; line-height: 1.8;">
+    <div style="display: flex; justify-content: space-between;">
+      <span>Patient's Name: <span id="print-p-name" style="text-transform: uppercase;"></span></span>
+      <span>AGE/SEX: <span id="print-p-age-gender"></span></span>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+      <span>Reff.Dr: <span id="print-doc-name"></span></span>
+      <span>DATE: <span id="print-date"></span></span>
+    </div>
+  </div>
+
+  <!-- Test Results Table -->
+  <div id="print-tests-container"></div>
+
+</div>
 
   <script type="module" src="../patients/patient.js"></script>
 </body>
