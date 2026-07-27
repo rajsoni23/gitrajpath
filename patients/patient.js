@@ -160,7 +160,7 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// ONLY REPORT PRINTING (NO BILL CREATION HERE)
+// ONLY REPORT PRINTING (REFINED & FIXED)
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -186,8 +186,8 @@ window.saveAndPrintReport = function() {
         
         inputs.forEach(inp => {
             const val = inp.value.trim();
-            // Sirf wahi filter honge jinme value enter hui hai
-            if (val !== "" && val !== "-") {
+            // Stricter Filter Check: Avoid printing empty values or dashes
+            if (val !== "" && val !== "-" && val !== undefined) {
                 paramValues[inp.dataset.param] = val;
             }
         });
@@ -202,7 +202,7 @@ window.saveAndPrintReport = function() {
         return;
     }
 
-    // Save Only Report Record (NOT A BILL)
+    // Save Only Report Record
     const newReport = {
         id: 'REP-' + Math.floor(100000 + Math.random() * 900000),
         patientName: name,
@@ -217,7 +217,7 @@ window.saveAndPrintReport = function() {
     allReportsData.unshift(newReport);
     localStorage.setItem('path_reports', JSON.stringify(allReportsData));
 
-    // Populate Print Template
+    // Populate Print Template Elements
     const printDate = document.getElementById('print-date');
     const printPName = document.getElementById('print-p-name');
     const printPAgeGender = document.getElementById('print-p-age-gender');
@@ -269,10 +269,12 @@ window.saveAndPrintReport = function() {
     const printContainer = document.getElementById('print-tests-container');
     if (printContainer) printContainer.innerHTML = printTestsHtml;
 
-    // Trigger Print Window
-    window.print();
+    // Small delay ensures DOM updates render cleanly before print execution
+    setTimeout(() => {
+        window.print();
+    }, 100);
 
-    // Reset Form
+    // Reset Form Elements
     if (nameEl) nameEl.value = '';
     if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
     if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
@@ -307,7 +309,7 @@ function updateDoctorReferralTable() {
 }
 
 // -------------------------------------------------------------
-// BILLING SECTION (Generates Bill Manual Here)
+// BILLING SECTION
 // -------------------------------------------------------------
 function updateBillingTable(filteredList = null) {
     const list = filteredList || allReportsData;
@@ -373,7 +375,6 @@ window.calculateFinalBill = function() {
     }
 };
 
-// Billing Section se final bill save karne ke liye
 window.confirmAndSaveBill = function() {
     if (!currentSelectedReport) return;
 
