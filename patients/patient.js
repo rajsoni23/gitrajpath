@@ -53,6 +53,41 @@ window.switchTab = async function(tabId, evt) {
 };
 
 // -------------------------------------------------------------
+// KEYBOARD NAVIGATION HANDLER (COMMON FOR DOCTOR & TEST)
+// -------------------------------------------------------------
+function handleKeyboardNavigation(e, container, type) {
+    const items = container.querySelectorAll('.autocomplete-item');
+    if (!items.length) return;
+
+    let currentIndex = type === 'doctor' ? currentDoctorFocusIndex : currentTestFocusIndex;
+
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        currentIndex++;
+        if (currentIndex >= items.length) currentIndex = 0;
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        currentIndex--;
+        if (currentIndex < 0) currentIndex = items.length - 1;
+    } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (currentIndex > -1 && items[currentIndex]) {
+            items[currentIndex].click();
+        }
+        return;
+    }
+
+    items.forEach(el => el.classList.remove('active'));
+    if (items[currentIndex]) {
+        items[currentIndex].classList.add('active');
+        items[currentIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    if (type === 'doctor') currentDoctorFocusIndex = currentIndex;
+    else currentTestFocusIndex = currentIndex;
+}
+
+// -------------------------------------------------------------
 // ARROW KEY SUPPORT & AUTOCOMPLETE (DOCTOR)
 // -------------------------------------------------------------
 window.handleDoctorSearch = function(e) {
@@ -122,36 +157,6 @@ window.handleTestSearch = function(e) {
         listContainer.style.display = 'none';
     }
 };
-
-function handleKeyboardNavigation(e, container, type) {
-    const items = container.querySelectorAll('.autocomplete-item');
-    if (!items.length) return;
-
-    let currentIndex = type === 'doctor' ? currentDoctorFocusIndex : currentTestFocusIndex;
-
-    if (e.key === "ArrowDown") {
-        currentIndex++;
-        if (currentIndex >= items.length) currentIndex = 0;
-    } else if (e.key === "ArrowUp") {
-        currentIndex--;
-        if (currentIndex < 0) currentIndex = items.length - 1;
-    } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (currentIndex > -1 && items[currentIndex]) {
-            items[currentIndex].click();
-        }
-        return;
-    }
-
-    items.forEach(el => el.classList.remove('active'));
-    if (items[currentIndex]) {
-        items[currentIndex].classList.add('active');
-        items[currentIndex].scrollIntoView({ block: 'nearest' });
-    }
-
-    if (type === 'doctor') currentDoctorFocusIndex = currentIndex;
-    else currentTestFocusIndex = currentIndex;
-}
 
 window.selectTestCode = function(code) {
     if (!activeTests.includes(code)) {
@@ -329,7 +334,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT ONLY (NO BLANK FORMAT FIX)
+// PRINT DIAGNOSTIC REPORT ONLY (UPDATED FORMAT & NO LINES)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -346,30 +351,33 @@ window.openReportPrint = function(index) {
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
                 
-                <div style="border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
-                    <table style="width: 100%; font-size: 13px; font-weight: bold; border: none !important;">
+                <!-- NEW PATIENT INFO HEADER -->
+                <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
+                    <table style="width: 100%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                         <tr style="border: none !important;">
-                            <td style="width: 50%; padding: 3px 0; border: none !important;">Patient Name: <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
-                            <td style="width: 50%; padding: 3px 0; border: none !important; text-align: right;">Date: ${formattedDate}</td>
+                            <td style="width: 55%; padding: 2px 0; border: none !important;">patient's name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
+                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">age/sex/${reportData.age}/years/${reportData.gender.toLowerCase()}</td>
                         </tr>
                         <tr style="border: none !important;">
-                            <td style="width: 50%; padding: 3px 0; border: none !important;">Age/Gender: ${reportData.age} Yrs / ${reportData.gender}</td>
-                            <td style="width: 50%; padding: 3px 0; border: none !important; text-align: right;">Referred By: ${reportData.doctorName}</td>
+                            <td style="width: 55%; padding: 2px 0; border: none !important;">reff.Dr : ${reportData.doctorName}</td>
+                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">date today date ${formattedDate}</td>
                         </tr>
                     </table>
                 </div>
 
-                <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 15px; text-transform: uppercase;">
+                <!-- TEST NAME TITLE -->
+                <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
                     ${t.testName}
                 </div>
 
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                <!-- TABLE WITHOUT BOTTOM ROW BORDERS -->
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; border: none !important;">
                     <thead>
-                        <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left;">
-                            <th style="padding: 6px 0; width: 45%;">INVESTIGATION</th>
-                            <th style="padding: 6px 0; width: 20%;">RESULT</th>
-                            <th style="padding: 6px 0; width: 15%;">UNIT</th>
-                            <th style="padding: 6px 0; width: 20%;">NORMAL RANGE</th>
+                        <tr style="border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; text-align: left;">
+                            <th style="padding: 6px 0; width: 45%; border: none !important;">INVESTIGATION</th>
+                            <th style="padding: 6px 0; width: 20%; border: none !important;">RESULT</th>
+                            <th style="padding: 6px 0; width: 15%; border: none !important;">UNIT</th>
+                            <th style="padding: 6px 0; width: 20%; border: none !important;">NORMAL RANGE</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -381,11 +389,11 @@ window.openReportPrint = function(index) {
             const range = (paramObj && paramObj.range) ? paramObj.range : '';
 
             fullReportHtml += `
-                <tr>
-                    <td style="padding: 6px 0; font-weight: bold; text-transform: uppercase;">${pName}</td>
-                    <td style="padding: 6px 0; font-weight: bold;">${pVal}</td>
-                    <td style="padding: 6px 0;">${unit}</td>
-                    <td style="padding: 6px 0;">${range}</td>
+                <tr style="border: none !important;">
+                    <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
+                    <td style="padding: 5px 0; font-weight: bold; border: none !important;">${pVal}</td>
+                    <td style="padding: 5px 0; border: none !important;">${unit}</td>
+                    <td style="padding: 5px 0; border: none !important;">${range}</td>
                 </tr>
             `;
         }
