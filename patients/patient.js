@@ -160,7 +160,7 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// ONLY REPORT PRINTING (REFINED & FIXED)
+// SAVE PATIENT REPORT RECORD ONLY (Registration Screen)
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -186,7 +186,6 @@ window.saveAndPrintReport = function() {
         
         inputs.forEach(inp => {
             const val = inp.value.trim();
-            // Stricter Filter Check: Avoid printing empty values or dashes
             if (val !== "" && val !== "-" && val !== undefined) {
                 paramValues[inp.dataset.param] = val;
             }
@@ -202,7 +201,6 @@ window.saveAndPrintReport = function() {
         return;
     }
 
-    // Save Only Report Record
     const newReport = {
         id: 'REP-' + Math.floor(100000 + Math.random() * 900000),
         patientName: name,
@@ -217,64 +215,10 @@ window.saveAndPrintReport = function() {
     allReportsData.unshift(newReport);
     localStorage.setItem('path_reports', JSON.stringify(allReportsData));
 
-    // Populate Print Template Elements
-    const printDate = document.getElementById('print-date');
-    const printPName = document.getElementById('print-p-name');
-    const printPAgeGender = document.getElementById('print-p-age-gender');
-    const printDocName = document.getElementById('print-doc-name');
+    // Instant Report Print
+    openReportPrint(0);
 
-    if (printDate) printDate.innerText = new Date(newReport.createdAt).toLocaleDateString('en-GB');
-    if (printPName) printPName.innerText = newReport.patientName;
-    if (printPAgeGender) printPAgeGender.innerText = `${newReport.age}/${newReport.gender.charAt(0)}`;
-    if (printDocName) printDocName.innerText = newReport.doctorName;
-
-    let printTestsHtml = "";
-    newReport.tests.forEach(t => {
-        const codeKey = Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
-        const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
-
-        printTestsHtml += `
-            <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
-                ${t.testName}
-            </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
-                <thead>
-                    <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left;">
-                        <th style="padding: 6px 0; width: 45%;">INVESTIGATION</th>
-                        <th style="padding: 6px 0; width: 20%;">RESULT</th>
-                        <th style="padding: 6px 0; width: 15%;">UNIT</th>
-                        <th style="padding: 6px 0; width: 20%;">NORMAL RANGE</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        for (const [pName, pVal] of Object.entries(t.values)) {
-            const paramObj = catalogueParams.find(p => (typeof p === 'object' ? p.name : p) === pName);
-            const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
-            const range = (paramObj && paramObj.range) ? paramObj.range : '';
-
-            printTestsHtml += `
-                <tr>
-                    <td style="padding: 4px 0; font-weight: bold; text-transform: uppercase;">${pName}</td>
-                    <td style="padding: 4px 0; font-weight: bold;">${pVal}</td>
-                    <td style="padding: 4px 0;">${unit}</td>
-                    <td style="padding: 4px 0;">${range}</td>
-                </tr>
-            `;
-        }
-        printTestsHtml += `</tbody></table>`;
-    });
-
-    const printContainer = document.getElementById('print-tests-container');
-    if (printContainer) printContainer.innerHTML = printTestsHtml;
-
-    // Small delay ensures DOM updates render cleanly before print execution
-    setTimeout(() => {
-        window.print();
-    }, 100);
-
-    // Reset Form Elements
+    // Reset Form
     if (nameEl) nameEl.value = '';
     if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
     if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
@@ -309,7 +253,7 @@ function updateDoctorReferralTable() {
 }
 
 // -------------------------------------------------------------
-// BILLING SECTION
+// BILLING & PATIENT LIST TABLE RENDER
 // -------------------------------------------------------------
 function updateBillingTable(filteredList = null) {
     const list = filteredList || allReportsData;
@@ -320,16 +264,23 @@ function updateBillingTable(filteredList = null) {
         html += `
             <tr>
                 <td>${r.id}</td>
-                <td>${r.patientName}</td>
+                <td><b>${r.patientName}</b></td>
                 <td>${r.doctorName}</td>
                 <td>${testNamesList}</td>
                 <td>₹${r.subtotal}</td>
-                <td><button class="btn" style="padding: 4px 8px; font-size:11px;" onclick="openBill(${index})">Generate Bill</button></td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #0284c7; margin-right: 5px;" onclick="openReportPrint(${index})">
+                        📄 Print Report
+                    </button>
+                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #10b981;" onclick="openBill(${index})">
+                        🧾 Generate Bill
+                    </button>
+                </td>
             </tr>
         `;
     });
     if (list.length === 0) {
-        html = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No reports pending for bill.</td></tr>`;
+        html = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No reports found.</td></tr>`;
     }
     const target = document.getElementById('billing-table-body');
     if (target) target.innerHTML = html;
@@ -343,6 +294,91 @@ window.filterBillsTable = function() {
     updateBillingTable(filtered);
 };
 
+// -------------------------------------------------------------
+// ACTION 1: PRINT DIAGNOSTIC REPORT ONLY (PER-TEST PAGE BREAK)
+// -------------------------------------------------------------
+window.openReportPrint = function(index) {
+    const reportData = allReportsData[index];
+    if (!reportData) return;
+
+    const formattedDate = new Date(reportData.createdAt).toLocaleDateString('en-GB');
+    let fullReportHtml = "";
+
+    reportData.tests.forEach((t, i) => {
+        const codeKey = Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
+        const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
+        const isLast = i === reportData.tests.length - 1;
+
+        fullReportHtml += `
+            <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''} padding: 10px;">
+                
+                <!-- Single Header -->
+                <div style="border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
+                    <table style="width: 100%; font-size: 13px; font-weight: bold; border: none !important;">
+                        <tr style="border: none !important;">
+                            <td style="width: 50%; padding: 3px 0; border: none !important;">Patient Name: <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
+                            <td style="width: 50%; padding: 3px 0; border: none !important; text-align: right;">Date: ${formattedDate}</td>
+                        </tr>
+                        <tr style="border: none !important;">
+                            <td style="width: 50%; padding: 3px 0; border: none !important;">Age/Gender: ${reportData.age} Yrs / ${reportData.gender}</td>
+                            <td style="width: 50%; padding: 3px 0; border: none !important; text-align: right;">Referred By: ${reportData.doctorName}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Test Title -->
+                <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 15px; text-transform: uppercase;">
+                    ${t.testName}
+                </div>
+
+                <!-- Test Results Table -->
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left;">
+                            <th style="padding: 6px 0; width: 45%;">INVESTIGATION</th>
+                            <th style="padding: 6px 0; width: 20%;">RESULT</th>
+                            <th style="padding: 6px 0; width: 15%;">UNIT</th>
+                            <th style="padding: 6px 0; width: 20%;">NORMAL RANGE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        for (const [pName, pVal] of Object.entries(t.values)) {
+            const paramObj = catalogueParams.find(p => (typeof p === 'object' ? p.name : p) === pName);
+            const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
+            const range = (paramObj && paramObj.range) ? paramObj.range : '';
+
+            fullReportHtml += `
+                <tr>
+                    <td style="padding: 6px 0; font-weight: bold; text-transform: uppercase;">${pName}</td>
+                    <td style="padding: 6px 0; font-weight: bold;">${pVal}</td>
+                    <td style="padding: 6px 0;">${unit}</td>
+                    <td style="padding: 6px 0;">${range}</td>
+                </tr>
+            `;
+        }
+
+        fullReportHtml += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+    });
+
+    const printContainer = document.getElementById('print-template-container') || document.getElementById('printable-report');
+    if (printContainer) {
+        printContainer.innerHTML = fullReportHtml;
+    }
+
+    setTimeout(() => {
+        window.print();
+    }, 150);
+};
+
+// -------------------------------------------------------------
+// ACTION 2: GENERATE CASH RECEIPT / BILL ONLY
+// -------------------------------------------------------------
 window.openBill = function(index) {
     currentSelectedReport = allReportsData[index];
     const billCard = document.getElementById('bill-view-card');
@@ -354,11 +390,9 @@ window.openBill = function(index) {
 
     let summaryHtml = "";
     currentSelectedReport.tests.forEach(t => {
-        summaryHtml += `<b>➡️ ${t.testName}</b><br>`;
-        for (const [pName, pVal] of Object.entries(t.values)) {
-            summaryHtml += `&nbsp;&nbsp;&nbsp;&nbsp;• ${pName}: <b>${pVal}</b><br>`;
-        }
+        summaryHtml += `<b>➡️ ${t.testName}</b> (₹${testCatalogue[Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName)]?.price || 0})<br>`;
     });
+    
     document.getElementById('bill-tests-summary-box').innerHTML = summaryHtml;
     document.getElementById('bill-subtotal').value = currentSelectedReport.subtotal;
     document.getElementById('bill-discount').value = 0;
@@ -380,19 +414,65 @@ window.confirmAndSaveBill = function() {
 
     const sub = parseFloat(document.getElementById('bill-subtotal')?.value) || 0;
     const disc = parseFloat(document.getElementById('bill-discount')?.value) || 0;
+    const net = Math.max(0, sub - disc);
 
-    const finalBill = {
-        billId: 'INV-' + Math.floor(100000 + Math.random() * 900000),
-        ...currentSelectedReport,
-        discount: disc,
-        netAmount: Math.max(0, sub - disc),
-        billedAt: new Date().toISOString()
-    };
+    const formattedDate = new Date().toLocaleDateString('en-GB');
 
-    allBillsData.unshift(finalBill);
-    localStorage.setItem('path_bills', JSON.stringify(allBillsData));
+    const billHtml = `
+        <div style="padding: 20px; font-family: Arial, sans-serif;">
+            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 style="margin: 0; text-transform: uppercase;">PATHOLOGY PAYMENT RECEIPT</h2>
+                <p style="margin: 3px 0; font-size: 12px;">Invoice Date: ${formattedDate}</p>
+            </div>
+            <table style="width: 100%; font-size: 13px; margin-bottom: 15px; border: none !important;">
+                <tr>
+                    <td><b>Patient Name:</b> ${currentSelectedReport.patientName}</td>
+                    <td style="text-align: right;"><b>Age/Sex:</b> ${currentSelectedReport.age} / ${currentSelectedReport.gender}</td>
+                </tr>
+                <tr>
+                    <td><b>Referred By:</b> ${currentSelectedReport.doctorName}</td>
+                    <td style="text-align: right;"><b>Receipt ID:</b> INV-${Math.floor(100000 + Math.random() * 900000)}</td>
+                </tr>
+            </table>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                <thead>
+                    <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000;">
+                        <th style="text-align: left; padding: 6px 0;">Test Name</th>
+                        <th style="text-align: right; padding: 6px 0;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${currentSelectedReport.tests.map(t => `
+                        <tr>
+                            <td style="padding: 6px 0;">${t.testName}</td>
+                            <td style="text-align: right; padding: 6px 0;">₹${testCatalogue[Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName)]?.price || 0}</td>
+                        </tr>
+                    `).join('')}
+                    <tr style="border-top: 1px solid #000;">
+                        <td style="padding: 6px 0; font-weight: bold;">Subtotal</td>
+                        <td style="text-align: right; padding: 6px 0; font-weight: bold;">₹${sub}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0;">Discount</td>
+                        <td style="text-align: right; padding: 6px 0;">- ₹${disc}</td>
+                    </tr>
+                    <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; font-size: 14px; font-weight: bold;">
+                        <td style="padding: 8px 0;">Net Payable</td>
+                        <td style="text-align: right; padding: 8px 0;">₹${net}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="text-align: center; margin-top: 30px; font-weight: bold; font-size: 12px;">Thank you for trusting us. Get well soon!</p>
+        </div>
+    `;
 
-    alert(`✅ Bill Generated Successfully! Net Amount: ₹${finalBill.netAmount}`);
+    const printContainer = document.getElementById('print-template-container') || document.getElementById('printable-report');
+    if (printContainer) printContainer.innerHTML = billHtml;
+
+    setTimeout(() => {
+        window.print();
+    }, 150);
+
     const billCard = document.getElementById('bill-view-card');
     if (billCard) billCard.style.display = 'none';
 };
