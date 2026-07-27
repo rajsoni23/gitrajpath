@@ -2,23 +2,22 @@ import { testCatalogue } from '../config/config.js';
 
 let doctorsDirectory = JSON.parse(localStorage.getItem('path_doctors')) || ['Dr. A. K. Sharma', 'Dr. R. P. Gupta'];
 let allReportsData = JSON.parse(localStorage.getItem('path_reports')) || [];
-let allBillsData = JSON.parse(localStorage.getItem('path_bills')) || [];
 let activeTests = [];
 let currentSelectedReport = null;
 
-// Tab Component File Mapping
+let currentDoctorFocusIndex = -1;
+let currentTestFocusIndex = -1;
+
 const tabFiles = {
     'tab-register': '../components/register.html',
     'tab-doctors': '../components/doctors.html',
     'tab-billing': '../components/billing.html'
 };
 
-// Initial App Load
 window.onload = async () => {
     await loadTabContent('tab-register');
 };
 
-// Component Fetch Loader
 async function loadTabContent(tabId) {
     const container = document.getElementById('tab-content-container');
     const filePath = tabFiles[tabId];
@@ -46,7 +45,6 @@ async function loadTabContent(tabId) {
     }
 }
 
-// Global Tab Switcher
 window.switchTab = async function(tabId, evt) {
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     if (evt && evt.target) evt.target.classList.add('active');
@@ -54,18 +52,28 @@ window.switchTab = async function(tabId, evt) {
     await loadTabContent(tabId);
 };
 
-// Doctor Autocomplete Search
+// -------------------------------------------------------------
+// ARROW KEY SUPPORT & AUTOCOMPLETE (DOCTOR)
+// -------------------------------------------------------------
 window.handleDoctorSearch = function(e) {
-    const val = e.target.value.toLowerCase().trim();
     const listContainer = document.getElementById('doctor-suggestions');
     if (!listContainer) return;
+
+    if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
+        handleKeyboardNavigation(e, listContainer, 'doctor');
+        return;
+    }
+
+    const val = e.target.value.toLowerCase().trim();
+    currentDoctorFocusIndex = -1;
+
     if (val.length === 0) { listContainer.style.display = 'none'; return; }
 
     const matches = doctorsDirectory.filter(d => d.toLowerCase().includes(val));
     if (matches.length > 0) {
         let html = "";
-        matches.forEach(d => {
-            html += `<div class="autocomplete-item" onclick="selectDoctor('${d}')">${d}</div>`;
+        matches.forEach((d, idx) => {
+            html += `<div class="autocomplete-item" id="doc-item-${idx}" onclick="selectDoctor('${d}')">${d}</div>`;
         });
         listContainer.innerHTML = html;
         listContainer.style.display = 'block';
@@ -79,13 +87,24 @@ window.selectDoctor = function(name) {
     const listContainer = document.getElementById('doctor-suggestions');
     if (docInput) docInput.value = name;
     if (listContainer) listContainer.style.display = 'none';
+    currentDoctorFocusIndex = -1;
 };
 
-// Test Shortcode Search
+// -------------------------------------------------------------
+// ARROW KEY SUPPORT & AUTOCOMPLETE (TEST SHORTCODES)
+// -------------------------------------------------------------
 window.handleTestSearch = function(e) {
-    const val = e.target.value.toUpperCase().trim();
     const listContainer = document.getElementById('test-suggestions');
     if (!listContainer) return;
+
+    if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
+        handleKeyboardNavigation(e, listContainer, 'test');
+        return;
+    }
+
+    const val = e.target.value.toUpperCase().trim();
+    currentTestFocusIndex = -1;
+
     if (val.length === 0) { listContainer.style.display = 'none'; return; }
 
     const matches = Object.keys(testCatalogue).filter(code => 
@@ -94,8 +113,8 @@ window.handleTestSearch = function(e) {
 
     if (matches.length > 0) {
         let html = "";
-        matches.forEach(code => {
-            html += `<div class="autocomplete-item" onclick="selectTestCode('${code}')"><b>${code}</b> - ${testCatalogue[code].name}</div>`;
+        matches.forEach((code, idx) => {
+            html += `<div class="autocomplete-item" id="test-item-${idx}" onclick="selectTestCode('${code}')"><b>${code}</b> - ${testCatalogue[code].name}</div>`;
         });
         listContainer.innerHTML = html;
         listContainer.style.display = 'block';
@@ -103,6 +122,36 @@ window.handleTestSearch = function(e) {
         listContainer.style.display = 'none';
     }
 };
+
+function handleKeyboardNavigation(e, container, type) {
+    const items = container.querySelectorAll('.autocomplete-item');
+    if (!items.length) return;
+
+    let currentIndex = type === 'doctor' ? currentDoctorFocusIndex : currentTestFocusIndex;
+
+    if (e.key === "ArrowDown") {
+        currentIndex++;
+        if (currentIndex >= items.length) currentIndex = 0;
+    } else if (e.key === "ArrowUp") {
+        currentIndex--;
+        if (currentIndex < 0) currentIndex = items.length - 1;
+    } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (currentIndex > -1 && items[currentIndex]) {
+            items[currentIndex].click();
+        }
+        return;
+    }
+
+    items.forEach(el => el.classList.remove('active'));
+    if (items[currentIndex]) {
+        items[currentIndex].classList.add('active');
+        items[currentIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    if (type === 'doctor') currentDoctorFocusIndex = currentIndex;
+    else currentTestFocusIndex = currentIndex;
+}
 
 window.selectTestCode = function(code) {
     if (!activeTests.includes(code)) {
@@ -114,20 +163,7 @@ window.selectTestCode = function(code) {
     const listContainer = document.getElementById('test-suggestions');
     if (input) input.value = '';
     if (listContainer) listContainer.style.display = 'none';
-};
-
-window.handleTestCode = function(e) {
-    if (e.key === 'Enter') {
-        const code = e.target.value.toUpperCase().trim();
-        if (testCatalogue[code] && !activeTests.includes(code)) {
-            activeTests.push(code);
-            e.target.value = '';
-            renderBadges();
-            renderInputs();
-        } else if (!testCatalogue[code]) {
-            alert("Invalid Code! Try CBC, KFT, or LFT.");
-        }
-    }
+    currentTestFocusIndex = -1;
 };
 
 function renderBadges() {
@@ -160,7 +196,7 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// SAVE PATIENT REPORT RECORD ONLY (Registration Screen)
+// SAVE PATIENT & TRIGGER REPORT PRINT
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -215,10 +251,8 @@ window.saveAndPrintReport = function() {
     allReportsData.unshift(newReport);
     localStorage.setItem('path_reports', JSON.stringify(allReportsData));
 
-    // Instant Report Print
     openReportPrint(0);
 
-    // Reset Form
     if (nameEl) nameEl.value = '';
     if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
     if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
@@ -231,7 +265,7 @@ window.saveAndPrintReport = function() {
 window.savePatientRecord = window.saveAndPrintReport;
 
 // -------------------------------------------------------------
-// DOCTOR REFERRAL REPORT
+// DOCTOR REFERRAL TABLE
 // -------------------------------------------------------------
 function updateDoctorReferralTable() {
     const report = {};
@@ -253,7 +287,7 @@ function updateDoctorReferralTable() {
 }
 
 // -------------------------------------------------------------
-// BILLING & PATIENT LIST TABLE RENDER
+// BILLING & PATIENT LIST
 // -------------------------------------------------------------
 function updateBillingTable(filteredList = null) {
     const list = filteredList || allReportsData;
@@ -295,7 +329,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// ACTION 1: PRINT DIAGNOSTIC REPORT ONLY (PER-TEST PAGE BREAK)
+// PRINT DIAGNOSTIC REPORT ONLY (NO BLANK FORMAT FIX)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -310,9 +344,8 @@ window.openReportPrint = function(index) {
         const isLast = i === reportData.tests.length - 1;
 
         fullReportHtml += `
-            <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''} padding: 10px;">
+            <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
                 
-                <!-- Single Header -->
                 <div style="border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
                     <table style="width: 100%; font-size: 13px; font-weight: bold; border: none !important;">
                         <tr style="border: none !important;">
@@ -326,12 +359,10 @@ window.openReportPrint = function(index) {
                     </table>
                 </div>
 
-                <!-- Test Title -->
                 <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 15px; text-transform: uppercase;">
                     ${t.testName}
                 </div>
 
-                <!-- Test Results Table -->
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
                     <thead>
                         <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left;">
@@ -366,18 +397,22 @@ window.openReportPrint = function(index) {
         `;
     });
 
-    const printContainer = document.getElementById('print-template-container') || document.getElementById('printable-report');
-    if (printContainer) {
-        printContainer.innerHTML = fullReportHtml;
+    let printContainer = document.getElementById('print-template-container');
+    if (!printContainer) {
+        printContainer = document.createElement('div');
+        printContainer.id = 'print-template-container';
+        document.body.appendChild(printContainer);
     }
+
+    printContainer.innerHTML = fullReportHtml;
 
     setTimeout(() => {
         window.print();
-    }, 150);
+    }, 200);
 };
 
 // -------------------------------------------------------------
-// ACTION 2: GENERATE CASH RECEIPT / BILL ONLY
+// PRINT BILL ONLY
 // -------------------------------------------------------------
 window.openBill = function(index) {
     currentSelectedReport = allReportsData[index];
@@ -419,7 +454,7 @@ window.confirmAndSaveBill = function() {
     const formattedDate = new Date().toLocaleDateString('en-GB');
 
     const billHtml = `
-        <div style="padding: 20px; font-family: Arial, sans-serif;">
+        <div style="padding: 10px; font-family: Arial, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
                 <h2 style="margin: 0; text-transform: uppercase;">PATHOLOGY PAYMENT RECEIPT</h2>
                 <p style="margin: 3px 0; font-size: 12px;">Invoice Date: ${formattedDate}</p>
@@ -466,12 +501,18 @@ window.confirmAndSaveBill = function() {
         </div>
     `;
 
-    const printContainer = document.getElementById('print-template-container') || document.getElementById('printable-report');
-    if (printContainer) printContainer.innerHTML = billHtml;
+    let printContainer = document.getElementById('print-template-container');
+    if (!printContainer) {
+        printContainer = document.createElement('div');
+        printContainer.id = 'print-template-container';
+        document.body.appendChild(printContainer);
+    }
+
+    printContainer.innerHTML = billHtml;
 
     setTimeout(() => {
         window.print();
-    }, 150);
+    }, 200);
 
     const billCard = document.getElementById('bill-view-card');
     if (billCard) billCard.style.display = 'none';
