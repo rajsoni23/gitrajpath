@@ -18,10 +18,12 @@
       <div id="doctor-suggestions" class="autocomplete-list"></div>
     </div>
     <div>
-      <label>Test Shortcode (CBC / KFT / LFT) + Enter</label>
-      <input type="text" id="test-code-input" placeholder="Type code..." onkeydown="handleTestCode(event)">
-    </div>
+  <label>Test Shortcode (CBC / KFT / LFT)</label>
+  <div class="autocomplete-wrapper">
+    <input type="text" id="test-code-input" placeholder="Type code (e.g. CBC)..." onkeyup="handleTestSearch(event)" onkeydown="handleTestCode(event)">
+    <div id="test-suggestions" class="autocomplete-list"></div>
   </div>
+</div>
   <div id="selected-tests-container" style="margin-top: 10px;"></div>
 </div>
 
