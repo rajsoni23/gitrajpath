@@ -1,6 +1,6 @@
 import { testCatalogue } from '../config/config.js';
 
-let doctorsDirectory = JSON.parse(localStorage.getItem('path_doctors')) || ['Dr. A. K. Sharma', 'Dr. R. P. Gupta'];
+let doctorsDirectory = JSON.parse(localStorage.getItem('path_doctors')) || [];
 let allReportsData = JSON.parse(localStorage.getItem('path_reports')) || [];
 let activeTests = [];
 let currentSelectedReport = null;
@@ -13,6 +13,24 @@ const tabFiles = {
     'tab-doctors': '../components/doctors.html',
     'tab-billing': '../components/billing.html'
 };
+
+// -------------------------------------------------------------
+// GLOBAL KEYBOARD SHORTCUTS (F3 & CTRL + B)
+// -------------------------------------------------------------
+document.addEventListener('keydown', (e) => {
+    // F3 -> Save and Print Report
+    if (e.key === 'F3') {
+        e.preventDefault();
+        saveAndPrintReport();
+    }
+
+    // Ctrl + B -> Switch to Billing & Summary Tab
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        const billingBtn = document.querySelector('[onclick*="tab-billing"]');
+        switchTab('tab-billing', { target: billingBtn });
+    }
+});
 
 window.onload = async () => {
     await loadTabContent('tab-register');
@@ -47,7 +65,12 @@ async function loadTabContent(tabId) {
 
 window.switchTab = async function(tabId, evt) {
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    if (evt && evt.target) evt.target.classList.add('active');
+    if (evt && evt.target) {
+        evt.target.classList.add('active');
+    } else {
+        const targetBtn = document.querySelector(`[onclick*="${tabId}"]`);
+        if (targetBtn) targetBtn.classList.add('active');
+    }
 
     await loadTabContent(tabId);
 };
@@ -355,12 +378,12 @@ window.openReportPrint = function(index) {
                 <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
                     <table style="width: 100%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                         <tr style="border: none !important;">
-                            <td style="width: 55%; padding: 2px 0; border: none !important;">patient's name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
-                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">age/sex/${reportData.age}/years/${reportData.gender.toLowerCase()}</td>
+                            <td style="width: 55%; padding: 2px 0; border: none !important;">Patient's Name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
+                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex/${reportData.age}/Years/${reportData.gender.toLowerCase()}</td>
                         </tr>
                         <tr style="border: none !important;">
-                            <td style="width: 55%; padding: 2px 0; border: none !important;">reff.Dr : ${reportData.doctorName}</td>
-                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">date today date ${formattedDate}</td>
+                            <td style="width: 55%; padding: 2px 0; border: none !important;">Reff.Dr : ${reportData.doctorName}</td>
+                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date ${formattedDate}</td>
                         </tr>
                     </table>
                 </div>
