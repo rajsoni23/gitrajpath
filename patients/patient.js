@@ -5,25 +5,59 @@ let allBillsData = JSON.parse(localStorage.getItem('path_bills')) || [];
 let activeTests = ['CBC'];
 let currentSelectedBill = null;
 
-window.onload = () => {
-    renderBadges();
-    renderInputs();
-    updateBillingTable();
+// Tab Component File Mapping
+const tabFiles = {
+    'tab-register': '../components/register.html',
+    'tab-doctors': '../components/doctors.html',
+    'tab-billing': '../components/billing.html'
 };
 
-window.switchTab = function(tabId, evt) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    evt.target.classList.add('active');
-          
-    if(tabId === 'tab-doctors') updateDoctorReferralTable();
-    if(tabId === 'tab-billing') updateBillingTable();
+// Initial App Load
+window.onload = async () => {
+    await loadTabContent('tab-register');
+};
+
+// Component Fetch Loader
+async function loadTabContent(tabId) {
+    const container = document.getElementById('tab-content-container');
+    const filePath = tabFiles[tabId];
+
+    try {
+        const response = await fetch(filePath);
+        if (!response.ok) throw new Error("Component load failed");
+
+        const html = await response.text();
+        container.innerHTML = html;
+
+        // Populate elements after HTML inserts into DOM
+        if (tabId === 'tab-register') {
+            renderBadges();
+            renderInputs();
+        } else if (tabId === 'tab-doctors') {
+            updateDoctorReferralTable();
+        } else if (tabId === 'tab-billing') {
+            updateBillingTable();
+        }
+    } catch (err) {
+        if(container) {
+            container.innerHTML = `<p style="color:red; text-align:center;">Error loading component template.</p>`;
+        }
+        console.error("Tab Load Error:", err);
+    }
 }
+
+// Global Tab Switcher
+window.switchTab = async function(tabId, evt) {
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    if (evt && evt.target) evt.target.classList.add('active');
+
+    await loadTabContent(tabId);
+};
 
 window.handleDoctorSearch = function(e) {
     const val = e.target.value.toLowerCase().trim();
     const listContainer = document.getElementById('doctor-suggestions');
+    if (!listContainer) return;
     if (val.length === 0) { listContainer.style.display = 'none'; return; }
 
     const matches = doctorsDirectory.filter(d => d.toLowerCase().includes(val));
@@ -37,12 +71,14 @@ window.handleDoctorSearch = function(e) {
     } else {
         listContainer.style.display = 'none';
     }
-}
+};
 
 window.selectDoctor = function(name) {
-    document.getElementById('p-doctor').value = name;
-    document.getElementById('doctor-suggestions').style.display = 'none';
-}
+    const docInput = document.getElementById('p-doctor');
+    const listContainer = document.getElementById('doctor-suggestions');
+    if (docInput) docInput.value = name;
+    if (listContainer) listContainer.style.display = 'none';
+};
 
 window.handleTestCode = function(e) {
     if (e.key === 'Enter') {
@@ -56,14 +92,15 @@ window.handleTestCode = function(e) {
             alert("Invalid Code! Try CBC, KFT, or LFT.");
         }
     }
-}
+};
 
 function renderBadges() {
     let html = "";
     activeTests.forEach(code => {
         html += `<span class="badge">${testCatalogue[code].name}</span>`;
     });
-    document.getElementById('selected-tests-container').innerHTML = html;
+    const target = document.getElementById('selected-tests-container');
+    if (target) target.innerHTML = html;
 }
 
 function renderInputs() {
@@ -82,18 +119,20 @@ function renderInputs() {
         });
         containerHtml += `</div>`;
     });
-    document.getElementById('test-inputs-container').innerHTML = containerHtml;
+    const target = document.getElementById('test-inputs-container');
+    if (target) target.innerHTML = containerHtml;
 }
 
 window.savePatientRecord = function() {
-    const name = document.getElementById('p-name').value.trim();
-    if(!name) { alert("Please enter patient name"); return; }
-          
-    const age = document.getElementById('p-age').value || 0;
-    const gender = document.getElementById('p-gender').value;
-    const docInput = document.getElementById('p-doctor').value.trim() || "Self";
+    const nameEl = document.getElementById('p-name');
+    if (!nameEl || !nameEl.value.trim()) { alert("Please enter patient name"); return; }
 
-    if(!doctorsDirectory.includes(docInput)) {
+    const name = nameEl.value.trim();
+    const age = document.getElementById('p-age') ? document.getElementById('p-age').value || 0 : 0;
+    const gender = document.getElementById('p-gender') ? document.getElementById('p-gender').value : 'Male';
+    const docInput = (document.getElementById('p-doctor') && document.getElementById('p-doctor').value.trim()) || "Self";
+
+    if (!doctorsDirectory.includes(docInput)) {
         doctorsDirectory.push(docInput);
         localStorage.setItem('path_doctors', JSON.stringify(doctorsDirectory));
     }
@@ -128,31 +167,32 @@ window.savePatientRecord = function() {
     localStorage.setItem('path_bills', JSON.stringify(allBillsData));
 
     alert("✅ Patient & Test Records Saved Successfully!");
-    document.getElementById('p-name').value = '';
-    document.getElementById('p-age').value = '';
-    document.getElementById('p-doctor').value = '';
+    if (nameEl) nameEl.value = '';
+    if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
+    if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
+    
     activeTests = ['CBC'];
     renderBadges();
     renderInputs();
-    updateBillingTable();
-}
+};
 
 function updateDoctorReferralTable() {
     const report = {};
     allBillsData.forEach(b => {
-        if(!report[b.doctorName]) report[b.doctorName] = { count: 0, business: 0 };
+        if (!report[b.doctorName]) report[b.doctorName] = { count: 0, business: 0 };
         report[b.doctorName].count += 1;
         report[b.doctorName].business += b.subtotal;
     });
 
     let html = "";
-    for(const [doc, data] of Object.entries(report)) {
+    for (const [doc, data] of Object.entries(report)) {
         html += `<tr><td><b>${doc}</b></td><td>${data.count}</td><td>₹${data.business}</td></tr>`;
     }
-    if(Object.keys(report).length === 0) {
+    if (Object.keys(report).length === 0) {
         html = `<tr><td colspan="3" style="text-align: center; color: #94a3b8;">No records found.</td></tr>`;
     }
-    document.getElementById('doctor-report-body').innerHTML = html;
+    const target = document.getElementById('doctor-report-body');
+    if (target) target.innerHTML = html;
 }
 
 function updateBillingTable(filteredList = null) {
@@ -172,10 +212,11 @@ function updateBillingTable(filteredList = null) {
             </tr>
         `;
     });
-    if(list.length === 0) {
+    if (list.length === 0) {
         html = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No bills found.</td></tr>`;
     }
-    document.getElementById('billing-table-body').innerHTML = html;
+    const target = document.getElementById('billing-table-body');
+    if (target) target.innerHTML = html;
 }
 
 window.filterBillsTable = function() {
@@ -184,19 +225,21 @@ window.filterBillsTable = function() {
         b.patientName.toLowerCase().includes(query) || b.id.toLowerCase().includes(query)
     );
     updateBillingTable(filtered);
-}
+};
 
 window.openBill = function(index) {
     currentSelectedBill = allBillsData[index];
-    document.getElementById('bill-view-card').style.display = 'block';
+    const billCard = document.getElementById('bill-view-card');
+    if (billCard) billCard.style.display = 'block';
+
     document.getElementById('bill-patient-info').innerText = currentSelectedBill.patientName;
     document.getElementById('bill-age-gender').innerText = `${currentSelectedBill.age} Yrs / ${currentSelectedBill.gender}`;
     document.getElementById('bill-doctor-info').innerText = currentSelectedBill.doctorName;
-          
+
     let summaryHtml = "";
     currentSelectedBill.tests.forEach(t => {
         summaryHtml += `<b>➡️ ${t.testName}</b><br>`;
-        for(const [pName, pVal] of Object.entries(t.values)) {
+        for (const [pName, pVal] of Object.entries(t.values)) {
             summaryHtml += `&nbsp;&nbsp;&nbsp;&nbsp;• ${pName}: <b>${pVal}</b><br>`;
         }
     });
@@ -204,15 +247,18 @@ window.openBill = function(index) {
     document.getElementById('bill-subtotal').value = currentSelectedBill.subtotal;
     document.getElementById('bill-discount').value = currentSelectedBill.discount || 0;
     calculateFinalBill();
-}
+};
 
 window.calculateFinalBill = function() {
     const sub = parseFloat(document.getElementById('bill-subtotal').value) || 0;
     const disc = parseFloat(document.getElementById('bill-discount').value) || 0;
     const net = Math.max(0, sub - disc);
-    document.getElementById('bill-net').value = net;
+    
+    if (document.getElementById('bill-net')) {
+        document.getElementById('bill-net').value = net;
+    }
 
-    if(currentSelectedBill) {
+    if (currentSelectedBill) {
         document.getElementById('print-bill-id').innerText = currentSelectedBill.id;
         document.getElementById('print-date').innerText = new Date(currentSelectedBill.createdAt).toLocaleDateString();
         document.getElementById('print-p-name').innerText = currentSelectedBill.patientName;
@@ -225,11 +271,11 @@ window.calculateFinalBill = function() {
         let printTestsHtml = "";
         currentSelectedBill.tests.forEach(t => {
             printTestsHtml += `<div style="margin-bottom: 8px;"><b>${t.testName}</b><table style="width:100%; border-collapse:collapse; margin-top:2px;">`;
-            for(const [pName, pVal] of Object.entries(t.values)) {
+            for (const [pName, pVal] of Object.entries(t.values)) {
                 printTestsHtml += `<tr><td style="border:1px solid #ddd; padding:4px;">${pName}</td><td style="border:1px solid #ddd; padding:4px;"><b>${pVal}</b></td></tr>`;
             }
             printTestsHtml += `</table></div>`;
         });
         document.getElementById('print-tests-container').innerHTML = printTestsHtml;
     }
-}
+};
