@@ -1,9 +1,10 @@
 import { testCatalogue } from '../config/config.js';
 
 let doctorsDirectory = JSON.parse(localStorage.getItem('path_doctors')) || ['Dr. A. K. Sharma', 'Dr. R. P. Gupta'];
+let allReportsData = JSON.parse(localStorage.getItem('path_reports')) || [];
 let allBillsData = JSON.parse(localStorage.getItem('path_bills')) || [];
 let activeTests = ['CBC'];
-let currentSelectedBill = null;
+let currentSelectedReport = null;
 
 // Tab Component File Mapping
 const tabFiles = {
@@ -29,7 +30,6 @@ async function loadTabContent(tabId) {
         const html = await response.text();
         container.innerHTML = html;
 
-        // Populate elements after HTML inserts into DOM
         if (tabId === 'tab-register') {
             renderBadges();
             renderInputs();
@@ -81,7 +81,7 @@ window.selectDoctor = function(name) {
     if (listContainer) listContainer.style.display = 'none';
 };
 
-// Test Shortcode Autocomplete Suggestions
+// Test Shortcode Search
 window.handleTestSearch = function(e) {
     const val = e.target.value.toUpperCase().trim();
     const listContainer = document.getElementById('test-suggestions');
@@ -159,7 +159,9 @@ function renderInputs() {
     if (target) target.innerHTML = containerHtml;
 }
 
-// Direct Save & Print Functionality
+// -------------------------------------------------------------
+// ONLY REPORT PRINTING (NO BILL CREATION HERE)
+// -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
     if (!nameEl || !nameEl.value.trim()) { alert("Please enter patient name"); return; }
@@ -184,7 +186,7 @@ window.saveAndPrintReport = function() {
         
         inputs.forEach(inp => {
             const val = inp.value.trim();
-            // Skip empty/blank inputs and "-"
+            // Sirf wahi filter honge jinme value enter hui hai
             if (val !== "" && val !== "-") {
                 paramValues[inp.dataset.param] = val;
             }
@@ -200,21 +202,20 @@ window.saveAndPrintReport = function() {
         return;
     }
 
-    const newBill = {
-        id: 'BILL-' + Math.floor(100000 + Math.random() * 900000),
+    // Save Only Report Record (NOT A BILL)
+    const newReport = {
+        id: 'REP-' + Math.floor(100000 + Math.random() * 900000),
         patientName: name,
         age: parseInt(age),
         gender: gender,
         doctorName: docInput,
         tests: testDetails,
         subtotal: subtotal,
-        discount: 0,
-        netAmount: subtotal,
         createdAt: new Date().toISOString()
     };
 
-    allBillsData.unshift(newBill);
-    localStorage.setItem('path_bills', JSON.stringify(allBillsData));
+    allReportsData.unshift(newReport);
+    localStorage.setItem('path_reports', JSON.stringify(allReportsData));
 
     // Populate Print Template
     const printDate = document.getElementById('print-date');
@@ -222,13 +223,13 @@ window.saveAndPrintReport = function() {
     const printPAgeGender = document.getElementById('print-p-age-gender');
     const printDocName = document.getElementById('print-doc-name');
 
-    if (printDate) printDate.innerText = new Date(newBill.createdAt).toLocaleDateString('en-GB');
-    if (printPName) printPName.innerText = newBill.patientName;
-    if (printPAgeGender) printPAgeGender.innerText = `${newBill.age}/${newBill.gender.charAt(0)}`;
-    if (printDocName) printDocName.innerText = newBill.doctorName;
+    if (printDate) printDate.innerText = new Date(newReport.createdAt).toLocaleDateString('en-GB');
+    if (printPName) printPName.innerText = newReport.patientName;
+    if (printPAgeGender) printPAgeGender.innerText = `${newReport.age}/${newReport.gender.charAt(0)}`;
+    if (printDocName) printDocName.innerText = newReport.doctorName;
 
     let printTestsHtml = "";
-    newBill.tests.forEach(t => {
+    newReport.tests.forEach(t => {
         const codeKey = Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
         const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
 
@@ -283,12 +284,15 @@ window.saveAndPrintReport = function() {
 
 window.savePatientRecord = window.saveAndPrintReport;
 
+// -------------------------------------------------------------
+// DOCTOR REFERRAL REPORT
+// -------------------------------------------------------------
 function updateDoctorReferralTable() {
     const report = {};
-    allBillsData.forEach(b => {
-        if (!report[b.doctorName]) report[b.doctorName] = { count: 0, business: 0 };
-        report[b.doctorName].count += 1;
-        report[b.doctorName].business += b.subtotal;
+    allReportsData.forEach(r => {
+        if (!report[r.doctorName]) report[r.doctorName] = { count: 0, business: 0 };
+        report[r.doctorName].count += 1;
+        report[r.doctorName].business += r.subtotal;
     });
 
     let html = "";
@@ -302,25 +306,28 @@ function updateDoctorReferralTable() {
     if (target) target.innerHTML = html;
 }
 
+// -------------------------------------------------------------
+// BILLING SECTION (Generates Bill Manual Here)
+// -------------------------------------------------------------
 function updateBillingTable(filteredList = null) {
-    const list = filteredList || allBillsData;
+    const list = filteredList || allReportsData;
     let html = "";
-    list.forEach((b) => {
-        const index = allBillsData.indexOf(b);
-        const testNamesList = b.tests.map(t => t.testName).join(', ');
+    list.forEach((r) => {
+        const index = allReportsData.indexOf(r);
+        const testNamesList = r.tests.map(t => t.testName).join(', ');
         html += `
             <tr>
-                <td>${b.id}</td>
-                <td>${b.patientName}</td>
-                <td>${b.doctorName}</td>
+                <td>${r.id}</td>
+                <td>${r.patientName}</td>
+                <td>${r.doctorName}</td>
                 <td>${testNamesList}</td>
-                <td>₹${b.netAmount}</td>
-                <td><button class="btn" style="padding: 4px 8px; font-size:11px;" onclick="openBill(${index})">Select & Bill</button></td>
+                <td>₹${r.subtotal}</td>
+                <td><button class="btn" style="padding: 4px 8px; font-size:11px;" onclick="openBill(${index})">Generate Bill</button></td>
             </tr>
         `;
     });
     if (list.length === 0) {
-        html = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No bills found.</td></tr>`;
+        html = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No reports pending for bill.</td></tr>`;
     }
     const target = document.getElementById('billing-table-body');
     if (target) target.innerHTML = html;
@@ -328,35 +335,34 @@ function updateBillingTable(filteredList = null) {
 
 window.filterBillsTable = function() {
     const query = document.getElementById('search-bill-input').value.toLowerCase().trim();
-    const filtered = allBillsData.filter(b => 
-        b.patientName.toLowerCase().includes(query) || b.id.toLowerCase().includes(query)
+    const filtered = allReportsData.filter(r => 
+        r.patientName.toLowerCase().includes(query) || r.id.toLowerCase().includes(query)
     );
     updateBillingTable(filtered);
 };
 
 window.openBill = function(index) {
-    currentSelectedBill = allBillsData[index];
+    currentSelectedReport = allReportsData[index];
     const billCard = document.getElementById('bill-view-card');
     if (billCard) billCard.style.display = 'block';
 
-    document.getElementById('bill-patient-info').innerText = currentSelectedBill.patientName;
-    document.getElementById('bill-age-gender').innerText = `${currentSelectedBill.age} Yrs / ${currentSelectedBill.gender}`;
-    document.getElementById('bill-doctor-info').innerText = currentSelectedBill.doctorName;
+    document.getElementById('bill-patient-info').innerText = currentSelectedReport.patientName;
+    document.getElementById('bill-age-gender').innerText = `${currentSelectedReport.age} Yrs / ${currentSelectedReport.gender}`;
+    document.getElementById('bill-doctor-info').innerText = currentSelectedReport.doctorName;
 
     let summaryHtml = "";
-    currentSelectedBill.tests.forEach(t => {
+    currentSelectedReport.tests.forEach(t => {
         summaryHtml += `<b>➡️ ${t.testName}</b><br>`;
         for (const [pName, pVal] of Object.entries(t.values)) {
             summaryHtml += `&nbsp;&nbsp;&nbsp;&nbsp;• ${pName}: <b>${pVal}</b><br>`;
         }
     });
     document.getElementById('bill-tests-summary-box').innerHTML = summaryHtml;
-    document.getElementById('bill-subtotal').value = currentSelectedBill.subtotal;
-    document.getElementById('bill-discount').value = currentSelectedBill.discount || 0;
+    document.getElementById('bill-subtotal').value = currentSelectedReport.subtotal;
+    document.getElementById('bill-discount').value = 0;
     calculateFinalBill();
 };
 
-// Print Generator for Billing Tab
 window.calculateFinalBill = function() {
     const sub = parseFloat(document.getElementById('bill-subtotal')?.value) || 0;
     const disc = parseFloat(document.getElementById('bill-discount')?.value) || 0;
@@ -365,54 +371,27 @@ window.calculateFinalBill = function() {
     if (document.getElementById('bill-net')) {
         document.getElementById('bill-net').value = net;
     }
+};
 
-    if (currentSelectedBill) {
-        document.getElementById('print-date').innerText = new Date(currentSelectedBill.createdAt).toLocaleDateString('en-GB');
-        document.getElementById('print-p-name').innerText = currentSelectedBill.patientName;
-        document.getElementById('print-p-age-gender').innerText = `${currentSelectedBill.age}/${currentSelectedBill.gender.charAt(0)}`;
-        document.getElementById('print-doc-name').innerText = currentSelectedBill.doctorName;
+// Billing Section se final bill save karne ke liye
+window.confirmAndSaveBill = function() {
+    if (!currentSelectedReport) return;
 
-        let printTestsHtml = "";
-        currentSelectedBill.tests.forEach(t => {
-            const codeKey = Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
-            const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
+    const sub = parseFloat(document.getElementById('bill-subtotal')?.value) || 0;
+    const disc = parseFloat(document.getElementById('bill-discount')?.value) || 0;
 
-            printTestsHtml += `
-                <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
-                    ${t.testName}
-                </div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
-                    <thead>
-                        <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left;">
-                            <th style="padding: 6px 0; width: 45%;">INVESTIGATION</th>
-                            <th style="padding: 6px 0; width: 20%;">RESULT</th>
-                            <th style="padding: 6px 0; width: 15%;">UNIT</th>
-                            <th style="padding: 6px 0; width: 20%;">NORMAL RANGE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+    const finalBill = {
+        billId: 'INV-' + Math.floor(100000 + Math.random() * 900000),
+        ...currentSelectedReport,
+        discount: disc,
+        netAmount: Math.max(0, sub - disc),
+        billedAt: new Date().toISOString()
+    };
 
-            for (const [pName, pVal] of Object.entries(t.values)) {
-                // Skip if blank value exists in legacy records
-                if (!pVal || pVal === "-") continue;
+    allBillsData.unshift(finalBill);
+    localStorage.setItem('path_bills', JSON.stringify(allBillsData));
 
-                const paramObj = catalogueParams.find(p => (typeof p === 'object' ? p.name : p) === pName);
-                const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
-                const range = (paramObj && paramObj.range) ? paramObj.range : '';
-
-                printTestsHtml += `
-                    <tr>
-                        <td style="padding: 4px 0; font-weight: bold; text-transform: uppercase;">${pName}</td>
-                        <td style="padding: 4px 0; font-weight: bold;">${pVal}</td>
-                        <td style="padding: 4px 0;">${unit}</td>
-                        <td style="padding: 4px 0;">${range}</td>
-                    </tr>
-                `;
-            }
-            printTestsHtml += `</tbody></table>`;
-        });
-
-        document.getElementById('print-tests-container').innerHTML = printTestsHtml;
-    }
+    alert(`✅ Bill Generated Successfully! Net Amount: ₹${finalBill.netAmount}`);
+    const billCard = document.getElementById('bill-view-card');
+    if (billCard) billCard.style.display = 'none';
 };
