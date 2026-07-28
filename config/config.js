@@ -23,7 +23,7 @@ export const testCatalogue = {
     params: [
       { name: 'Hemoglobin', unit: 'g/dL', range: '[M: 13.5-17.5] [F: 12.0-15.5]' },
       { name: 'Total WBC Count', unit: '/µL', range: '[4000-11000]' },
-      { name: 'Total Polymorphs', unit: '%', range: '[55-70%]' },
+      { name: 'Total Polymorphous', unit: '%', range: '[55-70%]' },
       { name: 'Lymphocytes', unit: '%', range: '[20-40%]' },
       { name: 'Eosinophils', unit: '%', range: '[1-6%]' },
       { name: 'Monocytes', unit: '%', range: '[2-8%]' },
