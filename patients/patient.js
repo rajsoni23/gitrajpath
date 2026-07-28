@@ -195,7 +195,9 @@ window.selectTestCode = function(code) {
 function renderBadges() {
     let html = "";
     activeTests.forEach(code => {
-        html += `<span class="badge">${testCatalogue[code].name}</span>`;
+        if (testCatalogue[code]) {
+            html += `<span class="badge">${testCatalogue[code].name}</span>`;
+        }
     });
     const target = document.getElementById('selected-tests-container');
     if (target) target.innerHTML = html;
@@ -205,13 +207,16 @@ function renderInputs() {
     let containerHtml = "";
     activeTests.forEach(code => {
         const testObj = testCatalogue[code];
+        if (!testObj) return;
+
         containerHtml += `<div class="section-title">📌 ${testObj.name}</div><div class="grid-4">`;
         testObj.params.forEach(param => {
             const pName = typeof param === 'object' ? param.name : param;
+            const safeParam = encodeURIComponent(pName);
             containerHtml += `
                 <div>
                     <label>${pName}</label>
-                    <input type="text" data-test="${code}" data-param="${pName}" placeholder="Value">
+                    <input type="text" data-test="${code}" data-param="${safeParam}" placeholder="Value">
                 </div>
             `;
         });
@@ -222,7 +227,7 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// SAVE PATIENT & TRIGGER REPORT PRINT
+// SAVE PATIENT & TRIGGER REPORT PRINT (UNIVERSAL FIX)
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -242,19 +247,26 @@ window.saveAndPrintReport = function() {
     let testDetails = [];
 
     activeTests.forEach(code => {
-        subtotal += testCatalogue[code].price;
+        if (!testCatalogue[code]) return;
+
+        subtotal += testCatalogue[code].price || 0;
         let paramValues = {};
         const inputs = document.querySelectorAll(`input[data-test="${code}"]`);
         
         inputs.forEach(inp => {
             const val = inp.value.trim();
             if (val !== "" && val !== undefined) {
-                paramValues[inp.dataset.param] = val;
+                const originalParamName = decodeURIComponent(inp.dataset.param);
+                paramValues[originalParamName] = val;
             }
         });
 
         if (Object.keys(paramValues).length > 0) {
-            testDetails.push({ testName: testCatalogue[code].name, values: paramValues });
+            testDetails.push({ 
+                testCode: code,
+                testName: testCatalogue[code].name, 
+                values: paramValues 
+            });
         }
     });
 
@@ -355,7 +367,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (FULL DYNAMIC PARAMETERS FIX)
+// PRINT DIAGNOSTIC REPORT (ROBUST FLEXIBLE MATCHING)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -365,23 +377,34 @@ window.openReportPrint = function(index) {
     let fullReportHtml = "";
 
     reportData.tests.forEach((t, i) => {
-        const codeKey = Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
-        const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
-        const isLast = i === reportData.tests.length - 1;
+        let catalogueParams = [];
+        
+        // 1. Precise lookup by Code first, fallback to Name
+        if (t.testCode && testCatalogue[t.testCode]) {
+            catalogueParams = testCatalogue[t.testCode].params || [];
+        } else {
+            const matchedKey = Object.keys(testCatalogue).find(k => 
+                testCatalogue[k].name.toLowerCase().trim() === t.testName.toLowerCase().trim()
+            );
+            if (matchedKey) catalogueParams = testCatalogue[matchedKey].params || [];
+        }
 
+        const isLast = i === reportData.tests.length - 1;
         let tableRowsHtml = "";
         
         if (t.values && Object.keys(t.values).length > 0) {
             for (const [pName, pVal] of Object.entries(t.values)) {
-                // Flexible Dynamic Matching
+                
+                const cleanStr = str => String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+                // 2. Safe Matching for parameter object vs array strings
                 const paramObj = catalogueParams.find(p => {
-                    const cName = (typeof p === 'object' ? p.name : p).toLowerCase().trim();
-                    const inputName = pName.toLowerCase().trim();
-                    return cName === inputName || cName.includes(inputName) || inputName.includes(cName);
+                    const cName = typeof p === 'object' ? p.name : p;
+                    return cleanStr(cName) === cleanStr(pName);
                 });
 
-                const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
-                const range = (paramObj && paramObj.range) ? paramObj.range : '';
+                const unit = (paramObj && typeof paramObj === 'object' && paramObj.unit) ? paramObj.unit : '';
+                const range = (paramObj && typeof paramObj === 'object' && paramObj.range) ? paramObj.range : '';
 
                 tableRowsHtml += `
                     <tr style="border: none !important;">
@@ -396,7 +419,6 @@ window.openReportPrint = function(index) {
 
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
-                
                 <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                     <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                         <tr style="border: none !important;">
@@ -408,7 +430,6 @@ window.openReportPrint = function(index) {
                             <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date : ${formattedDate}</td>
                         </tr>
                     </table>
-
                     <div id="report-qr-${i}" style="width: 65px; height: 65px; margin-left: 10px;"></div>
                 </div>
 
@@ -446,7 +467,6 @@ window.openReportPrint = function(index) {
         const qrContainer = document.getElementById(`report-qr-${i}`);
         if (qrContainer && window.QRCode) {
             const reportPayload = `ID: ${reportData.id}\nPatient: ${reportData.patientName}\nAge/Sex: ${reportData.age}/${reportData.gender}\nDr: ${reportData.doctorName}\nTest: ${t.testName}\nDate: ${formattedDate}`;
-            
             new window.QRCode(qrContainer, {
                 text: reportPayload,
                 width: 65,
@@ -456,9 +476,7 @@ window.openReportPrint = function(index) {
         }
     });
 
-    setTimeout(() => {
-        window.print();
-    }, 250);
+    setTimeout(() => { window.print(); }, 250);
 };
 
 // -------------------------------------------------------------
@@ -475,7 +493,8 @@ window.openBill = function(index) {
 
     let summaryHtml = "";
     currentSelectedReport.tests.forEach(t => {
-        summaryHtml += `<b>➡️ ${t.testName}</b> (₹${testCatalogue[Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName)]?.price || 0})<br>`;
+        const testCode = t.testCode || Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
+        summaryHtml += `<b>➡️ ${t.testName}</b> (₹${testCatalogue[testCode]?.price || 0})<br>`;
     });
     
     document.getElementById('bill-tests-summary-box').innerHTML = summaryHtml;
@@ -528,12 +547,15 @@ window.confirmAndSaveBill = function() {
                     </tr>
                 </thead>
                 <tbody>
-                    ${currentSelectedReport.tests.map(t => `
+                    ${currentSelectedReport.tests.map(t => {
+                        const code = t.testCode || Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
+                        return `
                         <tr>
                             <td style="padding: 6px 0;">${t.testName}</td>
-                            <td style="text-align: right; padding: 6px 0;">₹${testCatalogue[Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName)]?.price || 0}</td>
+                            <td style="text-align: right; padding: 6px 0;">₹${testCatalogue[code]?.price || 0}</td>
                         </tr>
-                    `).join('')}
+                        `;
+                    }).join('')}
                     <tr style="border-top: 1px solid #000;">
                         <td style="padding: 6px 0; font-weight: bold;">Subtotal</td>
                         <td style="text-align: right; padding: 6px 0; font-weight: bold;">₹${sub}</td>
@@ -583,9 +605,7 @@ window.confirmAndSaveBill = function() {
         });
     }
 
-    setTimeout(() => {
-        window.print();
-    }, 250);
+    setTimeout(() => { window.print(); }, 250);
 
     const billCard = document.getElementById('bill-view-card');
     if (billCard) billCard.style.display = 'none';
