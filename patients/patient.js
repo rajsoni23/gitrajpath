@@ -18,13 +18,11 @@ const tabFiles = {
 // GLOBAL KEYBOARD SHORTCUTS (F3 & CTRL + B)
 // -------------------------------------------------------------
 document.addEventListener('keydown', (e) => {
-    // F3 -> Save and Print Report
     if (e.key === 'F3') {
         e.preventDefault();
         saveAndPrintReport();
     }
 
-    // Ctrl + B -> Switch to Billing & Summary Tab
     if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
         e.preventDefault();
         const billingBtn = document.querySelector('[onclick*="tab-billing"]');
@@ -76,7 +74,7 @@ window.switchTab = async function(tabId, evt) {
 };
 
 // -------------------------------------------------------------
-// KEYBOARD NAVIGATION HANDLER (COMMON FOR DOCTOR & TEST)
+// KEYBOARD NAVIGATION HANDLER
 // -------------------------------------------------------------
 function handleKeyboardNavigation(e, container, type) {
     const items = container.querySelectorAll('.autocomplete-item');
@@ -111,7 +109,7 @@ function handleKeyboardNavigation(e, container, type) {
 }
 
 // -------------------------------------------------------------
-// ARROW KEY SUPPORT & AUTOCOMPLETE (DOCTOR)
+// AUTOCOMPLETE (DOCTOR)
 // -------------------------------------------------------------
 window.handleDoctorSearch = function(e) {
     const listContainer = document.getElementById('doctor-suggestions');
@@ -149,7 +147,7 @@ window.selectDoctor = function(name) {
 };
 
 // -------------------------------------------------------------
-// ARROW KEY SUPPORT & AUTOCOMPLETE (TEST SHORTCODES)
+// AUTOCOMPLETE (TEST SHORTCODES)
 // -------------------------------------------------------------
 window.handleTestSearch = function(e) {
     const listContainer = document.getElementById('test-suggestions');
@@ -250,7 +248,7 @@ window.saveAndPrintReport = function() {
         
         inputs.forEach(inp => {
             const val = inp.value.trim();
-            if (val !== "" && val !== "-" && val !== undefined) {
+            if (val !== "" && val !== undefined) {
                 paramValues[inp.dataset.param] = val;
             }
         });
@@ -261,7 +259,7 @@ window.saveAndPrintReport = function() {
     });
 
     if (testDetails.length === 0) {
-        alert("At Least One Parameter is required!");
+        alert("Please fill at least one parameter value!");
         return;
     }
 
@@ -357,7 +355,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT ONLY (WITH QR CODE)
+// PRINT DIAGNOSTIC REPORT (FULL DYNAMIC PARAMETERS FIX)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -371,32 +369,53 @@ window.openReportPrint = function(index) {
         const catalogueParams = codeKey ? testCatalogue[codeKey].params : [];
         const isLast = i === reportData.tests.length - 1;
 
+        let tableRowsHtml = "";
+        
+        if (t.values && Object.keys(t.values).length > 0) {
+            for (const [pName, pVal] of Object.entries(t.values)) {
+                // Flexible Dynamic Matching
+                const paramObj = catalogueParams.find(p => {
+                    const cName = (typeof p === 'object' ? p.name : p).toLowerCase().trim();
+                    const inputName = pName.toLowerCase().trim();
+                    return cName === inputName || cName.includes(inputName) || inputName.includes(cName);
+                });
+
+                const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
+                const range = (paramObj && paramObj.range) ? paramObj.range : '';
+
+                tableRowsHtml += `
+                    <tr style="border: none !important;">
+                        <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
+                        <td style="padding: 5px 0; font-weight: bold; border: none !important;">${pVal}</td>
+                        <td style="padding: 5px 0; border: none !important;">${unit}</td>
+                        <td style="padding: 5px 0; border: none !important;">${range}</td>
+                    </tr>
+                `;
+            }
+        }
+
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
                 
-                <!-- PATIENT INFO HEADER WITH QR CONTAINER -->
                 <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                     <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                         <tr style="border: none !important;">
                             <td style="width: 55%; padding: 2px 0; border: none !important;">Patient's Name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
-                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex/${reportData.age}/Years/${reportData.gender.toLowerCase()}</td>
+                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex : ${reportData.age} Yrs / ${reportData.gender}</td>
                         </tr>
                         <tr style="border: none !important;">
                             <td style="width: 55%; padding: 2px 0; border: none !important;">Reff.Dr : ${reportData.doctorName}</td>
-                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date ${formattedDate}</td>
+                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date : ${formattedDate}</td>
                         </tr>
                     </table>
 
-                    <!-- QR CODE CONTAINER FOR REPORT -->
                     <div id="report-qr-${i}" style="width: 65px; height: 65px; margin-left: 10px;"></div>
                 </div>
 
-                <!-- TEST NAME TITLE -->
                 <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
                     ${t.testName}
                 </div>
 
-                <!-- TABLE WITHOUT BOTTOM ROW BORDERS -->
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; border: none !important;">
                     <thead>
                         <tr style="border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; text-align: left;">
@@ -407,24 +426,7 @@ window.openReportPrint = function(index) {
                         </tr>
                     </thead>
                     <tbody>
-        `;
-
-        for (const [pName, pVal] of Object.entries(t.values)) {
-            const paramObj = catalogueParams.find(p => (typeof p === 'object' ? p.name : p) === pName);
-            const unit = (paramObj && paramObj.unit) ? paramObj.unit : '';
-            const range = (paramObj && paramObj.range) ? paramObj.range : '';
-
-            fullReportHtml += `
-                <tr style="border: none !important;">
-                    <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
-                    <td style="padding: 5px 0; font-weight: bold; border: none !important;">${pVal}</td>
-                    <td style="padding: 5px 0; border: none !important;">${unit}</td>
-                    <td style="padding: 5px 0; border: none !important;">${range}</td>
-                </tr>
-            `;
-        }
-
-        fullReportHtml += `
+                        ${tableRowsHtml}
                     </tbody>
                 </table>
             </div>
@@ -440,7 +442,6 @@ window.openReportPrint = function(index) {
 
     printContainer.innerHTML = fullReportHtml;
 
-    // GENERATE QR CODE FOR EACH PAGE
     reportData.tests.forEach((t, i) => {
         const qrContainer = document.getElementById(`report-qr-${i}`);
         if (qrContainer && window.QRCode) {
@@ -548,7 +549,6 @@ window.confirmAndSaveBill = function() {
                 </tbody>
             </table>
 
-            <!-- BILL QR CODE & FOOTER FLEXBOX -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
                 <div id="bill-qr-container" style="width: 80px; height: 80px;"></div>
                 <div style="text-align: right;">
@@ -570,7 +570,6 @@ window.confirmAndSaveBill = function() {
 
     printContainer.innerHTML = billHtml;
 
-    // GENERATE BILL QR CODE
     const qrContainer = document.getElementById('bill-qr-container');
     if (qrContainer && window.QRCode) {
         const testsList = currentSelectedReport.tests.map(t => t.testName).join(', ');
