@@ -261,7 +261,7 @@ window.saveAndPrintReport = function() {
     });
 
     if (testDetails.length === 0) {
-        alert("Kripya kam se kam ek test parameter ki value enter karein!");
+        alert("At Least One Parameter is required!");
         return;
     }
 
@@ -357,7 +357,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT ONLY (UPDATED FORMAT & NO LINES)
+// PRINT DIAGNOSTIC REPORT ONLY (WITH QR CODE)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -374,9 +374,9 @@ window.openReportPrint = function(index) {
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
                 
-                <!-- NEW PATIENT INFO HEADER -->
-                <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px;">
-                    <table style="width: 100%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
+                <!-- PATIENT INFO HEADER WITH QR CONTAINER -->
+                <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                         <tr style="border: none !important;">
                             <td style="width: 55%; padding: 2px 0; border: none !important;">Patient's Name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
                             <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex/${reportData.age}/Years/${reportData.gender.toLowerCase()}</td>
@@ -386,6 +386,9 @@ window.openReportPrint = function(index) {
                             <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date ${formattedDate}</td>
                         </tr>
                     </table>
+
+                    <!-- QR CODE CONTAINER FOR REPORT -->
+                    <div id="report-qr-${i}" style="width: 65px; height: 65px; margin-left: 10px;"></div>
                 </div>
 
                 <!-- TEST NAME TITLE -->
@@ -437,9 +440,24 @@ window.openReportPrint = function(index) {
 
     printContainer.innerHTML = fullReportHtml;
 
+    // GENERATE QR CODE FOR EACH PAGE
+    reportData.tests.forEach((t, i) => {
+        const qrContainer = document.getElementById(`report-qr-${i}`);
+        if (qrContainer && window.QRCode) {
+            const reportPayload = `ID: ${reportData.id}\nPatient: ${reportData.patientName}\nAge/Sex: ${reportData.age}/${reportData.gender}\nDr: ${reportData.doctorName}\nTest: ${t.testName}\nDate: ${formattedDate}`;
+            
+            new window.QRCode(qrContainer, {
+                text: reportPayload,
+                width: 65,
+                height: 65,
+                correctLevel: window.QRCode.CorrectLevel.M
+            });
+        }
+    });
+
     setTimeout(() => {
         window.print();
-    }, 200);
+    }, 250);
 };
 
 // -------------------------------------------------------------
@@ -483,11 +501,12 @@ window.confirmAndSaveBill = function() {
     const net = Math.max(0, sub - disc);
 
     const formattedDate = new Date().toLocaleDateString('en-GB');
+    const receiptId = 'INV-' + Math.floor(100000 + Math.random() * 900000);
 
     const billHtml = `
         <div style="padding: 10px; font-family: Arial, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-                <h2 style="margin: 0; text-transform: uppercase;">PATHOLOGY PAYMENT RECEIPT</h2>
+                <h2 style="margin: 0; text-transform: uppercase;">RAJ PATHOLOGY PAYMENT RECEIPT</h2>
                 <p style="margin: 3px 0; font-size: 12px;">Invoice Date: ${formattedDate}</p>
             </div>
             <table style="width: 100%; font-size: 13px; margin-bottom: 15px; border: none !important;">
@@ -497,7 +516,7 @@ window.confirmAndSaveBill = function() {
                 </tr>
                 <tr>
                     <td><b>Referred By:</b> ${currentSelectedReport.doctorName}</td>
-                    <td style="text-align: right;"><b>Receipt ID:</b> INV-${Math.floor(100000 + Math.random() * 900000)}</td>
+                    <td style="text-align: right;"><b>Receipt ID:</b> ${receiptId}</td>
                 </tr>
             </table>
             <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
@@ -528,7 +547,17 @@ window.confirmAndSaveBill = function() {
                     </tr>
                 </tbody>
             </table>
-            <p style="text-align: center; margin-top: 30px; font-weight: bold; font-size: 12px;">Thank you for trusting us. Get well soon!</p>
+
+            <!-- BILL QR CODE & FOOTER FLEXBOX -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <div id="bill-qr-container" style="width: 80px; height: 80px;"></div>
+                <div style="text-align: right;">
+                    <p style="margin: 0; font-weight: bold; font-size: 12px;">Authorized Signatory</p>
+                    <p style="margin: 3px 0; font-size: 11px;">Raj Pathology Lab</p>
+                </div>
+            </div>
+
+            <p style="text-align: center; margin-top: 25px; font-weight: bold; font-size: 12px;">Thank you for trusting us. Get well soon!</p>
         </div>
     `;
 
@@ -541,9 +570,23 @@ window.confirmAndSaveBill = function() {
 
     printContainer.innerHTML = billHtml;
 
+    // GENERATE BILL QR CODE
+    const qrContainer = document.getElementById('bill-qr-container');
+    if (qrContainer && window.QRCode) {
+        const testsList = currentSelectedReport.tests.map(t => t.testName).join(', ');
+        const billPayload = `Receipt: ${receiptId}\nPatient: ${currentSelectedReport.patientName}\nTests: ${testsList}\nSubtotal: Rs.${sub}\nDiscount: Rs.${disc}\nNet Amount: Rs.${net}\nDate: ${formattedDate}`;
+
+        new window.QRCode(qrContainer, {
+            text: billPayload,
+            width: 80,
+            height: 80,
+            correctLevel: window.QRCode.CorrectLevel.M
+        });
+    }
+
     setTimeout(() => {
         window.print();
-    }, 200);
+    }, 250);
 
     const billCard = document.getElementById('bill-view-card');
     if (billCard) billCard.style.display = 'none';
