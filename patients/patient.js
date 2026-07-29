@@ -179,6 +179,9 @@ window.handleTestSearch = function(e) {
     }
 };
 
+// Aliasing handleTestCode to handleTestSearch to fix missing function error
+window.handleTestCode = window.handleTestSearch;
+
 window.selectTestCode = function(code) {
     if (!activeTests.includes(code)) {
         activeTests.push(code);
@@ -367,7 +370,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (FULL CONTENT IN QR CODE)
+// PRINT DIAGNOSTIC REPORT (OPTIMIZED QR PAYLOAD)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -379,7 +382,6 @@ window.openReportPrint = function(index) {
     reportData.tests.forEach((t, i) => {
         let catalogueParams = [];
         
-        // Match Catalogue Details
         if (t.testCode && testCatalogue[t.testCode]) {
             catalogueParams = testCatalogue[t.testCode].params || [];
         } else {
@@ -391,7 +393,7 @@ window.openReportPrint = function(index) {
 
         const isLast = i === reportData.tests.length - 1;
         let tableRowsHtml = "";
-        let qrTestDetailsText = "";
+        let compactResultText = "";
 
         if (t.values && Object.keys(t.values).length > 0) {
             for (const [pName, pVal] of Object.entries(t.values)) {
@@ -406,7 +408,6 @@ window.openReportPrint = function(index) {
                 const unit = (paramObj && typeof paramObj === 'object' && paramObj.unit) ? paramObj.unit : '';
                 const range = (paramObj && typeof paramObj === 'object' && paramObj.range) ? paramObj.range : '';
 
-                // HTML Table Rows
                 tableRowsHtml += `
                     <tr style="border: none !important;">
                         <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
@@ -416,13 +417,19 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
 
-                // Add to QR Payload string
-                qrTestDetailsText += `\n- ${pName}: ${pVal} ${unit} (Ref: ${range || 'N/A'})`;
+                // Compact String for QR Payload to prevent overflow
+                compactResultText += `\n${pName}: ${pVal} ${unit}`.trim();
             }
         }
 
-        // FULL PAGE DATA FORMATTED FOR QR
-        const fullPageQrContent = `RAJ PATHOLOGY LAB\nID: ${reportData.id}\nDate: ${formattedDate}\nPatient: ${reportData.patientName} (${reportData.age}Y/${reportData.gender})\nDr: ${reportData.doctorName}\n---------------------\nTEST: ${t.testName}${qrTestDetailsText}`;
+        // Optimized QR Payload under safe 500 characters limits
+        const fullPageQrContent = `RAJ PATHOLOGY
+ID: ${reportData.id} | Date: ${formattedDate}
+Patient: ${reportData.patientName} (${reportData.age}Y/${reportData.gender})
+Ref. Dr: ${reportData.doctorName}
+Test: ${t.testName}
+---
+RESULTS:${compactResultText}`;
 
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
@@ -471,21 +478,34 @@ window.openReportPrint = function(index) {
 
     printContainer.innerHTML = fullReportHtml;
 
-    // Render Full Page Content QR Code
+    // Safe QR Code Rendering with Overflow Exception Catching
     reportData.tests.forEach((t, i) => {
         const qrContainer = document.getElementById(`report-qr-${i}`);
         const textInput = document.getElementById(`qr-text-${i}`);
 
         if (qrContainer && textInput && window.QRCode) {
-            const qrText = decodeURIComponent(textInput.value);
             qrContainer.innerHTML = "";
+            let qrText = decodeURIComponent(textInput.value);
 
-            new window.QRCode(qrContainer, {
-                text: qrText,
-                width: 85,
-                height: 85,
-                correctLevel: window.QRCode.CorrectLevel.L
-            });
+            try {
+                new window.QRCode(qrContainer, {
+                    text: qrText,
+                    width: 85,
+                    height: 85,
+                    correctLevel: window.QRCode.CorrectLevel.L
+                });
+            } catch (err) {
+                console.warn("QR overflow fallback triggered:", err);
+                qrContainer.innerHTML = "";
+                // Minimal Fallback QR Payload if content is too large
+                const fallbackText = `ID: ${reportData.id}\nPatient: ${reportData.patientName}\nTest: ${t.testName}\nDate: ${formattedDate}`;
+                new window.QRCode(qrContainer, {
+                    text: fallbackText,
+                    width: 85,
+                    height: 85,
+                    correctLevel: window.QRCode.CorrectLevel.L
+                });
+            }
         }
     });
 
