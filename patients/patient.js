@@ -560,7 +560,7 @@ window.confirmAndSaveBill = function() {
     const billHtml = `
         <div style="padding: 10px; font-family: Arial, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-                <h2 style="margin: 0; text-transform: uppercase;">PATHOLOGY PAYMENT RECEIPT</h2>
+                <h2 style="margin: 0; text-transform: uppercase;">RAJ PATHOLOGY PAYMENT RECEIPT</h2>
             </div>
             
             <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
@@ -616,7 +616,8 @@ window.confirmAndSaveBill = function() {
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px;">
                 <div style="text-align: right;">
                     <p style="margin: 0; font-weight: bold; font-size: 12px;">Authorized Signatory</p>
-                    <p style="margin: 3px 0; font-size: 11px;">Pathology Lab</p>
+                    <p style="margin: 3px 0; font-size: 11px;">RAJ Pathology Lab</p>
+                    <p style="margin: 3px 0; font-size: 11px;">Mo n. 9919678133</p>
                 </div>
             </div>
 
