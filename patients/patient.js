@@ -227,7 +227,7 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// SAVE PATIENT & TRIGGER REPORT PRINT (UNIVERSAL FIX)
+// SAVE PATIENT & TRIGGER REPORT PRINT
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -367,7 +367,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (ROBUST FLEXIBLE MATCHING)
+// PRINT DIAGNOSTIC REPORT (FULL CONTENT IN QR CODE)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -379,7 +379,7 @@ window.openReportPrint = function(index) {
     reportData.tests.forEach((t, i) => {
         let catalogueParams = [];
         
-        // 1. Precise lookup by Code first, fallback to Name
+        // Match Catalogue Details
         if (t.testCode && testCatalogue[t.testCode]) {
             catalogueParams = testCatalogue[t.testCode].params || [];
         } else {
@@ -391,13 +391,13 @@ window.openReportPrint = function(index) {
 
         const isLast = i === reportData.tests.length - 1;
         let tableRowsHtml = "";
-        
+        let qrTestDetailsText = "";
+
         if (t.values && Object.keys(t.values).length > 0) {
             for (const [pName, pVal] of Object.entries(t.values)) {
                 
                 const cleanStr = str => String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
 
-                // 2. Safe Matching for parameter object vs array strings
                 const paramObj = catalogueParams.find(p => {
                     const cName = typeof p === 'object' ? p.name : p;
                     return cleanStr(cName) === cleanStr(pName);
@@ -406,6 +406,7 @@ window.openReportPrint = function(index) {
                 const unit = (paramObj && typeof paramObj === 'object' && paramObj.unit) ? paramObj.unit : '';
                 const range = (paramObj && typeof paramObj === 'object' && paramObj.range) ? paramObj.range : '';
 
+                // HTML Table Rows
                 tableRowsHtml += `
                     <tr style="border: none !important;">
                         <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
@@ -414,8 +415,14 @@ window.openReportPrint = function(index) {
                         <td style="padding: 5px 0; border: none !important;">${range}</td>
                     </tr>
                 `;
+
+                // Add to QR Payload string
+                qrTestDetailsText += `\n- ${pName}: ${pVal} ${unit} (Ref: ${range || 'N/A'})`;
             }
         }
+
+        // FULL PAGE DATA FORMATTED FOR QR
+        const fullPageQrContent = `RAJ PATHOLOGY LAB\nID: ${reportData.id}\nDate: ${formattedDate}\nPatient: ${reportData.patientName} (${reportData.age}Y/${reportData.gender})\nDr: ${reportData.doctorName}\n---------------------\nTEST: ${t.testName}${qrTestDetailsText}`;
 
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
@@ -430,7 +437,8 @@ window.openReportPrint = function(index) {
                             <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date : ${formattedDate}</td>
                         </tr>
                     </table>
-                    <div id="report-qr-${i}" style="width: 65px; height: 65px; margin-left: 10px;"></div>
+                    <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(fullPageQrContent)}">
+                    <div id="report-qr-${i}" style="width: 85px; height: 85px; margin-left: 10px;"></div>
                 </div>
 
                 <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
@@ -463,20 +471,25 @@ window.openReportPrint = function(index) {
 
     printContainer.innerHTML = fullReportHtml;
 
+    // Render Full Page Content QR Code
     reportData.tests.forEach((t, i) => {
         const qrContainer = document.getElementById(`report-qr-${i}`);
-        if (qrContainer && window.QRCode) {
-            const reportPayload = `ID: ${reportData.id}\nPatient: ${reportData.patientName}\nAge/Sex: ${reportData.age}/${reportData.gender}\nDr: ${reportData.doctorName}\nTest: ${t.testName}\nDate: ${formattedDate}`;
+        const textInput = document.getElementById(`qr-text-${i}`);
+
+        if (qrContainer && textInput && window.QRCode) {
+            const qrText = decodeURIComponent(textInput.value);
+            qrContainer.innerHTML = "";
+
             new window.QRCode(qrContainer, {
-                text: reportPayload,
-                width: 65,
-                height: 65,
-                correctLevel: window.QRCode.CorrectLevel.M
+                text: qrText,
+                width: 85,
+                height: 85,
+                correctLevel: window.QRCode.CorrectLevel.L
             });
         }
     });
 
-    setTimeout(() => { window.print(); }, 250);
+    setTimeout(() => { window.print(); }, 300);
 };
 
 // -------------------------------------------------------------
