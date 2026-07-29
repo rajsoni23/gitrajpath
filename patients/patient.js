@@ -179,7 +179,6 @@ window.handleTestSearch = function(e) {
     }
 };
 
-// Aliasing handleTestCode to handleTestSearch to fix missing function error
 window.handleTestCode = window.handleTestSearch;
 
 window.selectTestCode = function(code) {
@@ -370,7 +369,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (OPTIMIZED QR PAYLOAD)
+// PRINT DIAGNOSTIC REPORT (FULL REPORT DATA IN QR CODE)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -393,7 +392,7 @@ window.openReportPrint = function(index) {
 
         const isLast = i === reportData.tests.length - 1;
         let tableRowsHtml = "";
-        let compactResultText = "";
+        let qrDataRows = [];
 
         if (t.values && Object.keys(t.values).length > 0) {
             for (const [pName, pVal] of Object.entries(t.values)) {
@@ -408,6 +407,7 @@ window.openReportPrint = function(index) {
                 const unit = (paramObj && typeof paramObj === 'object' && paramObj.unit) ? paramObj.unit : '';
                 const range = (paramObj && typeof paramObj === 'object' && paramObj.range) ? paramObj.range : '';
 
+                // Table HTML Generation
                 tableRowsHtml += `
                     <tr style="border: none !important;">
                         <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
@@ -417,19 +417,19 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
 
-                // Compact String for QR Payload to prevent overflow
-                compactResultText += `\n${pName}: ${pVal} ${unit}`.trim();
+                // Store complete parameter detail for QR payload
+                qrDataRows.push(`${pName}: ${pVal} | Unit: ${unit || '-'} | Range: ${range || '-'}`);
             }
         }
 
-        // Optimized QR Payload under safe 500 characters limits
-        const fullPageQrContent = `RAJ PATHOLOGY
-ID: ${reportData.id} | Date: ${formattedDate}
-Patient: ${reportData.patientName} (${reportData.age}Y/${reportData.gender})
+        // Complete QR payload with Patient Info, Doctor, Date, and Test Results
+        const fullPageQrContent = `Report ID: ${reportData.id}
+Date: ${formattedDate}
+Patient: ${reportData.patientName} (${reportData.age} Yrs / ${reportData.gender})
 Ref. Dr: ${reportData.doctorName}
 Test: ${t.testName}
----
-RESULTS:${compactResultText}`;
+----------------------------------------
+${qrDataRows.join('\n')}`;
 
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
@@ -478,7 +478,7 @@ RESULTS:${compactResultText}`;
 
     printContainer.innerHTML = fullReportHtml;
 
-    // Safe QR Code Rendering with Overflow Exception Catching
+    // QR Code rendering
     reportData.tests.forEach((t, i) => {
         const qrContainer = document.getElementById(`report-qr-${i}`);
         const textInput = document.getElementById(`qr-text-${i}`);
@@ -495,10 +495,11 @@ RESULTS:${compactResultText}`;
                     correctLevel: window.QRCode.CorrectLevel.L
                 });
             } catch (err) {
-                console.warn("QR overflow fallback triggered:", err);
+                console.warn("QR matrix capacity reached, applying fallback:", err);
                 qrContainer.innerHTML = "";
-                // Minimal Fallback QR Payload if content is too large
-                const fallbackText = `ID: ${reportData.id}\nPatient: ${reportData.patientName}\nTest: ${t.testName}\nDate: ${formattedDate}`;
+                
+                // Truncates gracefully if data exceeds maximum QR capability
+                const fallbackText = qrText.substring(0, 1200);
                 new window.QRCode(qrContainer, {
                     text: fallbackText,
                     width: 85,
@@ -559,7 +560,7 @@ window.confirmAndSaveBill = function() {
     const billHtml = `
         <div style="padding: 10px; font-family: Arial, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-                <h2 style="margin: 0; text-transform: uppercase;">RAJ PATHOLOGY PAYMENT RECEIPT</h2>
+                <h2 style="margin: 0; text-transform: uppercase;">PATHOLOGY PAYMENT RECEIPT</h2>
                 <p style="margin: 3px 0; font-size: 12px;">Invoice Date: ${formattedDate}</p>
             </div>
             <table style="width: 100%; font-size: 13px; margin-bottom: 15px; border: none !important;">
@@ -608,7 +609,7 @@ window.confirmAndSaveBill = function() {
                 <div id="bill-qr-container" style="width: 80px; height: 80px;"></div>
                 <div style="text-align: right;">
                     <p style="margin: 0; font-weight: bold; font-size: 12px;">Authorized Signatory</p>
-                    <p style="margin: 3px 0; font-size: 11px;">Raj Pathology Lab</p>
+                    <p style="margin: 3px 0; font-size: 11px;">Pathology Lab</p>
                 </div>
             </div>
 
