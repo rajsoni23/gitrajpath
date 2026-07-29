@@ -561,18 +561,26 @@ window.confirmAndSaveBill = function() {
         <div style="padding: 10px; font-family: Arial, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
                 <h2 style="margin: 0; text-transform: uppercase;">PATHOLOGY PAYMENT RECEIPT</h2>
-                <p style="margin: 3px 0; font-size: 12px;">Invoice Date: ${formattedDate}</p>
             </div>
-            <table style="width: 100%; font-size: 13px; margin-bottom: 15px; border: none !important;">
-                <tr>
-                    <td><b>Patient Name:</b> ${currentSelectedReport.patientName}</td>
-                    <td style="text-align: right;"><b>Age/Sex:</b> ${currentSelectedReport.age} / ${currentSelectedReport.gender}</td>
-                </tr>
-                <tr>
-                    <td><b>Referred By:</b> ${currentSelectedReport.doctorName}</td>
-                    <td style="text-align: right;"><b>Receipt ID:</b> ${receiptId}</td>
-                </tr>
-            </table>
+            
+            <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
+                    <tr style="border: none !important;">
+                        <td style="width: 55%; padding: 2px 0; border: none !important;">Patient Name: <span style="text-transform: uppercase;">${currentSelectedReport.patientName}</span></td>
+                        <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex: ${currentSelectedReport.age} Yrs / ${currentSelectedReport.gender}</td>
+                    </tr>
+                    <tr style="border: none !important;">
+                        <td style="width: 55%; padding: 2px 0; border: none !important;">Referred By: ${currentSelectedReport.doctorName}</td>
+                        <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Invoice Date: ${formattedDate}</td>
+                    </tr>
+                    <tr style="border: none !important;">
+                        <td style="width: 55%; padding: 2px 0; border: none !important;">Receipt ID: ${receiptId}</td>
+                        <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;"></td>
+                    </tr>
+                </table>
+                <div id="bill-qr-container" style="width: 85px; height: 85px; margin-left: 10px;"></div>
+            </div>
+
             <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
                 <thead>
                     <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000;">
@@ -605,8 +613,7 @@ window.confirmAndSaveBill = function() {
                 </tbody>
             </table>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                <div id="bill-qr-container" style="width: 80px; height: 80px;"></div>
+            <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px;">
                 <div style="text-align: right;">
                     <p style="margin: 0; font-weight: bold; font-size: 12px;">Authorized Signatory</p>
                     <p style="margin: 3px 0; font-size: 11px;">Pathology Lab</p>
@@ -633,8 +640,8 @@ window.confirmAndSaveBill = function() {
 
         new window.QRCode(qrContainer, {
             text: billPayload,
-            width: 80,
-            height: 80,
+            width: 85,
+            height: 85,
             correctLevel: window.QRCode.CorrectLevel.M
         });
     }
