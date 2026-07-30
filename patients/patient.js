@@ -369,7 +369,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (FULL REPORT DATA IN QR CODE)
+// PRINT DIAGNOSTIC REPORT (FULL REPORT DATA IN QR CODE WITH FALLBACK)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -417,19 +417,16 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
 
-                // Store complete parameter detail for QR payload
+                // Store parameter details for QR payload
                 qrDataRows.push(`${pName}: ${pVal} | Unit: ${unit || '-'} | Range: ${range || '-'}`);
             }
         }
 
-        // Complete QR payload with Patient Info, Doctor, Date, and Test Results
-        const fullPageQrContent = `Report ID: ${reportData.id}
-Date: ${formattedDate}
-Patient: ${reportData.patientName} (${reportData.age} Yrs / ${reportData.gender})
-Ref. Dr: ${reportData.doctorName}
-Test: ${t.testName}
-----------------------------------------
-${qrDataRows.join('\n')}`;
+        // Full Payload
+        const fullPageQrContent = `Report ID: ${reportData.id}\nDate: ${formattedDate}\nPatient: ${reportData.patientName} (${reportData.age} Yrs / ${reportData.gender})\nRef. Dr: ${reportData.doctorName}\nTest: ${t.testName}\n----------------------------------------\n${qrDataRows.join('\n')}`;
+
+        // Compact Summary Payload (Fallback if parameters exceed QR character limits)
+        const summaryQrContent = `Report ID: ${reportData.id}\nDate: ${formattedDate}\nPatient: ${reportData.patientName} (${reportData.age} Yrs / ${reportData.gender})\nRef. Dr: ${reportData.doctorName}\nTest: ${t.testName}`;
 
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
@@ -445,6 +442,7 @@ ${qrDataRows.join('\n')}`;
                         </tr>
                     </table>
                     <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(fullPageQrContent)}">
+                    <input type="hidden" id="qr-summary-${i}" value="${encodeURIComponent(summaryQrContent)}">
                     <div id="report-qr-${i}" style="width: 85px; height: 85px; margin-left: 10px;"></div>
                 </div>
 
@@ -478,14 +476,20 @@ ${qrDataRows.join('\n')}`;
 
     printContainer.innerHTML = fullReportHtml;
 
-    // QR Code rendering
+    // QR Code rendering with active capacity safety checks
     reportData.tests.forEach((t, i) => {
         const qrContainer = document.getElementById(`report-qr-${i}`);
         const textInput = document.getElementById(`qr-text-${i}`);
+        const summaryInput = document.getElementById(`qr-summary-${i}`);
 
-        if (qrContainer && textInput && window.QRCode) {
+        if (qrContainer && window.QRCode) {
             qrContainer.innerHTML = "";
             let qrText = decodeURIComponent(textInput.value);
+
+            // If payload exceeds safe character threshold for 85px box, automatically switch to summary payload
+            if (qrText.length > 800) {
+                qrText = decodeURIComponent(summaryInput.value);
+            }
 
             try {
                 new window.QRCode(qrContainer, {
@@ -495,21 +499,24 @@ ${qrDataRows.join('\n')}`;
                     correctLevel: window.QRCode.CorrectLevel.L
                 });
             } catch (err) {
-                console.warn("QR matrix capacity reached, applying fallback:", err);
+                console.warn("QR generation exception, rendering summary fallback:", err);
                 qrContainer.innerHTML = "";
                 
-                // Truncates gracefully if data exceeds maximum QR capability
-                const fallbackText = qrText.substring(0, 1200);
-                new window.QRCode(qrContainer, {
-                    text: fallbackText,
-                    width: 85,
-                    height: 85,
-                    correctLevel: window.QRCode.CorrectLevel.L
-                });
+                try {
+                    new window.QRCode(qrContainer, {
+                        text: decodeURIComponent(summaryInput.value),
+                        width: 85,
+                        height: 85,
+                        correctLevel: window.QRCode.CorrectLevel.L
+                    });
+                } catch (e) {
+                    console.error("Failed to render QR Code altogether:", e);
+                }
             }
         }
     });
 
+    // Always fires print, even if QR rendering encounters unexpected issues
     setTimeout(() => { window.print(); }, 300);
 };
 
