@@ -369,7 +369,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (FULL REPORT DATA IN QR CODE WITH FALLBACK)
+// PRINT DIAGNOSTIC REPORT (ESSENTIAL METADATA QR ONLY)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -392,7 +392,6 @@ window.openReportPrint = function(index) {
 
         const isLast = i === reportData.tests.length - 1;
         let tableRowsHtml = "";
-        let qrDataRows = [];
 
         if (t.values && Object.keys(t.values).length > 0) {
             for (const [pName, pVal] of Object.entries(t.values)) {
@@ -407,7 +406,6 @@ window.openReportPrint = function(index) {
                 const unit = (paramObj && typeof paramObj === 'object' && paramObj.unit) ? paramObj.unit : '';
                 const range = (paramObj && typeof paramObj === 'object' && paramObj.range) ? paramObj.range : '';
 
-                // Table HTML Generation
                 tableRowsHtml += `
                     <tr style="border: none !important;">
                         <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
@@ -416,17 +414,11 @@ window.openReportPrint = function(index) {
                         <td style="padding: 5px 0; border: none !important;">${range}</td>
                     </tr>
                 `;
-
-                // Store parameter details for QR payload
-                qrDataRows.push(`${pName}: ${pVal} | Unit: ${unit || '-'} | Range: ${range || '-'}`);
             }
         }
 
-        // Full Payload
-        const fullPageQrContent = `Report ID: ${reportData.id}\nDate: ${formattedDate}\nPatient: ${reportData.patientName} (${reportData.age} Yrs / ${reportData.gender})\nRef. Dr: ${reportData.doctorName}\nTest: ${t.testName}\n----------------------------------------\n${qrDataRows.join('\n')}`;
-
-        // Compact Summary Payload (Fallback if parameters exceed QR character limits)
-        const summaryQrContent = `Report ID: ${reportData.id}\nDate: ${formattedDate}\nPatient: ${reportData.patientName} (${reportData.age} Yrs / ${reportData.gender})\nRef. Dr: ${reportData.doctorName}\nTest: ${t.testName}`;
+        // ONLY ESSENTIAL METADATA IN QR
+        const essentialQrContent = `Report ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
 
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
@@ -441,8 +433,7 @@ window.openReportPrint = function(index) {
                             <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date : ${formattedDate}</td>
                         </tr>
                     </table>
-                    <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(fullPageQrContent)}">
-                    <input type="hidden" id="qr-summary-${i}" value="${encodeURIComponent(summaryQrContent)}">
+                    <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(essentialQrContent)}">
                     <div id="report-qr-${i}" style="width: 85px; height: 85px; margin-left: 10px;"></div>
                 </div>
 
@@ -476,47 +467,32 @@ window.openReportPrint = function(index) {
 
     printContainer.innerHTML = fullReportHtml;
 
-    // QR Code rendering with active capacity safety checks
+    // Fail-safe QR Generation Logic
     reportData.tests.forEach((t, i) => {
         const qrContainer = document.getElementById(`report-qr-${i}`);
         const textInput = document.getElementById(`qr-text-${i}`);
-        const summaryInput = document.getElementById(`qr-summary-${i}`);
 
-        if (qrContainer && window.QRCode) {
+        if (qrContainer && textInput) {
             qrContainer.innerHTML = "";
-            let qrText = decodeURIComponent(textInput.value);
-
-            // If payload exceeds safe character threshold for 85px box, automatically switch to summary payload
-            if (qrText.length > 800) {
-                qrText = decodeURIComponent(summaryInput.value);
-            }
+            const qrText = decodeURIComponent(textInput.value);
 
             try {
-                new window.QRCode(qrContainer, {
-                    text: qrText,
-                    width: 85,
-                    height: 85,
-                    correctLevel: window.QRCode.CorrectLevel.L
-                });
-            } catch (err) {
-                console.warn("QR generation exception, rendering summary fallback:", err);
-                qrContainer.innerHTML = "";
-                
-                try {
+                if (window.QRCode) {
                     new window.QRCode(qrContainer, {
-                        text: decodeURIComponent(summaryInput.value),
+                        text: qrText,
                         width: 85,
                         height: 85,
-                        correctLevel: window.QRCode.CorrectLevel.L
+                        correctLevel: window.QRCode.CorrectLevel.M
                     });
-                } catch (e) {
-                    console.error("Failed to render QR Code altogether:", e);
                 }
+            } catch (err) {
+                console.error("QR Code Error:", err);
+                qrContainer.innerHTML = "";
             }
         }
     });
 
-    // Always fires print, even if QR rendering encounters unexpected issues
+    // Always fires print successfully
     setTimeout(() => { window.print(); }, 300);
 };
 
@@ -646,12 +622,16 @@ window.confirmAndSaveBill = function() {
         const testsList = currentSelectedReport.tests.map(t => t.testName).join(', ');
         const billPayload = `Receipt: ${receiptId}\nPatient: ${currentSelectedReport.patientName}\nTests: ${testsList}\nSubtotal: Rs.${sub}\nDiscount: Rs.${disc}\nNet Amount: Rs.${net}\nDate: ${formattedDate}`;
 
-        new window.QRCode(qrContainer, {
-            text: billPayload,
-            width: 85,
-            height: 85,
-            correctLevel: window.QRCode.CorrectLevel.M
-        });
+        try {
+            new window.QRCode(qrContainer, {
+                text: billPayload,
+                width: 85,
+                height: 85,
+                correctLevel: window.QRCode.CorrectLevel.M
+            });
+        } catch (err) {
+            console.error("Bill QR error:", err);
+        }
     }
 
     setTimeout(() => { window.print(); }, 250);
