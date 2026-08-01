@@ -1,0 +1,80 @@
+<svg width="1000" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #2c3e50; }
+      .subtitle { font-family: 'Arial', sans-serif; font-size: 12px; fill: #7f8c8d; }
+      .folder-text { font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; fill: #27ae60; font-weight: bold; }
+      .file-text { font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; fill: #3498db; }
+      .icon { font-family: 'Arial', sans-serif; font-size: 16px; }
+      .line { stroke: #bdc3c7; stroke-width: 1.5; }
+      .background { fill: #f8f9fa; }
+      .header-bg { fill: #ecf0f1; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="800" class="background"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1000" height="60" class="header-bg"/>
+  <text x="20" y="25" class="title">📁 File Tree: gitrajpath</text>
+
+
+  <!-- Tree Structure -->
+    <line x1="15" y1="80" x2="25" y2="80" class="line"/>
+    <text x="30" y="85" class="icon">📁</text>
+    <text x="55" y="85" class="folder-text">components/</text>
+    <line x1="45" y1="100" x2="45" y2="110" class="line"/>
+    <line x1="45" y1="110" x2="55" y2="110" class="line"/>
+    <text x="60" y="115" class="icon">🌐</text>
+    <text x="85" y="115" class="file-text">billing.html</text>
+    <line x1="45" y1="135" x2="45" y2="145" class="line"/>
+    <line x1="45" y1="145" x2="55" y2="145" class="line"/>
+    <text x="60" y="150" class="icon">🌐</text>
+    <text x="85" y="150" class="file-text">doctors.html</text>
+    <line x1="45" y1="170" x2="45" y2="180" class="line"/>
+    <line x1="45" y1="180" x2="55" y2="180" class="line"/>
+    <text x="60" y="185" class="icon">🌐</text>
+    <text x="85" y="185" class="file-text">register.html</text>
+    <line x1="15" y1="250" x2="25" y2="250" class="line"/>
+    <text x="30" y="255" class="icon">📁</text>
+    <text x="55" y="255" class="folder-text">config/</text>
+    <line x1="45" y1="270" x2="45" y2="280" class="line"/>
+    <line x1="45" y1="280" x2="55" y2="280" class="line"/>
+    <text x="60" y="285" class="icon">📄</text>
+    <text x="85" y="285" class="file-text">config.js</text>
+    <line x1="15" y1="350" x2="25" y2="350" class="line"/>
+    <text x="30" y="355" class="icon">📁</text>
+    <text x="55" y="355" class="folder-text">lib/</text>
+    <line x1="15" y1="385" x2="25" y2="385" class="line"/>
+    <text x="30" y="390" class="icon">📁</text>
+    <text x="55" y="390" class="folder-text">pages/</text>
+    <line x1="45" y1="405" x2="45" y2="415" class="line"/>
+    <line x1="45" y1="415" x2="55" y2="415" class="line"/>
+    <text x="60" y="420" class="icon">📁</text>
+    <text x="85" y="420" class="folder-text">lib/</text>
+    <line x1="45" y1="440" x2="45" y2="450" class="line"/>
+    <line x1="45" y1="450" x2="55" y2="450" class="line"/>
+    <text x="60" y="455" class="icon">🌐</text>
+    <text x="85" y="455" class="file-text">dashboard.html</text>
+    <line x1="15" y1="520" x2="25" y2="520" class="line"/>
+    <text x="30" y="525" class="icon">📁</text>
+    <text x="55" y="525" class="folder-text">patients/</text>
+    <line x1="45" y1="540" x2="45" y2="550" class="line"/>
+    <line x1="45" y1="550" x2="55" y2="550" class="line"/>
+    <text x="60" y="555" class="icon">📄</text>
+    <text x="85" y="555" class="file-text">patient.js</text>
+    <line x1="15" y1="620" x2="25" y2="620" class="line"/>
+    <text x="30" y="625" class="icon">📁</text>
+    <text x="55" y="625" class="folder-text">styles/</text>
+    <line x1="45" y1="640" x2="45" y2="650" class="line"/>
+    <line x1="45" y1="650" x2="55" y2="650" class="line"/>
+    <text x="60" y="655" class="icon">🎨</text>
+    <text x="85" y="655" class="file-text">style.css</text>
+    <line x1="15" y1="720" x2="25" y2="720" class="line"/>
+    <text x="30" y="725" class="icon">📄</text>
+    <text x="55" y="725" class="file-text">main.js</text>
+    <line x1="15" y1="755" x2="25" y2="755" class="line"/>
+    <text x="30" y="760" class="icon">⚙️</text>
+    <text x="55" y="760" class="file-text">package.json</text>
+</svg>
