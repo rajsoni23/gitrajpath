@@ -369,7 +369,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (ESSENTIAL METADATA QR ONLY)
+// PRINT DIAGNOSTIC REPORT (ESSENTIAL METADATA + REFF DOCTOR QR)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -417,8 +417,8 @@ window.openReportPrint = function(index) {
             }
         }
 
-        // ONLY ESSENTIAL METADATA IN QR
-        const essentialQrContent = `Report ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
+        // METADATA WITH REFERRED DOCTOR ADDED
+        const essentialQrContent = `Report ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nReff Doctor: ${reportData.doctorName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
 
         fullReportHtml += `
             <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
@@ -620,7 +620,7 @@ window.confirmAndSaveBill = function() {
     const qrContainer = document.getElementById('bill-qr-container');
     if (qrContainer && window.QRCode) {
         const testsList = currentSelectedReport.tests.map(t => t.testName).join(', ');
-        const billPayload = `Receipt: ${receiptId}\nPatient: ${currentSelectedReport.patientName}\nTests: ${testsList}\nSubtotal: Rs.${sub}\nDiscount: Rs.${disc}\nNet Amount: Rs.${net}\nDate: ${formattedDate}`;
+        const billPayload = `Receipt: ${receiptId}\nPatient: ${currentSelectedReport.patientName}\nReff Doctor: ${currentSelectedReport.doctorName}\nTests: ${testsList}\nSubtotal: Rs.${sub}\nDiscount: Rs.${disc}\nNet Amount: Rs.${net}\nDate: ${formattedDate}`;
 
         try {
             new window.QRCode(qrContainer, {
