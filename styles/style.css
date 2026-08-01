@@ -38,7 +38,13 @@ body {
 }
 
 .tab-btn { 
-  background: #1e293b; 
+  background: linear-gradient(
+  135deg,
+  #0A1A3A 0%,
+  #123B7A 50%,
+  #0C1F3F 75%,
+  #090909 100%
+);
   color: #94a3b8; 
   border: 1px solid #475569; 
   padding: 8px 16px; 
