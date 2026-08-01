@@ -4,11 +4,8 @@
 }
 
 body { 
-  background: linear-gradient(
-  135deg,
-  #E8D27A 0%,
-  #F8F3D4 50%,
-  #FFFFFF 100%
+  
+background:#007979;
 );
   color: #f8fafc; 
   margin: 0; 
