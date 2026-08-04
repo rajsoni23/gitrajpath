@@ -556,18 +556,18 @@ window.openReportPrint = function(index) {
                         <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                    Patient's Name : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
+                                   <strong> Patient's Name</strong> : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    AGE/SEX : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
+                                    <strong>AGE/SEX </strong>: <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
                                 </td>
                             </tr>
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                    Reffered by : <span style="font-weight: bold;">${reportData.doctorName}</span>
+                                    <strong>Reffered by</strong> : <span style="font-weight: bold;">${reportData.doctorName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    DATE : <span style="font-weight: bold;">${formattedDate}</span>
+                                  <strong>  DATE </strong>: <span style="font-weight: bold;">${formattedDate}</span>
                                 </td>
                             </tr>
                         </table>
@@ -579,7 +579,7 @@ window.openReportPrint = function(index) {
                     <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
                         ${t.testName} - REPORT
                     </div>
-
+                     <br>
                     <!-- TEST PARAMETERS TABLE -->
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
@@ -596,7 +596,7 @@ window.openReportPrint = function(index) {
                     </table>
                 </div>
 
-                <!-- FOOTER SECTION REMOVED AS PER IMAGE MARKING -->
+                >
             </div>
         `;
     });
