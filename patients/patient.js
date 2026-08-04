@@ -564,7 +564,7 @@ window.openReportPrint = function(index) {
                             </tr>
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                    Reff.Dr : <span style="font-weight: bold;">${reportData.doctorName}</span>
+                                    Reffered by : <span style="font-weight: bold;">${reportData.doctorName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
                                     DATE : <span style="font-weight: bold;">${formattedDate}</span>
