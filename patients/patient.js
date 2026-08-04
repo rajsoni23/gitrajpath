@@ -239,7 +239,7 @@ function renderBadges() {
 }
 
 // -------------------------------------------------------------
-// RENDER PARAMETER INPUTS (AUTO PRE-FILLED WITH NORMAL VALUES)
+// RENDER PARAMETER INPUTS (WITH CENTER ALIGNMENT & DEFAULT VALUES)
 // -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
@@ -265,25 +265,25 @@ function renderInputs() {
 
                 containerHtml += `
                     <div style="grid-column: span 4; margin-top: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid #334155;">
-                        <label style="font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; color: #38bdf8;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
-                        <table style="width: 100%; border-collapse: collapse; text-align: center; color: #fff; font-size: 12px;">
+                        <label style="font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; color: #38bdf8; text-align: left;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
+                        <table style="width: 100%; border-collapse: collapse; text-align: center; color: #fff; font-size: 12px; margin: 0 auto;">
                             <thead>
                                 <tr style="background: rgba(255,255,255,0.1);">
-                                    ${headers.map(h => `<th style="padding: 6px; border: 1px solid #475569;">${h}</th>`).join('')}
+                                    ${headers.map((h, idx) => `<th style="padding: 6px; border: 1px solid #475569; text-align: ${idx === 0 ? 'left' : 'center'} !important;">${h}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>
                                 ${rows.map((r) => `
                                     <tr>
-                                        <td style="font-weight: bold; text-align: left; padding: 6px; border: 1px solid #475569;">${r.antigen}</td>
+                                        <td style="font-weight: bold; text-align: left !important; padding: 6px; border: 1px solid #475569;">${r.antigen}</td>
                                         ${(r.values || ["-","-","-","-","-"]).map((val, cIdx) => `
-                                            <td style="padding: 2px; border: 1px solid #475569;">
+                                            <td style="padding: 2px; border: 1px solid #475569; text-align: center !important;">
                                                 <input type="text" 
                                                     data-table-test="${code}" 
                                                     data-antigen="${encodeURIComponent(r.antigen)}" 
                                                     data-col-idx="${cIdx}" 
-                                                    value="${val}" 
-                                                    style="width: 100%; text-align: center; background: rgba(0,0,0,0.2); color: #fff; border: 1px solid #64748b; border-radius: 3px; padding: 4px; font-weight: bold;"
+                                                    value="${val || '-'}" 
+                                                    style="width: 100%; text-align: center !important; background: rgba(0,0,0,0.2); color: #fff; border: 1px solid #64748b; border-radius: 3px; padding: 4px; font-weight: bold;"
                                                     placeholder="-">
                                             </td>
                                         `).join('')}
@@ -373,8 +373,8 @@ window.saveAndPrintReport = function() {
             const colIdx = parseInt(tInp.dataset.colIdx);
             const val = tInp.value.trim();
 
-            if (!tableValues[antigen]) tableValues[antigen] = ["", "", "", "", ""];
-            tableValues[antigen][colIdx] = val;
+            if (!tableValues[antigen]) tableValues[antigen] = ["-", "-", "-", "-", "-"];
+            tableValues[antigen][colIdx] = val || "-";
         });
 
         if (Object.keys(paramValues).length > 0 || Object.keys(tableValues).length > 0) {
@@ -488,7 +488,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (EXACT LAYOUT RULES & 4CM GAPS)
+// PRINT DIAGNOSTIC REPORT (EXACT CENTER ALIGNED TABLES & PERFECT FORMAT)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -516,31 +516,35 @@ window.openReportPrint = function(index) {
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
             
-            // 1. WIDAL / SLIDE AGGLUTINATION TABLE
+            // 1. WIDAL / SLIDE AGGLUTINATION TABLE (PERFECT CENTER ALIGNMENT)
             if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const savedTableData = t.tableData || {};
 
                 tableRowsHtml += `
                     <tr style="border: none !important;">
-                        <td colspan="4" style="padding: 6px 0; border: none !important; text-align: left !important;">
-                            <div style="font-weight: bold; margin-bottom: 4px; font-size: 11px; text-transform: uppercase;">
+                        <td colspan="4" style="padding: 8px 0; border: none !important; text-align: left !important;">
+                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">
                                 ${param.name || 'WIDAL TEST'}
                             </div>
-                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal;">
+                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
                                 <thead>
                                     <tr>
-                                        ${headers.map((h, idx) => `<th style="padding: 3px; background: white !important; color: black !important; font-weight: bold; text-align: ${idx === 0 ? 'left' : 'center'} !important;">${h}</th>`).join('')}
+                                        ${headers.map((h, idx) => `
+                                            <th style="padding: 5px; background: white !important; color: black !important; font-weight: bold; text-align: ${idx === 0 ? 'left' : 'center'} !important; border: 1px solid #000;">${h}</th>
+                                        `).join('')}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${(param.rows || []).map(r => {
                                         const antigenName = r.antigen;
-                                        const cellValues = savedTableData[antigenName] || r.values || ["","","","",""];
+                                        const cellValues = savedTableData[antigenName] || r.values || ["-","-","-","-","-"];
                                         return `
                                             <tr>
-                                                <td style="font-weight: bold; text-align: left !important; padding: 3px;">${antigenName}</td>
-                                                ${cellValues.map(v => `<td style="text-align: center !important; font-weight: normal; padding: 3px;">${v || ''}</td>`).join('')}
+                                                <td style="font-weight: bold; text-align: left !important; padding: 5px; border: 1px solid #000;">${antigenName}</td>
+                                                ${cellValues.map(v => `
+                                                    <td style="text-align: center !important; font-weight: normal; padding: 5px; border: 1px solid #000;">${v || '-'}</td>
+                                                `).join('')}
                                             </tr>
                                         `;
                                     }).join('')}
@@ -590,18 +594,18 @@ window.openReportPrint = function(index) {
                         <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                    Patient's Name : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
+                                   <strong>Patient's Name</strong> : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    AGE/SEX : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
+                                    <strong>AGE/SEX</strong> : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
                                 </td>
                             </tr>
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                    Reff.Dr : <span style="font-weight: bold;">${reportData.doctorName}</span>
+                                    <strong>Referred by</strong> : <span style="font-weight: bold;">${reportData.doctorName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    DATE : <span style="font-weight: bold;">${formattedDate}</span>
+                                  <strong>DATE</strong> : <span style="font-weight: bold;">${formattedDate}</span>
                                 </td>
                             </tr>
                         </table>
@@ -609,11 +613,11 @@ window.openReportPrint = function(index) {
                         <div id="report-qr-${i}" style="width: 70px; height: 70px; margin-left: 10px;"></div>
                     </div>
 
-                    <!-- TEST TITLE WITH GAP SPACE -->
+                    <!-- TEST TITLE WITH MARGIN SPACE ABOVE & BELOW -->
                     <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
                         ${t.testName} - REPORT
                     </div>
-
+                    <br>
                     <!-- TEST PARAMETERS TABLE -->
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
