@@ -205,35 +205,103 @@ function renderBadges() {
     if (target) target.innerHTML = html;
 }
 
+// -------------------------------------------------------------
+// RENDER PARAMETER INPUTS (DYNAMIC TABLE + SINGLE TEST SUPPORT)
+// -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
+
     activeTests.forEach(code => {
         const testObj = testCatalogue[code];
         if (!testObj) return;
 
         containerHtml += `<div class="section-title">📌 ${testObj.name}</div><div class="grid-4">`;
+        
         testObj.params.forEach(param => {
-            const pName = typeof param === 'object' ? param.name : param;
-            const safeParam = encodeURIComponent(pName);
-            containerHtml += `
-                <div>
-                    <label>${pName}</label>
-                    <input type="text" data-test="${code}" data-param="${safeParam}" placeholder="Value">
-                </div>
-            `;
+            const isTableParam = (typeof param === 'object') && 
+                                 (param.type === 'table' || param.isTable || param.rows !== undefined);
+
+            // 1. TABLE GRID FOR WIDAL / SEROLOGY WIDAL
+            if (isTableParam) {
+                const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
+                const rows = param.rows || [
+                    { antigen: "S.TYPHI 'O'", values: ["", "", "", "", ""] },
+                    { antigen: "S.TYPHI 'H'", values: ["", "", "", "", ""] },
+                    { antigen: "S.PARATYPHI 'AH'", values: ["", "", "", "", ""] },
+                    { antigen: "S.PARATYPHI 'BH'", values: ["", "", "", "", ""] }
+                ];
+
+                containerHtml += `
+                    <div style="grid-column: span 4; margin-top: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid #334155;">
+                        <label style="font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; color: #38bdf8;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
+                        <table style="width: 100%; border-collapse: collapse; text-align: center; color: #fff; font-size: 12px;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.1);">
+                                    ${headers.map(h => `<th style="padding: 6px; border: 1px solid #475569;">${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map((r) => `
+                                    <tr>
+                                        <td style="font-weight: bold; text-align: left; padding: 6px; border: 1px solid #475569;">${r.antigen}</td>
+                                        ${(r.values || ["","","","",""]).map((val, cIdx) => `
+                                            <td style="padding: 2px; border: 1px solid #475569;">
+                                                <input type="text" 
+                                                    data-table-test="${code}" 
+                                                    data-antigen="${encodeURIComponent(r.antigen)}" 
+                                                    data-col-idx="${cIdx}" 
+                                                    value="${val}" 
+                                                    style="width: 100%; text-align: center; background: rgba(0,0,0,0.2); color: #fff; border: 1px solid #64748b; border-radius: 3px; padding: 4px; font-weight: bold;"
+                                                    placeholder="-">
+                                            </td>
+                                        `).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                // 2. STANDARD SINGLE INPUT PARAMETER
+                const pName = typeof param === 'object' ? param.name : param;
+                const safeParam = encodeURIComponent(pName);
+                const defaultRange = (typeof param === 'object' && param.range) ? param.range : '';
+
+                containerHtml += `
+                    <div>
+                        <label>${pName}</label>
+                        <input type="text" data-test="${code}" data-param="${safeParam}" placeholder="${defaultRange || 'Value'}">
+                    </div>
+                `;
+            }
         });
         containerHtml += `</div>`;
     });
+
     const target = document.getElementById('test-inputs-container');
     if (target) target.innerHTML = containerHtml;
 }
 
 // -------------------------------------------------------------
-// SAVE PATIENT & TRIGGER REPORT PRINT
+// SAVE PATIENT RECORD & REPORT
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
-    if (!nameEl || !nameEl.value.trim()) { alert("Please enter patient name"); return; }
+    
+    if (!nameEl || !nameEl.value.trim()) { 
+        nameEl.style.border = "2px solid #ef4444";
+        nameEl.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+        nameEl.placeholder = "⚠️ Patient Name Required!";
+        nameEl.focus();
+
+        setTimeout(() => {
+            nameEl.style.border = "";
+            nameEl.style.backgroundColor = "";
+            nameEl.placeholder = "Enter Patient Name";
+        }, 3500);
+
+        return; 
+    }
 
     const name = nameEl.value.trim();
     const age = document.getElementById('p-age') ? document.getElementById('p-age').value || 0 : 0;
@@ -245,16 +313,21 @@ window.saveAndPrintReport = function() {
         localStorage.setItem('path_doctors', JSON.stringify(doctorsDirectory));
     }
 
-    let subtotal = 0;
     let testDetails = [];
+    let calculatedBaseTotal = 0;
 
     activeTests.forEach(code => {
         if (!testCatalogue[code]) return;
 
-        subtotal += testCatalogue[code].price || 0;
+        if (testCatalogue[code].price) {
+            calculatedBaseTotal += parseFloat(testCatalogue[code].price) || 0;
+        }
+
         let paramValues = {};
+        let tableValues = {};
+
+        // 1. Gather Standard Inputs
         const inputs = document.querySelectorAll(`input[data-test="${code}"]`);
-        
         inputs.forEach(inp => {
             const val = inp.value.trim();
             if (val !== "" && val !== undefined) {
@@ -263,11 +336,23 @@ window.saveAndPrintReport = function() {
             }
         });
 
-        if (Object.keys(paramValues).length > 0) {
+        // 2. Gather Dynamic Table Inputs (Widal/Serology)
+        const tableInputs = document.querySelectorAll(`input[data-table-test="${code}"]`);
+        tableInputs.forEach(tInp => {
+            const antigen = decodeURIComponent(tInp.dataset.antigen);
+            const colIdx = parseInt(tInp.dataset.colIdx);
+            const val = tInp.value.trim();
+
+            if (!tableValues[antigen]) tableValues[antigen] = ["", "", "", "", ""];
+            tableValues[antigen][colIdx] = val;
+        });
+
+        if (Object.keys(paramValues).length > 0 || Object.keys(tableValues).length > 0) {
             testDetails.push({ 
                 testCode: code,
                 testName: testCatalogue[code].name, 
-                values: paramValues 
+                values: paramValues,
+                tableData: tableValues
             });
         }
     });
@@ -284,7 +369,9 @@ window.saveAndPrintReport = function() {
         gender: gender,
         doctorName: docInput,
         tests: testDetails,
-        subtotal: subtotal,
+        subtotal: calculatedBaseTotal,
+        discount: 0,
+        netTotal: calculatedBaseTotal,
         createdAt: new Date().toISOString()
     };
 
@@ -312,7 +399,7 @@ function updateDoctorReferralTable() {
     allReportsData.forEach(r => {
         if (!report[r.doctorName]) report[r.doctorName] = { count: 0, business: 0 };
         report[r.doctorName].count += 1;
-        report[r.doctorName].business += r.subtotal;
+        report[r.doctorName].business += (r.netTotal !== undefined ? r.netTotal : r.subtotal);
     });
 
     let html = "";
@@ -335,13 +422,15 @@ function updateBillingTable(filteredList = null) {
     list.forEach((r) => {
         const index = allReportsData.indexOf(r);
         const testNamesList = r.tests.map(t => t.testName).join(', ');
+        const displayTotal = r.netTotal !== undefined ? r.netTotal : r.subtotal;
+
         html += `
             <tr>
                 <td>${r.id}</td>
                 <td><b>${r.patientName}</b></td>
                 <td>${r.doctorName}</td>
                 <td>${testNamesList}</td>
-                <td>₹${r.subtotal}</td>
+                <td>₹${displayTotal}</td>
                 <td style="text-align: center; white-space: nowrap;">
                     <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #0284c7; margin-right: 5px;" onclick="openReportPrint(${index})">
                         📄 Print Report
@@ -369,7 +458,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (ESSENTIAL METADATA + REFF DOCTOR QR)
+// PRINT DIAGNOSTIC REPORT (UPDATED STYLING & ALIGNMENTS)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -390,70 +479,119 @@ window.openReportPrint = function(index) {
             if (matchedKey) catalogueParams = testCatalogue[matchedKey].params || [];
         }
 
-        const isLast = i === reportData.tests.length - 1;
         let tableRowsHtml = "";
 
-        if (t.values && Object.keys(t.values).length > 0) {
-            for (const [pName, pVal] of Object.entries(t.values)) {
-                
-                const cleanStr = str => String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
-
-                const paramObj = catalogueParams.find(p => {
-                    const cName = typeof p === 'object' ? p.name : p;
-                    return cleanStr(cName) === cleanStr(pName);
-                });
-
-                const unit = (paramObj && typeof paramObj === 'object' && paramObj.unit) ? paramObj.unit : '';
-                const range = (paramObj && typeof paramObj === 'object' && paramObj.range) ? paramObj.range : '';
+        catalogueParams.forEach(param => {
+            const pName = typeof param === 'object' ? param.name : param;
+            const isTableParam = (typeof param === 'object') && 
+                                 (param.type === 'table' || param.isTable || param.rows !== undefined);
+            
+            // WIDAL / SLIDE TABLE PARAMETER
+            if (isTableParam) {
+                const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
+                const savedTableData = t.tableData || {};
 
                 tableRowsHtml += `
                     <tr style="border: none !important;">
-                        <td style="padding: 5px 0; font-weight: bold; text-transform: uppercase; border: none !important;">${pName}</td>
-                        <td style="padding: 5px 0; font-weight: bold; border: none !important;">${pVal}</td>
-                        <td style="padding: 5px 0; border: none !important;">${unit}</td>
-                        <td style="padding: 5px 0; border: none !important;">${range}</td>
+                        <td colspan="4" style="padding: 6px 0; border: none !important; text-align: left !important;">
+                            <div style="font-weight: bold; margin-bottom: 4px; font-size: 11px; text-transform: uppercase;">
+                                ${param.name || 'WIDAL TEST'}
+                            </div>
+                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal;">
+                                <thead>
+                                    <tr>
+                                        ${headers.map((h, idx) => `<th style="padding: 3px; background: white !important; color: black !important; font-weight: bold; text-align: ${idx === 0 ? 'left' : 'center'} !important;">${h}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(param.rows || []).map(r => {
+                                        const antigenName = r.antigen;
+                                        const cellValues = savedTableData[antigenName] || r.values || ["","","","",""];
+                                        return `
+                                            <tr>
+                                                <td style="font-weight: normal; text-align: left !important; padding: 3px;">${antigenName}</td>
+                                                ${cellValues.map(v => `<td style="text-align: center !important; font-weight: normal; padding: 3px;">${v || ''}</td>`).join('')}
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </td>
                     </tr>
                 `;
-            }
-        }
+            } else {
+                // STANDARD PARAMETER ROW (UNBOLDED REGULAR DATA)
+                const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
+                if (pVal !== "" && pVal !== undefined) {
+                    const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
+                    const range = (typeof param === 'object' && param.range) ? param.range : '';
 
-        // METADATA WITH REFERRED DOCTOR ADDED
+                    tableRowsHtml += `
+                        <tr style="border: none !important;">
+                            <td style="font-weight: normal; text-transform: uppercase; text-align: left !important; border: none !important; padding: 4px 0;">${pName}</td>
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0;">${pVal}</td>
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0;">${unit}</td>
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0;">${range}</td>
+                        </tr>
+                    `;
+                }
+            }
+        });
+
         const essentialQrContent = `Report ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nReff Doctor: ${reportData.doctorName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
 
         fullReportHtml += `
-            <div class="report-page" style="${!isLast ? 'page-break-after: always; break-after: page;' : ''}">
-                <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                    <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
-                        <tr style="border: none !important;">
-                            <td style="width: 55%; padding: 2px 0; border: none !important;">Patient's Name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
-                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex : ${reportData.age} Yrs / ${reportData.gender}</td>
-                        </tr>
-                        <tr style="border: none !important;">
-                            <td style="width: 55%; padding: 2px 0; border: none !important;">Reff.Dr : ${reportData.doctorName}</td>
-                            <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Date : ${formattedDate}</td>
-                        </tr>
+            <div class="report-page">
+                <div class="report-body-content">
+                    <!-- CLEAN PATIENT INFORMATION HEADER -->
+                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <table style="width: 80%; font-size: 12px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.4; background: white;">
+                            <tr style="border: none !important;">
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important;">Patient's Name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">Age/Sex : ${reportData.age} Yrs / ${reportData.gender}</td>
+                            </tr>
+                            <tr style="border: none !important;">
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important;">Reff.Dr : ${reportData.doctorName}</td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">Date : ${formattedDate}</td>
+                            </tr>
+                        </table>
+                        <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(essentialQrContent)}">
+                        <div id="report-qr-${i}" style="width: 70px; height: 70px; margin-left: 10px;"></div>
+                    </div>
+
+                    <!-- TEST TITLE -->
+                    <div style="text-align: center; font-weight: bold; margin-bottom: 10px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
+                        ${t.testName}
+                    </div>
+
+                    <!-- TEST PARAMETERS TABLE -->
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white; font-weight: normal;">
+                        <thead>
+                            <tr style="background: white;">
+                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important;">INVESTIGATION</th>
+                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important;">RESULT</th>
+                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important;">UNIT</th>
+                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important;">NORMAL RANGE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
                     </table>
-                    <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(essentialQrContent)}">
-                    <div id="report-qr-${i}" style="width: 85px; height: 85px; margin-left: 10px;"></div>
                 </div>
 
-                <div style="text-align: center; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; font-size: 14px; text-transform: uppercase;">
-                    ${t.testName}
+                <!-- BOTTOM FOOTER -->
+                <div class="report-footer-section">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div style="font-size: 10px; color: #333;">
+                            <i>* System Generated Diagnostic Report</i>
+                        </div>
+                        <div style="text-align: right; font-weight: bold; font-size: 11px;">
+                            <br><br>
+                            <span>(Checked By / Pathologist)</span>
+                        </div>
+                    </div>
                 </div>
-
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; border: none !important;">
-                    <thead>
-                        <tr style="border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; text-align: left;">
-                            <th style="padding: 6px 0; width: 45%; border: none !important;">INVESTIGATION</th>
-                            <th style="padding: 6px 0; width: 20%; border: none !important;">RESULT</th>
-                            <th style="padding: 6px 0; width: 15%; border: none !important;">UNIT</th>
-                            <th style="padding: 6px 0; width: 20%; border: none !important;">NORMAL RANGE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRowsHtml}
-                    </tbody>
-                </table>
             </div>
         `;
     });
@@ -467,7 +605,6 @@ window.openReportPrint = function(index) {
 
     printContainer.innerHTML = fullReportHtml;
 
-    // Fail-safe QR Generation Logic
     reportData.tests.forEach((t, i) => {
         const qrContainer = document.getElementById(`report-qr-${i}`);
         const textInput = document.getElementById(`qr-text-${i}`);
@@ -480,24 +617,22 @@ window.openReportPrint = function(index) {
                 if (window.QRCode) {
                     new window.QRCode(qrContainer, {
                         text: qrText,
-                        width: 85,
-                        height: 85,
+                        width: 70,
+                        height: 70,
                         correctLevel: window.QRCode.CorrectLevel.M
                     });
                 }
             } catch (err) {
                 console.error("QR Code Error:", err);
-                qrContainer.innerHTML = "";
             }
         }
     });
 
-    // Always fires print successfully
     setTimeout(() => { window.print(); }, 300);
 };
 
 // -------------------------------------------------------------
-// PRINT BILL ONLY
+// BILLING TAB FUNCTIONS
 // -------------------------------------------------------------
 window.openBill = function(index) {
     currentSelectedReport = allReportsData[index];
@@ -510,13 +645,16 @@ window.openBill = function(index) {
 
     let summaryHtml = "";
     currentSelectedReport.tests.forEach(t => {
-        const testCode = t.testCode || Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
-        summaryHtml += `<b>➡️ ${t.testName}</b> (₹${testCatalogue[testCode]?.price || 0})<br>`;
+        summaryHtml += `<b>➡️ ${t.testName}</b><br>`;
     });
-    
     document.getElementById('bill-tests-summary-box').innerHTML = summaryHtml;
-    document.getElementById('bill-subtotal').value = currentSelectedReport.subtotal;
-    document.getElementById('bill-discount').value = 0;
+    
+    const subtotalEl = document.getElementById('bill-subtotal');
+    const discountEl = document.getElementById('bill-discount');
+    
+    if (subtotalEl) subtotalEl.value = currentSelectedReport.subtotal || 0;
+    if (discountEl) discountEl.value = currentSelectedReport.discount || 0;
+    
     calculateFinalBill();
 };
 
@@ -536,6 +674,11 @@ window.confirmAndSaveBill = function() {
     const sub = parseFloat(document.getElementById('bill-subtotal')?.value) || 0;
     const disc = parseFloat(document.getElementById('bill-discount')?.value) || 0;
     const net = Math.max(0, sub - disc);
+
+    currentSelectedReport.subtotal = sub;
+    currentSelectedReport.discount = disc;
+    currentSelectedReport.netTotal = net;
+    localStorage.setItem('path_reports', JSON.stringify(allReportsData));
 
     const formattedDate = new Date().toLocaleDateString('en-GB');
     const receiptId = 'INV-' + Math.floor(100000 + Math.random() * 900000);
@@ -568,30 +711,31 @@ window.confirmAndSaveBill = function() {
                 <thead>
                     <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000;">
                         <th style="text-align: left; padding: 6px 0;">Test Name</th>
-                        <th style="text-align: right; padding: 6px 0;">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${currentSelectedReport.tests.map(t => {
-                        const code = t.testCode || Object.keys(testCatalogue).find(k => testCatalogue[k].name === t.testName);
-                        return `
+                    ${currentSelectedReport.tests.map(t => `
                         <tr>
-                            <td style="padding: 6px 0;">${t.testName}</td>
-                            <td style="text-align: right; padding: 6px 0;">₹${testCatalogue[code]?.price || 0}</td>
+                            <td style="padding: 6px 0; font-weight: bold;">➡️ ${t.testName}</td>
                         </tr>
-                        `;
-                    }).join('')}
+                    `).join('')}
                     <tr style="border-top: 1px solid #000;">
-                        <td style="padding: 6px 0; font-weight: bold;">Subtotal</td>
-                        <td style="text-align: right; padding: 6px 0; font-weight: bold;">₹${sub}</td>
+                        <td style="padding: 6px 0; font-weight: bold; display: flex; justify-content: space-between;">
+                            <span>Subtotal</span>
+                            <span>₹${sub}</span>
+                        </td>
                     </tr>
                     <tr>
-                        <td style="padding: 6px 0;">Discount</td>
-                        <td style="text-align: right; padding: 6px 0;">- ₹${disc}</td>
+                        <td style="padding: 6px 0; display: flex; justify-content: space-between;">
+                            <span>Discount</span>
+                            <span>- ₹${disc}</span>
+                        </td>
                     </tr>
                     <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; font-size: 14px; font-weight: bold;">
-                        <td style="padding: 8px 0;">Net Payable</td>
-                        <td style="text-align: right; padding: 8px 0;">₹${net}</td>
+                        <td style="padding: 8px 0; display: flex; justify-content: space-between;">
+                            <span>Net Payable</span>
+                            <span>₹${net}</span>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -638,4 +782,6 @@ window.confirmAndSaveBill = function() {
 
     const billCard = document.getElementById('bill-view-card');
     if (billCard) billCard.style.display = 'none';
+    
+    updateBillingTable();
 };
