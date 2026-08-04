@@ -74,6 +74,39 @@ window.switchTab = async function(tabId, evt) {
 };
 
 // -------------------------------------------------------------
+// HELPER TO DYNAMICALLY DERIVE DEFAULT NORMAL VALUES
+// -------------------------------------------------------------
+function getDefaultValue(param) {
+    if (param.defaultValue !== undefined) return param.defaultValue;
+    if (!param.range) return '';
+
+    const rangeStr = param.range.trim();
+    if (rangeStr === 'Negative' || rangeStr === 'NEGATIVE') return 'Negative';
+    if (rangeStr === 'Absent' || rangeStr === 'ABSENT') return 'Absent';
+    if (rangeStr === 'Not Seen' || rangeStr === 'NOT SEEN') return 'Not Seen';
+
+    // Single Numeric Range e.g. [70-140]
+    const simpleMatch = rangeStr.match(/\[(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/);
+    if (simpleMatch) {
+        const min = parseFloat(simpleMatch[1]);
+        const max = parseFloat(simpleMatch[2]);
+        const mid = (min + max) / 2;
+        return Number.isInteger(mid) ? mid.toString() : mid.toFixed(1);
+    }
+
+    // Gender Specific Range e.g. [M: 13.5-17.5]
+    const genderMatch = rangeStr.match(/\[M:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/);
+    if (genderMatch) {
+        const min = parseFloat(genderMatch[1]);
+        const max = parseFloat(genderMatch[2]);
+        const mid = (min + max) / 2;
+        return Number.isInteger(mid) ? mid.toString() : mid.toFixed(1);
+    }
+
+    return rangeStr.replace(/[\[\]]/g, '');
+}
+
+// -------------------------------------------------------------
 // KEYBOARD NAVIGATION HANDLER
 // -------------------------------------------------------------
 function handleKeyboardNavigation(e, container, type) {
@@ -206,7 +239,7 @@ function renderBadges() {
 }
 
 // -------------------------------------------------------------
-// RENDER PARAMETER INPUTS
+// RENDER PARAMETER INPUTS (AUTO PRE-FILLED WITH NORMAL VALUES)
 // -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
@@ -224,10 +257,10 @@ function renderInputs() {
             if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const rows = param.rows || [
-                    { antigen: "S.TYPHI 'O'", values: ["", "", "", "", ""] },
-                    { antigen: "S.TYPHI 'H'", values: ["", "", "", "", ""] },
-                    { antigen: "S.PARATYPHI 'AH'", values: ["", "", "", "", ""] },
-                    { antigen: "S.PARATYPHI 'BH'", values: ["", "", "", "", ""] }
+                    { antigen: "S.TYPHI 'O'", values: ["-", "-", "-", "-", "-"] },
+                    { antigen: "S.TYPHI 'H'", values: ["-", "-", "-", "-", "-"] },
+                    { antigen: "S.PARATYPHI 'AH'", values: ["-", "-", "-", "-", "-"] },
+                    { antigen: "S.PARATYPHI 'BH'", values: ["-", "-", "-", "-", "-"] }
                 ];
 
                 containerHtml += `
@@ -243,7 +276,7 @@ function renderInputs() {
                                 ${rows.map((r) => `
                                     <tr>
                                         <td style="font-weight: bold; text-align: left; padding: 6px; border: 1px solid #475569;">${r.antigen}</td>
-                                        ${(r.values || ["","","","",""]).map((val, cIdx) => `
+                                        ${(r.values || ["-","-","-","-","-"]).map((val, cIdx) => `
                                             <td style="padding: 2px; border: 1px solid #475569;">
                                                 <input type="text" 
                                                     data-table-test="${code}" 
@@ -264,11 +297,12 @@ function renderInputs() {
                 const pName = typeof param === 'object' ? param.name : param;
                 const safeParam = encodeURIComponent(pName);
                 const defaultRange = (typeof param === 'object' && param.range) ? param.range : '';
+                const autoFillVal = getDefaultValue(param);
 
                 containerHtml += `
                     <div>
                         <label>${pName}</label>
-                        <input type="text" data-test="${code}" data-param="${safeParam}" placeholder="${defaultRange || 'Value'}">
+                        <input type="text" data-test="${code}" data-param="${safeParam}" value="${autoFillVal}" placeholder="${defaultRange || 'Value'}">
                     </div>
                 `;
             }
@@ -454,7 +488,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (UPDATED WITH ALL IMAGE MARKS & BOLD RULES)
+// PRINT DIAGNOSTIC REPORT (EXACT LAYOUT RULES & 4CM GAPS)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -556,18 +590,18 @@ window.openReportPrint = function(index) {
                         <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                   <strong> Patient's Name</strong> : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
+                                    Patient's Name : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    <strong>AGE/SEX </strong>: <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
+                                    AGE/SEX : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
                                 </td>
                             </tr>
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                    <strong>Reffered by</strong> : <span style="font-weight: bold;">${reportData.doctorName}</span>
+                                    Reff.Dr : <span style="font-weight: bold;">${reportData.doctorName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                  <strong>  DATE </strong>: <span style="font-weight: bold;">${formattedDate}</span>
+                                    DATE : <span style="font-weight: bold;">${formattedDate}</span>
                                 </td>
                             </tr>
                         </table>
@@ -575,11 +609,11 @@ window.openReportPrint = function(index) {
                         <div id="report-qr-${i}" style="width: 70px; height: 70px; margin-left: 10px;"></div>
                     </div>
 
-                    <!-- TEST TITLE WITH MARGIN SPACE ABOVE & BELOW -->
+                    <!-- TEST TITLE WITH GAP SPACE -->
                     <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
                         ${t.testName} - REPORT
                     </div>
-                     <br>
+
                     <!-- TEST PARAMETERS TABLE -->
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
@@ -595,8 +629,6 @@ window.openReportPrint = function(index) {
                         </tbody>
                     </table>
                 </div>
-
-                >
             </div>
         `;
     });
