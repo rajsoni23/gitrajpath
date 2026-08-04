@@ -208,10 +208,10 @@ export const testCatalogue = {
         status: 'BORDER LINE',
         headers: ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'],
         rows: [
-          { antigen: "S.TYPHI 'O'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.TYPHI 'H'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.PARATYPHI 'AH'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] }
+          { antigen: "   S.TYPHI 'O'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "   S.TYPHI 'H'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "   S.PARATYPHI 'AH'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "   S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] }
         ]
       }
     ]
@@ -240,10 +240,10 @@ export const testCatalogue = {
         status: 'BORDER LINE',
         headers: ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'],
         rows: [
-          { antigen: "S.TYPHI 'O'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.TYPHI 'H'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.PARATYPHI 'AH'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] }
+          { antigen: "   S.TYPHI 'O'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "   S.TYPHI 'H'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "   S.PARATYPHI 'AH'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "   S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] }
         ]
       },
       { name: 'DENGUE IgG', unit: '', range: 'NEGATIVE' },
