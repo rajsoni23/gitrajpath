@@ -192,7 +192,7 @@ th {
 @media print {
   @page {
     size: A4 portrait;
-    margin-top: 3.2cm !important;    
+    margin-top: 5cm !important;    
     margin-bottom: 2.5cm !important; 
     margin-left: 1.2cm;
     margin-right: 1.2cm;
