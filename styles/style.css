@@ -1,6 +1,6 @@
 * { 
   box-sizing: border-box; 
-font-family: 'Segoe UI', Tahoma, sans-serif;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
 body { 
@@ -188,12 +188,12 @@ th {
   display: none;
 }
 
-/* CLEAN PRINT ENGINE WITH NO BLACK STRIPS */
+/* CLEAN PRINT ENGINE WITH 4CM TOP AND BOTTOM GAPS */
 @media print {
   @page {
     size: A4 portrait;
-    margin-top: 5cm !important;    
-    margin-bottom: 2.5cm !important; 
+    margin-top: 4cm !important;    
+    margin-bottom: 4cm !important; 
     margin-left: 1.2cm;
     margin-right: 1.2cm;
   }
@@ -247,7 +247,6 @@ th {
     display: flex !important;
     flex-direction: column !important;
     box-sizing: border-box !important;
-    min-height: 22cm !important;
     justify-content: space-between !important;
     overflow: hidden !important;
   }
@@ -256,16 +255,10 @@ th {
     flex: 1 1 auto !important;
   }
 
-  .report-footer-section {
-    margin-top: auto !important;
-    padding-top: 10px !important;
-  }
-
   /* Table styling without global bold font */
   .report-page table {
     width: 100% !important;
     border-collapse: collapse !important;
-    font-weight: normal !important;
   }
 
   .report-page th {
@@ -281,6 +274,5 @@ th {
     color: #000 !important;
     padding: 6px 4px !important;
     background: transparent !important;
-    font-weight: normal !important;
   }
 }
