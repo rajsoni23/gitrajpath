@@ -460,6 +460,9 @@ window.filterBillsTable = function() {
 // -------------------------------------------------------------
 // PRINT DIAGNOSTIC REPORT (UPDATED STYLING & ALIGNMENTS)
 // -------------------------------------------------------------
+// -------------------------------------------------------------
+// PRINT DIAGNOSTIC REPORT (EXACT PRINT MATCH AS PER SAMPLE)
+// -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
     if (!reportData) return;
@@ -486,7 +489,7 @@ window.openReportPrint = function(index) {
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
             
-            // WIDAL / SLIDE TABLE PARAMETER
+            // 1. WIDAL / SLIDE AGGLUTINATION TABLE
             if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const savedTableData = t.tableData || {};
@@ -520,7 +523,7 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // STANDARD PARAMETER ROW (UNBOLDED REGULAR DATA)
+                // 2. STANDARD PARAMETER ROW (EXACT FORMATTING AS IMAGE)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -528,10 +531,18 @@ window.openReportPrint = function(index) {
 
                     tableRowsHtml += `
                         <tr style="border: none !important;">
-                            <td style="font-weight: normal; text-transform: uppercase; text-align: left !important; border: none !important; padding: 4px 0;">${pName}</td>
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0;">${pVal}</td>
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0;">${unit}</td>
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0;">${range}</td>
+                            <td style="font-weight: normal; text-transform: uppercase; text-align: left !important; border: none !important; padding: 4px 0; width: 40%;">
+                                ${pName}
+                            </td>
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0; width: 20%;">
+                                ${pVal}
+                            </td>
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0; width: 15%;">
+                                ${unit}
+                            </td>
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0; width: 25%;">
+                                ${range ? (range.startsWith('[') ? range : `[${range}]`) : ''}
+                            </td>
                         </tr>
                     `;
                 }
@@ -543,16 +554,16 @@ window.openReportPrint = function(index) {
         fullReportHtml += `
             <div class="report-page">
                 <div class="report-body-content">
-                    <!-- CLEAN PATIENT INFORMATION HEADER -->
+                    <!-- PATIENT INFORMATION HEADER -->
                     <div style="border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <table style="width: 80%; font-size: 12px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.4; background: white;">
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important;">Patient's Name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">Age/Sex : ${reportData.age} Yrs / ${reportData.gender}</td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">AGE/SEX : ${reportData.age} YRS / ${reportData.gender}</td>
                             </tr>
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important;">Reff.Dr : ${reportData.doctorName}</td>
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">Date : ${formattedDate}</td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">DATE : ${formattedDate}</td>
                             </tr>
                         </table>
                         <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(essentialQrContent)}">
@@ -560,18 +571,18 @@ window.openReportPrint = function(index) {
                     </div>
 
                     <!-- TEST TITLE -->
-                    <div style="text-align: center; font-weight: bold; margin-bottom: 10px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
-                        ${t.testName}
+                    <div style="text-align: center; font-weight: bold; margin-bottom: 12px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
+                        ${t.testName} - REPORT
                     </div>
 
                     <!-- TEST PARAMETERS TABLE -->
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white; font-weight: normal;">
                         <thead>
-                            <tr style="background: white;">
-                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important;">INVESTIGATION</th>
-                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important;">RESULT</th>
-                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important;">UNIT</th>
-                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important;">NORMAL RANGE</th>
+                            <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
+                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 4px 0;">INVESTIGATION</th>
+                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important; padding: 4px 0;">RESULT</th>
+                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 4px 0;">UNIT</th>
+                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important; padding: 4px 0;">NORMAL RANGE</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -629,9 +640,7 @@ window.openReportPrint = function(index) {
     });
 
     setTimeout(() => { window.print(); }, 300);
-};
-
-// -------------------------------------------------------------
+};// -------------------------------------------------------------
 // BILLING TAB FUNCTIONS
 // -------------------------------------------------------------
 window.openBill = function(index) {
