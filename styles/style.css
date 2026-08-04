@@ -4,9 +4,7 @@
 }
 
 body { 
-  
-background:#152127;
-);
+  background: #0f172a; 
   color: #f8fafc; 
   margin: 0; 
   padding: 15px; 
@@ -14,13 +12,7 @@ background:#152127;
 }
 
 .app-header { 
-  background:linear-gradient(
-  135deg,
-  #1A103D 0%,
-  #2E1B69 45%,
-  #18102C 70%,
-  #090909 100%
-);
+  background: #0284c7; 
   color: white; 
   padding: 10px 15px; 
   border-radius: 6px; 
@@ -40,13 +32,7 @@ background:#152127;
 }
 
 .tab-btn { 
-  background: linear-gradient(
-  135deg,
-  #0A1A3A 0%,
-  #123B7A 50%,
-  #0C1F3F 75%,
-  #090909 100%
-);
+  background: #1e293b; 
   color: #94a3b8; 
   border: 1px solid #475569; 
   padding: 8px 16px; 
@@ -202,21 +188,29 @@ th {
   display: none;
 }
 
-/* STICKY LETTERHEAD PRINT ENGINE */
+/* CLEAN PRINT ENGINE WITH NO BLACK STRIPS */
 @media print {
   @page {
     size: A4 portrait;
-    margin-top: 4cm !important;     /* Top Space for Letterhead Pad */
-    margin-bottom: 4cm !important;  /* Bottom Space for Doctor Stamp/Sign */
-    margin-left: 1.5cm;
-    margin-right: 1.5cm;
+    margin-top: 3.2cm !important;    
+    margin-bottom: 2.5cm !important; 
+    margin-left: 1.2cm;
+    margin-right: 1.2cm;
+  }
+
+  /* Pure clean white background everywhere */
+  html, body, div, table, tr, th, td {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
   }
 
   body {
-    background: white !important;
-    color: black !important;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Hide Application UI completely during print */
@@ -242,25 +236,51 @@ th {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    color: black !important;
-    background: white !important;
   }
 
+  /* Printable Page Container */
   .report-page {
     page-break-after: always !important;
     break-after: page !important;
-    display: block !important;
-    width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    min-height: 22cm !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
   }
 
-  table {
+  .report-body-content {
+    flex: 1 1 auto !important;
+  }
+
+  .report-footer-section {
+    margin-top: auto !important;
+    padding-top: 10px !important;
+  }
+
+  /* Table styling without global bold font */
+  .report-page table {
     width: 100% !important;
     border-collapse: collapse !important;
-    color: black !important;
+    font-weight: normal !important;
   }
 
-  th, td {
-    color: black !important;
-    border-bottom: 1px solid #000 !important;
+  .report-page th {
+    color: #000 !important;
+    border-top: 1.5px solid #000 !important;
+    border-bottom: 1.5px solid #000 !important;
+    padding: 6px 4px !important;
+    background: transparent !important;
+    font-weight: bold !important;
+  }
+
+  .report-page td {
+    color: #000 !important;
+    padding: 6px 4px !important;
+    background: transparent !important;
+    font-weight: normal !important;
   }
 }
