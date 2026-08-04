@@ -206,7 +206,7 @@ function renderBadges() {
 }
 
 // -------------------------------------------------------------
-// RENDER PARAMETER INPUTS (DYNAMIC TABLE + SINGLE TEST SUPPORT)
+// RENDER PARAMETER INPUTS
 // -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
@@ -221,7 +221,6 @@ function renderInputs() {
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
 
-            // 1. TABLE GRID FOR WIDAL / SEROLOGY WIDAL
             if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const rows = param.rows || [
@@ -262,7 +261,6 @@ function renderInputs() {
                     </div>
                 `;
             } else {
-                // 2. STANDARD SINGLE INPUT PARAMETER
                 const pName = typeof param === 'object' ? param.name : param;
                 const safeParam = encodeURIComponent(pName);
                 const defaultRange = (typeof param === 'object' && param.range) ? param.range : '';
@@ -326,7 +324,6 @@ window.saveAndPrintReport = function() {
         let paramValues = {};
         let tableValues = {};
 
-        // 1. Gather Standard Inputs
         const inputs = document.querySelectorAll(`input[data-test="${code}"]`);
         inputs.forEach(inp => {
             const val = inp.value.trim();
@@ -336,7 +333,6 @@ window.saveAndPrintReport = function() {
             }
         });
 
-        // 2. Gather Dynamic Table Inputs (Widal/Serology)
         const tableInputs = document.querySelectorAll(`input[data-table-test="${code}"]`);
         tableInputs.forEach(tInp => {
             const antigen = decodeURIComponent(tInp.dataset.antigen);
@@ -458,10 +454,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (UPDATED STYLING & ALIGNMENTS)
-// -------------------------------------------------------------
-// -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (EXACT PRINT MATCH AS PER SAMPLE)
+// PRINT DIAGNOSTIC REPORT (UPDATED WITH ALL IMAGE MARKS & BOLD RULES)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -512,7 +505,7 @@ window.openReportPrint = function(index) {
                                         const cellValues = savedTableData[antigenName] || r.values || ["","","","",""];
                                         return `
                                             <tr>
-                                                <td style="font-weight: normal; text-align: left !important; padding: 3px;">${antigenName}</td>
+                                                <td style="font-weight: bold; text-align: left !important; padding: 3px;">${antigenName}</td>
                                                 ${cellValues.map(v => `<td style="text-align: center !important; font-weight: normal; padding: 3px;">${v || ''}</td>`).join('')}
                                             </tr>
                                         `;
@@ -523,7 +516,7 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW (EXACT FORMATTING AS IMAGE)
+                // 2. STANDARD PARAMETER ROW (INVESTIGATION & NORMAL RANGE = BOLD | RESULT & UNIT = REGULAR)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -531,16 +524,20 @@ window.openReportPrint = function(index) {
 
                     tableRowsHtml += `
                         <tr style="border: none !important;">
-                            <td style="font-weight: normal; text-transform: uppercase; text-align: left !important; border: none !important; padding: 4px 0; width: 40%;">
+                            <!-- INVESTIGATION (BOLD) -->
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 5px 0; width: 40%;">
                                 ${pName}
                             </td>
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0; width: 20%;">
+                            <!-- RESULT (NORMAL) -->
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 5px 0; width: 20%;">
                                 ${pVal}
                             </td>
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0; width: 15%;">
+                            <!-- UNIT (NORMAL) -->
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 5px 0; width: 15%;">
                                 ${unit}
                             </td>
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0; width: 25%;">
+                            <!-- NORMAL RANGE (BOLD) -->
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 5px 0; width: 25%;">
                                 ${range ? (range.startsWith('[') ? range : `[${range}]`) : ''}
                             </td>
                         </tr>
@@ -554,35 +551,43 @@ window.openReportPrint = function(index) {
         fullReportHtml += `
             <div class="report-page">
                 <div class="report-body-content">
-                    <!-- PATIENT INFORMATION HEADER -->
-                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                        <table style="width: 80%; font-size: 12px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.4; background: white;">
+                    <!-- PATIENT INFORMATION HEADER WITH BOLD VALUES -->
+                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
                             <tr style="border: none !important;">
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important;">Patient's Name : <span style="text-transform: uppercase;">${reportData.patientName}</span></td>
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">AGE/SEX : ${reportData.age} YRS / ${reportData.gender}</td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
+                                    Patient's Name : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
+                                </td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
+                                    AGE/SEX : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
+                                </td>
                             </tr>
                             <tr style="border: none !important;">
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important;">Reff.Dr : ${reportData.doctorName}</td>
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important;">DATE : ${formattedDate}</td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
+                                    Reff.Dr : <span style="font-weight: bold;">${reportData.doctorName}</span>
+                                </td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
+                                    DATE : <span style="font-weight: bold;">${formattedDate}</span>
+                                </td>
                             </tr>
                         </table>
                         <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(essentialQrContent)}">
                         <div id="report-qr-${i}" style="width: 70px; height: 70px; margin-left: 10px;"></div>
                     </div>
 
-                    <!-- TEST TITLE -->
-                    <div style="text-align: center; font-weight: bold; margin-bottom: 12px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
+                    <!-- TEST TITLE WITH MARGIN SPACE ABOVE & BELOW -->
+                    <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
                         ${t.testName} - REPORT
                     </div>
 
                     <!-- TEST PARAMETERS TABLE -->
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white; font-weight: normal;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
-                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 4px 0;">INVESTIGATION</th>
-                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important; padding: 4px 0;">RESULT</th>
-                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 4px 0;">UNIT</th>
-                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important; padding: 4px 0;">NORMAL RANGE</th>
+                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 6px 0;">INVESTIGATION</th>
+                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">RESULT</th>
+                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">UNIT</th>
+                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">NORMAL RANGE</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -591,18 +596,7 @@ window.openReportPrint = function(index) {
                     </table>
                 </div>
 
-                <!-- BOTTOM FOOTER -->
-                <div class="report-footer-section">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                        <div style="font-size: 10px; color: #333;">
-                            <i>* System Generated Diagnostic Report</i>
-                        </div>
-                        <div style="text-align: right; font-weight: bold; font-size: 11px;">
-                            <br><br>
-                            <span>(Checked By / Pathologist)</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- FOOTER SECTION REMOVED AS PER IMAGE MARKING -->
             </div>
         `;
     });
@@ -640,7 +634,9 @@ window.openReportPrint = function(index) {
     });
 
     setTimeout(() => { window.print(); }, 300);
-};// -------------------------------------------------------------
+};
+
+// -------------------------------------------------------------
 // BILLING TAB FUNCTIONS
 // -------------------------------------------------------------
 window.openBill = function(index) {
