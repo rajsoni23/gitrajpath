@@ -488,13 +488,14 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (EXACT CENTER ALIGNED TABLES & PERFECT FORMAT)
+// PRINT DIAGNOSTIC REPORT (FLAG COLUMN + GENDER MATCHED LOW/HIGH + ADDED ROW SPACING)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
     if (!reportData) return;
 
     const formattedDate = new Date(reportData.createdAt).toLocaleDateString('en-GB');
+    const isFemale = (reportData.gender || '').toLowerCase().startsWith('f');
     let fullReportHtml = "";
 
     reportData.tests.forEach((t, i) => {
@@ -516,7 +517,7 @@ window.openReportPrint = function(index) {
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
             
-            // 1. WIDAL / SLIDE AGGLUTINATION TABLE (PERFECT CENTER ALIGNMENT)
+            // 1. WIDAL / SLIDE AGGLUTINATION TABLE
             if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const savedTableData = t.tableData || {};
@@ -554,29 +555,70 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW (INVESTIGATION & NORMAL RANGE = BOLD | RESULT & UNIT = REGULAR)
+                // 2. STANDARD PARAMETER ROW WITH GENDER-MATCHED FLAG LOGIC (WITH 8PX VERTICAL SPACING)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
-                    const range = (typeof param === 'object' && param.range) ? param.range : '';
+                    const rawRange = (typeof param === 'object' && param.range) ? param.range : '';
+
+                    let flagStatus = '';
+                    const numVal = parseFloat(pVal);
+
+                    if (!isNaN(numVal) && rawRange) {
+                        let minVal = null;
+                        let maxVal = null;
+
+                        // Gender Specific Regex Matches e.g., [M: 13.5-17.5] [F: 12.0-15.5]
+                        const maleMatch = rawRange.match(/\[M:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/i);
+                        const femaleMatch = rawRange.match(/\[F:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/i);
+
+                        if (isFemale && femaleMatch) {
+                            minVal = parseFloat(femaleMatch[1]);
+                            maxVal = parseFloat(femaleMatch[2]);
+                        } else if (!isFemale && maleMatch) {
+                            minVal = parseFloat(maleMatch[1]);
+                            maxVal = parseFloat(maleMatch[2]);
+                        } else {
+                            // Standard Range e.g., [4000-11000]
+                            const simpleMatch = rawRange.match(/\[(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/);
+                            if (simpleMatch) {
+                                minVal = parseFloat(simpleMatch[1]);
+                                maxVal = parseFloat(simpleMatch[2]);
+                            }
+                        }
+
+                        if (minVal !== null && maxVal !== null) {
+                            if (numVal < minVal) {
+                                flagStatus = 'LOW';
+                            } else if (numVal > maxVal) {
+                                flagStatus = 'HIGH';
+                            }
+                        }
+                    }
+
+                    // Format Normal Range display text including Unit at the end
+                    let rangeDisplay = rawRange ? (rawRange.startsWith('[') ? rawRange : `[${rawRange}]`) : '';
+                    if (unit) {
+                        rangeDisplay = rangeDisplay ? `${rangeDisplay} ${unit}` : unit;
+                    }
 
                     tableRowsHtml += `
                         <tr style="border: none !important;">
-                            <!-- INVESTIGATION (BOLD) -->
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 5px 0; width: 40%;">
+                            <!-- INVESTIGATION (BOLD) WITH SPACED PADDING -->
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 8px 0; width: 40%;">
                                 ${pName}
                             </td>
-                            <!-- RESULT (NORMAL) -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 5px 0; width: 20%;">
+                            <!-- RESULT -->
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 8px 0; width: 20%;">
                                 ${pVal}
                             </td>
-                            <!-- UNIT (NORMAL) -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 5px 0; width: 15%;">
-                                ${unit}
+                            <!-- FLAG COLUMN (LOW / HIGH) -->
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 8px 0; width: 15%;">
+                                ${flagStatus ? `<span>${flagStatus}</span>` : ''}
                             </td>
-                            <!-- NORMAL RANGE (BOLD) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 5px 0; width: 25%;">
-                                ${range ? (range.startsWith('[') ? range : `[${range}]`) : ''}
+                            <!-- NORMAL RANGE + UNIT (BOLD) -->
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 8px 0; width: 25%;">
+                                ${rangeDisplay}
                             </td>
                         </tr>
                     `;
@@ -618,13 +660,13 @@ window.openReportPrint = function(index) {
                         ${t.testName} - REPORT
                     </div>
                     <br>
-                    <!-- TEST PARAMETERS TABLE -->
+                    <!-- TEST PARAMETERS TABLE WITH FLAG COLUMN -->
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
                                 <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 6px 0;">INVESTIGATION</th>
                                 <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">RESULT</th>
-                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">UNIT</th>
+                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">FLAG</th>
                                 <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">NORMAL RANGE</th>
                             </tr>
                         </thead>
