@@ -265,7 +265,7 @@ function renderInputs() {
 
                 containerHtml += `
                     <div style="grid-column: span 4; margin-top: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid #334155;">
-                        <label style="font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; color: #38bdf8; text-align: left;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
+                        <label style="font-size: 14px; font-weight: bold; margin-bottom: 11; display: block; color: #38bdf8; text-align: left;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
                         <table style="width: 100%; border-collapse: collapse; text-align: center; color: #fff; font-size: 12px; margin: 0 auto;">
                             <thead>
                                 <tr style="background: rgba(255,255,255,0.1);">
@@ -524,7 +524,7 @@ window.openReportPrint = function(index) {
 
                 tableRowsHtml += `
                     <tr style="border: none !important;">
-                        <td colspan="4" style="padding: 8px 0; border: none !important; text-align: left !important;">
+                        <td colspan="4" style="padding: 11 0; border: none !important; text-align: left !important;">
                             <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">
                                 ${param.name || 'WIDAL TEST'}
                             </div>
@@ -555,7 +555,7 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW WITH GENDER-MATCHED FLAG LOGIC (WITH 8PX VERTICAL SPACING)
+                // 2. STANDARD PARAMETER ROW WITH GENDER-MATCHED FLAG LOGIC (WITH 11 VERTICAL SPACING)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -605,19 +605,19 @@ window.openReportPrint = function(index) {
                     tableRowsHtml += `
                         <tr style="border: none !important;">
                             <!-- INVESTIGATION (BOLD) WITH SPACED PADDING -->
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 8px 0; width: 40%;">
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 11 0; width: 40%;">
                                 ${pName}
                             </td>
                             <!-- RESULT -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 8px 0; width: 20%;">
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 11 0; width: 20%;">
                                 ${pVal}
                             </td>
                             <!-- FLAG COLUMN (LOW / HIGH) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 8px 0; width: 15%;">
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 11 0; width: 15%;">
                                 ${flagStatus ? `<span>${flagStatus}</span>` : ''}
                             </td>
                             <!-- NORMAL RANGE + UNIT (BOLD) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 8px 0; width: 25%;">
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 11 0; width: 25%;">
                                 ${rangeDisplay}
                             </td>
                         </tr>
@@ -632,7 +632,7 @@ window.openReportPrint = function(index) {
             <div class="report-page">
                 <div class="report-body-content">
                     <!-- PATIENT INFORMATION HEADER WITH BOLD VALUES -->
-                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 11; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
@@ -772,7 +772,7 @@ window.confirmAndSaveBill = function() {
                 <h2 style="margin: 0; text-transform: uppercase;">RAJ PATHOLOGY PAYMENT RECEIPT</h2>
             </div>
             
-            <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="border-bottom: 1.5px solid #000; padding-bottom: 11; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                 <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                     <tr style="border: none !important;">
                         <td style="width: 55%; padding: 2px 0; border: none !important;">Patient Name: <span style="text-transform: uppercase;">${currentSelectedReport.patientName}</span></td>
@@ -815,7 +815,7 @@ window.confirmAndSaveBill = function() {
                         </td>
                     </tr>
                     <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; font-size: 14px; font-weight: bold;">
-                        <td style="padding: 8px 0; display: flex; justify-content: space-between;">
+                        <td style="padding: 11 0; display: flex; justify-content: space-between;">
                             <span>Net Payable</span>
                             <span>₹${net}</span>
                         </td>
