@@ -15,7 +15,7 @@ function createWindow() {
         }
     });
 
-    // Load the dashboard HTML file from the src folder
+    // Load the home
     mainWindow.loadFile(path.join(__dirname, 'src/pages/dashboard.html'));
 }
 
