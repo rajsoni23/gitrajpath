@@ -265,7 +265,7 @@ function renderInputs() {
 
                 containerHtml += `
                     <div style="grid-column: span 4; margin-top: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid #334155;">
-                        <label style="font-size: 14px; font-weight: bold; margin-bottom: 11; display: block; color: #38bdf8; text-align: left;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
+                        <label style="font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; color: #38bdf8; text-align: left;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
                         <table style="width: 100%; border-collapse: collapse; text-align: center; color: #fff; font-size: 12px; margin: 0 auto;">
                             <thead>
                                 <tr style="background: rgba(255,255,255,0.1);">
@@ -462,10 +462,10 @@ function updateBillingTable(filteredList = null) {
                 <td>${testNamesList}</td>
                 <td>₹${displayTotal}</td>
                 <td style="text-align: center; white-space: nowrap;">
-                    <button class="btn" style="padding: 5px 10px; font-size: 25px; background: #0284c7; margin-right: 5px;" onclick="openReportPrint(${index})">
+                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #0284c7; margin-right: 5px;" onclick="openReportPrint(${index})">
                         📄 Print Report
                     </button>
-                    <button class="btn" style="padding: 5px 10px; font-size: 25px; background: #10b981;" onclick="openBill(${index})">
+                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #10b981;" onclick="openBill(${index})">
                         🧾 Generate Bill
                     </button>
                 </td>
@@ -488,7 +488,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (FLAG COLUMN + GENDER MATCHED LOW/HIGH + ADDED ROW SPACING)
+// PRINT DIAGNOSTIC REPORT (ENTER-LIKE DISTANCE GAP BETWEEN PARAMETERS)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -524,8 +524,8 @@ window.openReportPrint = function(index) {
 
                 tableRowsHtml += `
                     <tr style="border: none !important;">
-                        <td colspan="4" style="padding: 11 0; border: none !important; text-align: left !important;">
-                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 25px; text-transform: uppercase;">
+                        <td colspan="4" style="padding: 12px 0; border: none !important; text-align: left !important;">
+                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">
                                 ${param.name || 'WIDAL TEST'}
                             </div>
                             <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
@@ -555,7 +555,7 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW WITH GENDER-MATCHED FLAG LOGIC (WITH 11 VERTICAL SPACING)
+                // 2. STANDARD PARAMETER ROW WITH GENDER-MATCHED FLAG LOGIC & HARD ENTER SPACER ROW
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -568,7 +568,6 @@ window.openReportPrint = function(index) {
                         let minVal = null;
                         let maxVal = null;
 
-                        // Gender Specific Regex Matches e.g., [M: 13.5-17.5] [F: 12.0-15.5]
                         const maleMatch = rawRange.match(/\[M:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/i);
                         const femaleMatch = rawRange.match(/\[F:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/i);
 
@@ -579,7 +578,6 @@ window.openReportPrint = function(index) {
                             minVal = parseFloat(maleMatch[1]);
                             maxVal = parseFloat(maleMatch[2]);
                         } else {
-                            // Standard Range e.g., [4000-11000]
                             const simpleMatch = rawRange.match(/\[(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/);
                             if (simpleMatch) {
                                 minVal = parseFloat(simpleMatch[1]);
@@ -596,7 +594,6 @@ window.openReportPrint = function(index) {
                         }
                     }
 
-                    // Format Normal Range display text including Unit at the end
                     let rangeDisplay = rawRange ? (rawRange.startsWith('[') ? rawRange : `[${rawRange}]`) : '';
                     if (unit) {
                         rangeDisplay = rangeDisplay ? `${rangeDisplay} ${unit}` : unit;
@@ -604,22 +601,26 @@ window.openReportPrint = function(index) {
 
                     tableRowsHtml += `
                         <tr style="border: none !important;">
-                            <!-- INVESTIGATION (BOLD) WITH SPACED PADDING -->
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 11 0; width: 40%;">
+                            <!-- INVESTIGATION (BOLD) -->
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 4px 0; width: 40%;">
                                 ${pName}
                             </td>
                             <!-- RESULT -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 11 0; width: 20%;">
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0; width: 20%;">
                                 ${pVal}
                             </td>
                             <!-- FLAG COLUMN (LOW / HIGH) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 11 0; width: 15%;">
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0; width: 15%;">
                                 ${flagStatus ? `<span>${flagStatus}</span>` : ''}
                             </td>
                             <!-- NORMAL RANGE + UNIT (BOLD) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 11 0; width: 25%;">
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0; width: 25%;">
                                 ${rangeDisplay}
                             </td>
+                        </tr>
+                        <!-- ENTER-LIKE TRANSPARENT SPACER ROW (22px Height) -->
+                        <tr style="border: none !important; height: 22px;">
+                            <td colspan="4" style="border: none !important; padding: 0;"></td>
                         </tr>
                     `;
                 }
@@ -632,7 +633,7 @@ window.openReportPrint = function(index) {
             <div class="report-page">
                 <div class="report-body-content">
                     <!-- PATIENT INFORMATION HEADER WITH BOLD VALUES -->
-                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 11; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
                             <tr style="border: none !important;">
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
@@ -661,7 +662,7 @@ window.openReportPrint = function(index) {
                     </div>
                     <br>
                     <!-- TEST PARAMETERS TABLE WITH FLAG COLUMN -->
-                    <table style="width: 100%; border-collapse: collapse; font-size: 25px; border: none !important; background: white;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
                                 <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 6px 0;">INVESTIGATION</th>
@@ -772,7 +773,7 @@ window.confirmAndSaveBill = function() {
                 <h2 style="margin: 0; text-transform: uppercase;">RAJ PATHOLOGY PAYMENT RECEIPT</h2>
             </div>
             
-            <div style="border-bottom: 1.5px solid #000; padding-bottom: 11; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                 <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                     <tr style="border: none !important;">
                         <td style="width: 55%; padding: 2px 0; border: none !important;">Patient Name: <span style="text-transform: uppercase;">${currentSelectedReport.patientName}</span></td>
@@ -815,7 +816,7 @@ window.confirmAndSaveBill = function() {
                         </td>
                     </tr>
                     <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; font-size: 14px; font-weight: bold;">
-                        <td style="padding: 11 0; display: flex; justify-content: space-between;">
+                        <td style="padding: 8px 0; display: flex; justify-content: space-between;">
                             <span>Net Payable</span>
                             <span>₹${net}</span>
                         </td>
@@ -826,8 +827,8 @@ window.confirmAndSaveBill = function() {
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px;">
                 <div style="text-align: right;">
                     <p style="margin: 0; font-weight: bold; font-size: 12px;">Authorized Signatory</p>
-                    <p style="margin: 3px 0; font-size: 25px;">RAJ Pathology Lab</p>
-                    <p style="margin: 3px 0; font-size: 25px;">Mo n. 9919678133</p>
+                    <p style="margin: 3px 0; font-size: 11px;">RAJ Pathology Lab</p>
+                    <p style="margin: 3px 0; font-size: 11px;">Mo n. 9919678133</p>
                 </div>
             </div>
 
