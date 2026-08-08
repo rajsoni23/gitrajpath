@@ -462,10 +462,10 @@ function updateBillingTable(filteredList = null) {
                 <td>${testNamesList}</td>
                 <td>₹${displayTotal}</td>
                 <td style="text-align: center; white-space: nowrap;">
-                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #0284c7; margin-right: 5px;" onclick="openReportPrint(${index})">
+                    <button class="btn" style="padding: 5px 10px; font-size: 25px; background: #0284c7; margin-right: 5px;" onclick="openReportPrint(${index})">
                         📄 Print Report
                     </button>
-                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #10b981;" onclick="openBill(${index})">
+                    <button class="btn" style="padding: 5px 10px; font-size: 25px; background: #10b981;" onclick="openBill(${index})">
                         🧾 Generate Bill
                     </button>
                 </td>
@@ -525,7 +525,7 @@ window.openReportPrint = function(index) {
                 tableRowsHtml += `
                     <tr style="border: none !important;">
                         <td colspan="4" style="padding: 11 0; border: none !important; text-align: left !important;">
-                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">
+                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 25px; text-transform: uppercase;">
                                 ${param.name || 'WIDAL TEST'}
                             </div>
                             <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
@@ -661,7 +661,7 @@ window.openReportPrint = function(index) {
                     </div>
                     <br>
                     <!-- TEST PARAMETERS TABLE WITH FLAG COLUMN -->
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 25px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
                                 <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 6px 0;">INVESTIGATION</th>
@@ -826,8 +826,8 @@ window.confirmAndSaveBill = function() {
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px;">
                 <div style="text-align: right;">
                     <p style="margin: 0; font-weight: bold; font-size: 12px;">Authorized Signatory</p>
-                    <p style="margin: 3px 0; font-size: 11px;">RAJ Pathology Lab</p>
-                    <p style="margin: 3px 0; font-size: 11px;">Mo n. 9919678133</p>
+                    <p style="margin: 3px 0; font-size: 25px;">RAJ Pathology Lab</p>
+                    <p style="margin: 3px 0; font-size: 25px;">Mo n. 9919678133</p>
                 </div>
             </div>
 
