@@ -488,7 +488,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (ENTER-LIKE DISTANCE GAP BETWEEN PARAMETERS)
+// PRINT DIAGNOSTIC REPORT (CUSTOM SPACING PER TEST TYPE)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -524,7 +524,7 @@ window.openReportPrint = function(index) {
 
                 tableRowsHtml += `
                     <tr style="border: none !important;">
-                        <td colspan="4" style="padding: 12px 0; border: none !important; text-align: left !important;">
+                        <td colspan="4" style="padding: 8px 0; border: none !important; text-align: left !important;">
                             <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">
                                 ${param.name || 'WIDAL TEST'}
                             </div>
@@ -555,7 +555,7 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW WITH GENDER-MATCHED FLAG LOGIC & HARD ENTER SPACER ROW
+                // 2. STANDARD PARAMETER ROW WITH CONDITIONAL SPACING
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -599,28 +599,31 @@ window.openReportPrint = function(index) {
                         rangeDisplay = rangeDisplay ? `${rangeDisplay} ${unit}` : unit;
                     }
 
+                    // --- EXPLICIT CONDITIONAL SPACING LOGIC ---
+                    // WIDAL, URINE, aur SEROLOGY_PANEL ko COMPACT (4px) rakhein, baaki CBC/LFT/RFT/ESR/SUGAR/LIPID/SEMEN/MANTOUX/BLOODGROUP etc. me ENTER WAJA GAP (18px) dein
+                    const compactTests = ['WIDAL', 'URINE', 'SEROLOGY_PANEL'];
+                    const currentCode = (t.testCode || '').toUpperCase();
+                    
+                    const paddingValue = compactTests.includes(currentCode) ? '4px 0' : '18px 0';
+
                     tableRowsHtml += `
                         <tr style="border: none !important;">
-                            <!-- INVESTIGATION (BOLD) -->
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: 4px 0; width: 40%;">
+                            <!-- INVESTIGATION -->
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: ${paddingValue}; width: 40%;">
                                 ${pName}
                             </td>
                             <!-- RESULT -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: 4px 0; width: 20%;">
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: ${paddingValue}; width: 20%;">
                                 ${pVal}
                             </td>
                             <!-- FLAG COLUMN (LOW / HIGH) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0; width: 15%;">
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: ${paddingValue}; width: 15%;">
                                 ${flagStatus ? `<span>${flagStatus}</span>` : ''}
                             </td>
-                            <!-- NORMAL RANGE + UNIT (BOLD) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: 4px 0; width: 25%;">
+                            <!-- NORMAL RANGE + UNIT -->
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: ${paddingValue}; width: 25%;">
                                 ${rangeDisplay}
                             </td>
-                        </tr>
-                        <!-- ENTER-LIKE TRANSPARENT SPACER ROW (22px Height) -->
-                        <tr style="border: none !important; height: 22px;">
-                            <td colspan="4" style="border: none !important; padding: 0;"></td>
                         </tr>
                     `;
                 }
