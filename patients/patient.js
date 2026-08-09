@@ -105,7 +105,7 @@ function getDefaultValue(param) {
 }
 
 // -------------------------------------------------------------
-// KEYBOARD NAVIGATION HANDLER
+// KEYBOARD NAVIGATION HANDLER (UPDATED FOR DEFAULT 1ST SELECTION ON ENTER)
 // -------------------------------------------------------------
 function handleKeyboardNavigation(e, container, type) {
     const items = container.querySelectorAll('.autocomplete-item');
@@ -123,14 +123,16 @@ function handleKeyboardNavigation(e, container, type) {
         if (currentIndex < 0) currentIndex = items.length - 1;
     } else if (e.key === "Enter") {
         e.preventDefault();
-        if (currentIndex > -1 && items[currentIndex]) {
-            items[currentIndex].click();
+        // Agar arrow keys use nahi ki gayi h, toh pehla item (index 0) select hoga
+        const indexToSelect = currentIndex > -1 ? currentIndex : 0;
+        if (items[indexToSelect]) {
+            items[indexToSelect].click();
         }
         return;
     }
 
     items.forEach(el => el.classList.remove('active'));
-    if (items[currentIndex]) {
+    if (currentIndex > -1 && items[currentIndex]) {
         items[currentIndex].classList.add('active');
         items[currentIndex].scrollIntoView({ block: 'nearest' });
     }
@@ -160,7 +162,9 @@ window.handleDoctorSearch = function(e) {
     if (matches.length > 0) {
         let html = "";
         matches.forEach((d, idx) => {
-            html += `<div class="autocomplete-item" id="doc-item-${idx}" onclick="selectDoctor('${d}')">${d}</div>`;
+            // First item default active class ke sath highlight hoga
+            const activeClass = idx === 0 ? 'active' : '';
+            html += `<div class="autocomplete-item ${activeClass}" id="doc-item-${idx}" onclick="selectDoctor('${d}')">${d}</div>`;
         });
         listContainer.innerHTML = html;
         listContainer.style.display = 'block';
@@ -201,7 +205,9 @@ window.handleTestSearch = function(e) {
     if (matches.length > 0) {
         let html = "";
         matches.forEach((code, idx) => {
-            html += `<div class="autocomplete-item" id="test-item-${idx}" onclick="selectTestCode('${code}')"><b>${code}</b> - ${testCatalogue[code].name}</div>`;
+            // First item default active class ke sath highlight hoga
+            const activeClass = idx === 0 ? 'active' : '';
+            html += `<div class="autocomplete-item ${activeClass}" id="test-item-${idx}" onclick="selectTestCode('${code}')"><b>${code}</b> - ${testCatalogue[code].name}</div>`;
         });
         listContainer.innerHTML = html;
         listContainer.style.display = 'block';
@@ -237,7 +243,7 @@ function renderBadges() {
 }
 
 // -------------------------------------------------------------
-// RENDER PARAMETER INPUTS
+// RENDER PARAMETER INPUTS (UPDATED FOR HEADER HANDLING)
 // -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
@@ -249,10 +255,21 @@ function renderInputs() {
         containerHtml += `<div class="section-title">📌 ${testObj.name}</div><div class="grid-4">`;
         
         testObj.params.forEach(param => {
+            const isSectionHeader = (typeof param === 'object') && 
+                                   (param.type === 'sectionHeader' || param.isHeader);
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
 
-            if (isTableParam) {
+            if (isSectionHeader) {
+                // Section Header span poori row cover karega and input nahi banega
+                containerHtml += `
+                    <div style="grid-column: span 4; margin-top: 15px; margin-bottom: 5px; text-align: center;">
+                        <h4 style="margin: 0; padding: 6px; color: #38bdf8; font-size: 14px; text-transform: uppercase; border-bottom: 1px dashed #38bdf8; display: inline-block;">
+                            ${param.name}
+                        </h4>
+                    </div>
+                `;
+            } else if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const rows = param.rows || [
                     { antigen: "S.TYPHI 'O'", values: ["-", "-", "-", "-", "-"] },
@@ -311,6 +328,199 @@ function renderInputs() {
     const target = document.getElementById('test-inputs-container');
     if (target) target.innerHTML = containerHtml;
 }
+
+// -------------------------------------------------------------
+// PRINT DIAGNOSTIC REPORT (HANDLES SECTION HEADER PRINTING)
+// -------------------------------------------------------------
+window.openReportPrint = function(index) {
+    const reportData = allReportsData[index];
+    if (!reportData) return;
+
+    const formattedDate = new Date(reportData.createdAt).toLocaleDateString('en-GB');
+    let fullReportHtml = "";
+
+    reportData.tests.forEach((t, i) => {
+        let catalogueParams = [];
+        
+        if (t.testCode && testCatalogue[t.testCode]) {
+            catalogueParams = testCatalogue[t.testCode].params || [];
+        } else {
+            const matchedKey = Object.keys(testCatalogue).find(k => 
+                testCatalogue[k].name.toLowerCase().trim() === t.testName.toLowerCase().trim()
+            );
+            if (matchedKey) catalogueParams = testCatalogue[matchedKey].params || [];
+        }
+
+        let tableRowsHtml = "";
+
+        catalogueParams.forEach(param => {
+            const pName = typeof param === 'object' ? param.name : param;
+            const isSectionHeader = (typeof param === 'object') && 
+                                   (param.type === 'sectionHeader' || param.isHeader);
+            const isTableParam = (typeof param === 'object') && 
+                                 (param.type === 'table' || param.isTable || param.rows !== undefined);
+            
+            // 1. SECTION HEADER (BIOCHEMISTRY REPORT)
+            if (isSectionHeader) {
+                tableRowsHtml += `
+                    <tr style="border: none !important;">
+                        <td colspan="4" style="padding-top: 15px; padding-bottom: 5px; border: none !important; text-align: center !important;">
+                            <span style="font-weight: bold; font-size: 12px; text-decoration: underline; text-transform: uppercase;">
+                                ${param.name}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }
+            // 2. WIDAL TABLE
+            else if (isTableParam) {
+                const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
+                const savedTableData = t.tableData || {};
+
+                tableRowsHtml += `
+                    <tr style="border: none !important;">
+                        <td colspan="4" style="padding: 8px 0; border: none !important; text-align: left !important;">
+                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">
+                                ${param.name || 'WIDAL TEST'}
+                            </div>
+                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
+                                <thead>
+                                    <tr>
+                                        ${headers.map((h, idx) => `
+                                            <th style="padding: 5px; background: white !important; color: black !important; font-weight: bold; text-align: ${idx === 0 ? 'left' : 'center'} !important; border: 1px solid #000;">${h}</th>
+                                        `).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(param.rows || []).map(r => {
+                                        const antigenName = r.antigen;
+                                        const cellValues = savedTableData[antigenName] || r.values || ["-","-","-","-","-"];
+                                        return `
+                                            <tr>
+                                                <td style="font-weight: bold; text-align: left !important; padding: 5px; border: 1px solid #000;">${antigenName}</td>
+                                                ${cellValues.map(v => `
+                                                    <td style="text-align: center !important; font-weight: normal; padding: 5px; border: 1px solid #000;">${v || '-'}</td>
+                                                `).join('')}
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                // 3. STANDARD PARAMETER ROW
+                const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
+                if (pVal !== "" && pVal !== undefined) {
+                    const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
+                    const range = (typeof param === 'object' && param.range) ? param.range : '';
+                    const dynamicTestClass = `test-row-${(t.testCode || 'default').toLowerCase()}`;
+
+                    tableRowsHtml += `
+                        <tr class="${dynamicTestClass}" style="border: none !important;">
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; width: 40%;">
+                                ${pName}
+                            </td>
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; width: 20%;">
+                                ${pVal}
+                            </td>
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; width: 15%;">
+                                ${unit}
+                            </td>
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; width: 25%;">
+                                ${range ? (range.startsWith('[') ? range : `[${range}]`) : ''}
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        });
+
+        const essentialQrContent = `Report ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nReff Doctor: ${reportData.doctorName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
+
+        fullReportHtml += `
+            <div class="report-page">
+                <div class="report-body-content">
+                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
+                            <tr style="border: none !important;">
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
+                                   <strong>Patient's Name</strong> : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
+                                </td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
+                                    <strong>AGE/SEX</strong> : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
+                                </td>
+                            </tr>
+                            <tr style="border: none !important;">
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
+                                    <strong>Referred by</strong> : <span style="font-weight: bold;">${reportData.doctorName}</span>
+                                </td>
+                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
+                                  <strong>DATE</strong> : <span style="font-weight: bold;">${formattedDate}</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(essentialQrContent)}">
+                        <div id="report-qr-${i}" style="width: 70px; height: 70px; margin-left: 10px;"></div>
+                    </div>
+
+                    <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
+                        ${t.testName} - REPORT
+                    </div>
+                    <br>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
+                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important;">INVESTIGATION</th>
+                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important;">RESULT</th>
+                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important;">UNIT</th>
+                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important;">NORMAL RANGE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    });
+
+    let printContainer = document.getElementById('print-template-container');
+    if (!printContainer) {
+        printContainer = document.createElement('div');
+        printContainer.id = 'print-template-container';
+        document.body.appendChild(printContainer);
+    }
+
+    printContainer.innerHTML = fullReportHtml;
+
+    reportData.tests.forEach((t, i) => {
+        const qrContainer = document.getElementById(`report-qr-${i}`);
+        const textInput = document.getElementById(`qr-text-${i}`);
+
+        if (qrContainer && textInput) {
+            qrContainer.innerHTML = "";
+            const qrText = decodeURIComponent(textInput.value);
+
+            try {
+                if (window.QRCode) {
+                    new window.QRCode(qrContainer, {
+                        text: qrText,
+                        width: 70,
+                        height: 70,
+                        correctLevel: window.QRCode.CorrectLevel.M
+                    });
+                }
+            } catch (err) {
+                console.error("QR Code Error:", err);
+            }
+        }
+    });
+
+    setTimeout(() => { window.print(); }, 300);
+};
 
 // -------------------------------------------------------------
 // SAVE PATIENT RECORD & REPORT
@@ -483,191 +693,6 @@ window.filterBillsTable = function() {
         r.patientName.toLowerCase().includes(query) || r.id.toLowerCase().includes(query)
     );
     updateBillingTable(filtered);
-};
-
-// -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (DYNAMIC DEDICATED TEST CLASSES)
-// -------------------------------------------------------------
-window.openReportPrint = function(index) {
-    const reportData = allReportsData[index];
-    if (!reportData) return;
-
-    const formattedDate = new Date(reportData.createdAt).toLocaleDateString('en-GB');
-    let fullReportHtml = "";
-
-    reportData.tests.forEach((t, i) => {
-        let catalogueParams = [];
-        
-        if (t.testCode && testCatalogue[t.testCode]) {
-            catalogueParams = testCatalogue[t.testCode].params || [];
-        } else {
-            const matchedKey = Object.keys(testCatalogue).find(k => 
-                testCatalogue[k].name.toLowerCase().trim() === t.testName.toLowerCase().trim()
-            );
-            if (matchedKey) catalogueParams = testCatalogue[matchedKey].params || [];
-        }
-
-        let tableRowsHtml = "";
-
-        catalogueParams.forEach(param => {
-            const pName = typeof param === 'object' ? param.name : param;
-            const isTableParam = (typeof param === 'object') && 
-                                 (param.type === 'table' || param.isTable || param.rows !== undefined);
-            
-            // 1. WIDAL TABLE
-            if (isTableParam) {
-                const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
-                const savedTableData = t.tableData || {};
-
-                tableRowsHtml += `
-                    <tr style="border: none !important;">
-                        <td colspan="4" style="padding: 8px 0; border: none !important; text-align: left !important;">
-                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">
-                                ${param.name || 'WIDAL TEST'}
-                            </div>
-                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
-                                <thead>
-                                    <tr>
-                                        ${headers.map((h, idx) => `
-                                            <th style="padding: 5px; background: white !important; color: black !important; font-weight: bold; text-align: ${idx === 0 ? 'left' : 'center'} !important; border: 1px solid #000;">${h}</th>
-                                        `).join('')}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${(param.rows || []).map(r => {
-                                        const antigenName = r.antigen;
-                                        const cellValues = savedTableData[antigenName] || r.values || ["-","-","-","-","-"];
-                                        return `
-                                            <tr>
-                                                <td style="font-weight: bold; text-align: left !important; padding: 5px; border: 1px solid #000;">${antigenName}</td>
-                                                ${cellValues.map(v => `
-                                                    <td style="text-align: center !important; font-weight: normal; padding: 5px; border: 1px solid #000;">${v || '-'}</td>
-                                                `).join('')}
-                                            </tr>
-                                        `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                `;
-            } else {
-                // 2. STANDARD PARAMETER ROW (DYNAMIC DEDICATED CLASS PER TEST)
-                const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
-                if (pVal !== "" && pVal !== undefined) {
-                    const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
-                    const range = (typeof param === 'object' && param.range) ? param.range : '';
-
-                    // Generate dynamic CSS class from test code (e.g. test-row-cbc, test-row-urine, test-row-lft)
-                    const dynamicTestClass = `test-row-${(t.testCode || 'default').toLowerCase()}`;
-
-                    tableRowsHtml += `
-                        <tr class="${dynamicTestClass}" style="border: none !important;">
-                            <!-- INVESTIGATION (BOLD) -->
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; width: 40%;">
-                                ${pName}
-                            </td>
-                            <!-- RESULT (NORMAL) -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; width: 20%;">
-                                ${pVal}
-                            </td>
-                            <!-- UNIT (NORMAL) -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; width: 15%;">
-                                ${unit}
-                            </td>
-                            <!-- NORMAL RANGE (BOLD) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; width: 25%;">
-                                ${range ? (range.startsWith('[') ? range : `[${range}]`) : ''}
-                            </td>
-                        </tr>
-                    `;
-                }
-            }
-        });
-
-        const essentialQrContent = `Report ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nReff Doctor: ${reportData.doctorName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
-
-        fullReportHtml += `
-            <div class="report-page">
-                <div class="report-body-content">
-                    <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-                        <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
-                            <tr style="border: none !important;">
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                   <strong>Patient's Name</strong> : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
-                                </td>
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    <strong>AGE/SEX</strong> : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
-                                </td>
-                            </tr>
-                            <tr style="border: none !important;">
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: left !important; color: #000;">
-                                    <strong>Referred by</strong> : <span style="font-weight: bold;">${reportData.doctorName}</span>
-                                </td>
-                                <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                  <strong>DATE</strong> : <span style="font-weight: bold;">${formattedDate}</span>
-                                </td>
-                            </tr>
-                        </table>
-                        <input type="hidden" id="qr-text-${i}" value="${encodeURIComponent(essentialQrContent)}">
-                        <div id="report-qr-${i}" style="width: 70px; height: 70px; margin-left: 10px;"></div>
-                    </div>
-
-                    <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
-                        ${t.testName} - REPORT
-                    </div>
-                    <br>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
-                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important;">INVESTIGATION</th>
-                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important;">RESULT</th>
-                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important;">UNIT</th>
-                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important;">NORMAL RANGE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRowsHtml}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    });
-
-    let printContainer = document.getElementById('print-template-container');
-    if (!printContainer) {
-        printContainer = document.createElement('div');
-        printContainer.id = 'print-template-container';
-        document.body.appendChild(printContainer);
-    }
-
-    printContainer.innerHTML = fullReportHtml;
-
-    reportData.tests.forEach((t, i) => {
-        const qrContainer = document.getElementById(`report-qr-${i}`);
-        const textInput = document.getElementById(`qr-text-${i}`);
-
-        if (qrContainer && textInput) {
-            qrContainer.innerHTML = "";
-            const qrText = decodeURIComponent(textInput.value);
-
-            try {
-                if (window.QRCode) {
-                    new window.QRCode(qrContainer, {
-                        text: qrText,
-                        width: 70,
-                        height: 70,
-                        correctLevel: window.QRCode.CorrectLevel.M
-                    });
-                }
-            } catch (err) {
-                console.error("QR Code Error:", err);
-            }
-        }
-    });
-
-    setTimeout(() => { window.print(); }, 300);
 };
 
 // -------------------------------------------------------------
