@@ -486,7 +486,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (DYNAMIC CLASS ALIGNMENT FIX)
+// PRINT DIAGNOSTIC REPORT (DYNAMIC DEDICATED TEST CLASSES)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -552,21 +552,17 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW (CLEAN ALIGNMENT WITH CSS CLASSES)
+                // 2. STANDARD PARAMETER ROW (DYNAMIC DEDICATED CLASS PER TEST)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
                     const range = (typeof param === 'object' && param.range) ? param.range : '';
 
-                    const denseTests = ['WIDAL', 'URINE', 'SEROLOGY_PANEL', 'SEROLOGY'];
-                    const currentCode = (t.testCode || '').toUpperCase();
-                    const currentName = (t.testName || '').toUpperCase();
-                    
-                    const isDense = denseTests.some(code => currentCode.includes(code) || currentName.includes(code));
-                    const rowClass = isDense ? 'report-row-compact' : 'report-row-spaced';
+                    // Generate dynamic CSS class from test code (e.g. test-row-cbc, test-row-urine, test-row-lft)
+                    const dynamicTestClass = `test-row-${(t.testCode || 'default').toLowerCase()}`;
 
                     tableRowsHtml += `
-                        <tr class="${rowClass}" style="border: none !important;">
+                        <tr class="${dynamicTestClass}" style="border: none !important;">
                             <!-- INVESTIGATION (BOLD) -->
                             <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; width: 40%;">
                                 ${pName}
