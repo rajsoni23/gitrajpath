@@ -604,7 +604,7 @@ window.openReportPrint = function(index) {
                     const compactTests = ['WIDAL', 'URINE', 'SEROLOGY_PANEL'];
                     const currentCode = (t.testCode || '').toUpperCase();
                     
-                    const paddingValue = compactTests.includes(currentCode) ? '4px 0' : '18px 0';
+                    const paddingValue = compactTests.includes(currentCode) ? '4px 0' : '30px 0';
 
                     tableRowsHtml += `
                         <tr style="border: none !important;">
