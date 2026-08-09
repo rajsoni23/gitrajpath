@@ -486,14 +486,13 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT
+// PRINT DIAGNOSTIC REPORT (ORIGINAL UNIT & RANGE WITHOUT UNDERLINES)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
     if (!reportData) return;
 
     const formattedDate = new Date(reportData.createdAt).toLocaleDateString('en-GB');
-    const isFemale = (reportData.gender || '').toLowerCase().startsWith('f');
     let fullReportHtml = "";
 
     reportData.tests.forEach((t, i) => {
@@ -553,51 +552,12 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW (DYNAMIC CSS CLASS ATTACHED)
+                // 2. STANDARD PARAMETER ROW (ORIGINAL UNIT & RANGE WITH CLASS SPACING)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
-                    const rawRange = (typeof param === 'object' && param.range) ? param.range : '';
+                    const range = (typeof param === 'object' && param.range) ? param.range : '';
 
-                    let flagStatus = '';
-                    const numVal = parseFloat(pVal);
-
-                    if (!isNaN(numVal) && rawRange) {
-                        let minVal = null;
-                        let maxVal = null;
-
-                        const maleMatch = rawRange.match(/\[M:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/i);
-                        const femaleMatch = rawRange.match(/\[F:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/i);
-
-                        if (isFemale && femaleMatch) {
-                            minVal = parseFloat(femaleMatch[1]);
-                            maxVal = parseFloat(femaleMatch[2]);
-                        } else if (!isFemale && maleMatch) {
-                            minVal = parseFloat(maleMatch[1]);
-                            maxVal = parseFloat(maleMatch[2]);
-                        } else {
-                            const simpleMatch = rawRange.match(/\[(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/);
-                            if (simpleMatch) {
-                                minVal = parseFloat(simpleMatch[1]);
-                                maxVal = parseFloat(simpleMatch[2]);
-                            }
-                        }
-
-                        if (minVal !== null && maxVal !== null) {
-                            if (numVal < minVal) {
-                                flagStatus = 'LOW';
-                            } else if (numVal > maxVal) {
-                                flagStatus = 'HIGH';
-                            }
-                        }
-                    }
-
-                    let rangeDisplay = rawRange ? (rawRange.startsWith('[') ? rawRange : `[${rawRange}]`) : '';
-                    if (unit) {
-                        rangeDisplay = rangeDisplay ? `${rangeDisplay} ${unit}` : unit;
-                    }
-
-                    // --- MATCHING TEST CODES / NAMES FOR COMPACT vs SPACED ---
                     const denseTests = ['WIDAL', 'URINE', 'SEROLOGY_PANEL', 'SEROLOGY'];
                     const currentCode = (t.testCode || '').toUpperCase();
                     const currentName = (t.testName || '').toUpperCase();
@@ -606,22 +566,22 @@ window.openReportPrint = function(index) {
                     const rowClass = isDense ? 'report-row-compact' : 'report-row-spaced';
 
                     tableRowsHtml += `
-                        <tr class="${rowClass}">
-                            <!-- INVESTIGATION -->
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; width: 40%;">
+                        <tr class="${rowClass}" style="border: none !important;">
+                            <!-- INVESTIGATION (BOLD) -->
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; width: 40%;">
                                 ${pName}
                             </td>
-                            <!-- RESULT -->
-                            <td style="font-weight: normal; text-align: center !important; width: 20%;">
+                            <!-- RESULT (NORMAL) -->
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; width: 20%;">
                                 ${pVal}
                             </td>
-                            <!-- FLAG -->
-                            <td style="font-weight: bold; text-align: center !important; width: 15%;">
-                                ${flagStatus ? `<span>${flagStatus}</span>` : ''}
+                            <!-- UNIT (NORMAL) -->
+                            <td style="font-weight: normal; text-align: center !important; border: none !important; width: 15%;">
+                                ${unit}
                             </td>
-                            <!-- NORMAL RANGE + UNIT -->
-                            <td style="font-weight: bold; text-align: center !important; width: 25%;">
-                                ${rangeDisplay}
+                            <!-- NORMAL RANGE (BOLD) -->
+                            <td style="font-weight: bold; text-align: center !important; border: none !important; width: 25%;">
+                                ${range ? (range.startsWith('[') ? range : `[${range}]`) : ''}
                             </td>
                         </tr>
                     `;
@@ -661,12 +621,12 @@ window.openReportPrint = function(index) {
                         ${t.testName} - REPORT
                     </div>
                     <br>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; background: white;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
                                 <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 6px 0;">INVESTIGATION</th>
                                 <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">RESULT</th>
-                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">FLAG</th>
+                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">UNIT</th>
                                 <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">NORMAL RANGE</th>
                             </tr>
                         </thead>
