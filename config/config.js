@@ -217,7 +217,7 @@ export const testCatalogue = {
           { antigen: "S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] },
 
         ]
-      };
+      
       { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
       { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' }
     ]
