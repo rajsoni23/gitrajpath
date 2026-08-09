@@ -486,7 +486,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (ORIGINAL UNIT & RANGE WITHOUT UNDERLINES)
+// PRINT DIAGNOSTIC REPORT (DYNAMIC CLASS ALIGNMENT FIX)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -552,7 +552,7 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW (ORIGINAL UNIT & RANGE WITH CLASS SPACING)
+                // 2. STANDARD PARAMETER ROW (CLEAN ALIGNMENT WITH CSS CLASSES)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -624,10 +624,10 @@ window.openReportPrint = function(index) {
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
-                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 6px 0;">INVESTIGATION</th>
-                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">RESULT</th>
-                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">UNIT</th>
-                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important; padding: 6px 0;">NORMAL RANGE</th>
+                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important;">INVESTIGATION</th>
+                                <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important;">RESULT</th>
+                                <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important;">UNIT</th>
+                                <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important;">NORMAL RANGE</th>
                             </tr>
                         </thead>
                         <tbody>
