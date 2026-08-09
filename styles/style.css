@@ -282,7 +282,7 @@ th {
      ------------------------------------------------------------- */
 
   /* Dense multi-parameter tests (Compact) */
-  .test-row-urine td { padding: 8px 0 !important; }
+  .test-row-urine td { padding: 5px 0 !important; }
   .test-row-serology_panel td { padding: 4px 0 !important; }
   .test-row-widal td { padding: 5px 0 !important; }
 
