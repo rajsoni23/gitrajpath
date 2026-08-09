@@ -198,7 +198,7 @@ export const testCatalogue = {
     ]
   },
   'WIDAL': {
-    name: 'WIDAL TEST SLIDE AGGLUTINATION',
+    name: 'WIDAL TEST ',
     price: 300,
     params: [
       { name: 'Widal Result', unit: '', range: 'Negative', defaultValue: 'Negative' },
@@ -217,6 +217,7 @@ export const testCatalogue = {
           { antigen: "S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] }
         ]
       },
+      { name: 'BIOCHEMISTRY REPORT', type: 'sectionHeader' },
       { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
       { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' }
     ]
@@ -228,6 +229,7 @@ export const testCatalogue = {
       { name: 'Blood Urea', unit: 'mg/dL', range: '[12.6-42.6]', defaultValue: '25.0' },
       { name: 'Serum Creatinine', unit: 'mg/dL', range: '[M: 0.7-1.3] [F: 0.6-1.1]', defaultValue: '0.9' },
       { name: 'uric Acid', unit: 'mg/dL', range: '[M:2.4-7.0] [F:2.4-6.0]', defaultValue: '102' },
+      { name: 'Serum CALCIUM', unit: 'mg/dL', range: '[M:8.7-11]', defaultValue: '9' },
       { name: 'Blood Sugar Random', unit: 'mg/dL', range: '[70-140]', defaultValue: '100' },
       { name: 'Sodium', unit: 'mmol/L', range: '[136-145]', defaultValue: '140' },
       { name: 'Potassium', unit: 'mmol/L', range: '[3.5-5.2]', defaultValue: '4.2' },
