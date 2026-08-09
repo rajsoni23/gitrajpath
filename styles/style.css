@@ -288,6 +288,6 @@ th {
   /* Spaced Tests (CBC, LFT, RFT, Sugar, Lipid, etc.) */
   /* Is 20px 0 value ko change karke aap print distance kam ya zyada kar sakte hain */
   .report-row-spaced td {
-    padding: 20px 0 !important; 
+    padding: 40px 0 !important; 
   }
 }
