@@ -188,7 +188,7 @@ th {
   display: none;
 }
 
-/* CLEAN PRINT ENGINE WITH CONTROLLED ROW SPACING */
+/* CLEAN PRINT ENGINE WITH CONTROLLED ROW SPACING & EXACT ALIGNMENT */
 @media print {
   @page {
     size: A4 portrait;
@@ -261,18 +261,19 @@ th {
     border-collapse: collapse !important;
   }
 
+  /* Fixed TH padding to 0 on left/right for strict vertical alignment with TD */
   .report-page th {
     color: #000 !important;
     border-top: 1.5px solid #000 !important;
     border-bottom: 1.5px solid #000 !important;
-    padding: 6px 4px !important;
+    padding: 6px 0 !important;
     background: transparent !important;
     font-weight: bold !important;
   }
 
   .report-page td {
     color: #000 !important;
-    padding: 6px 4px !important;
+    padding: 6px 0 !important;
     background: transparent !important;
   }
 
@@ -286,7 +287,6 @@ th {
   }
 
   /* Spaced Tests (CBC, LFT, RFT, Sugar, Lipid, etc.) */
-  /* Is 20px 0 value ko change karke aap print distance kam ya zyada kar sakte hain */
   .report-row-spaced td {
     padding: 15px 0 !important; 
   }
