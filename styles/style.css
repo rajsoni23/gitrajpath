@@ -188,7 +188,7 @@ th {
   display: none;
 }
 
-/* CLEAN PRINT ENGINE WITH CONTROLLED ROW SPACING & EXACT ALIGNMENT */
+/* CLEAN PRINT ENGINE WITH INDIVIDUAL TEST SPACING CONTROL */
 @media print {
   @page {
     size: A4 portrait;
@@ -273,21 +273,32 @@ th {
 
   .report-page td {
     color: #000 !important;
-    padding: 6px 0 !important;
+    padding: 12px 0 !important; /* Default spacing fallback for any unspecified test */
     background: transparent !important;
   }
 
   /* -------------------------------------------------------------
-     PARAMETER SPACING CONTROL VIA CSS
+     PER-TEST DYNAMIC SPACING CONTROL
      ------------------------------------------------------------- */
-  
-  /* Compact Tests (Widal, Urine, Serology) */
-  .report-row-compact td {
-    padding: 4px 0 !important;
-  }
 
-  /* Spaced Tests (CBC, LFT, RFT, Sugar, Lipid, etc.) */
-  .report-row-spaced td {
-    padding: 15px 0 !important; 
-  }
+  /* Dense multi-parameter tests (Compact) */
+  .test-row-urine td { padding: 3px 0 !important; }
+  .test-row-serology_panel td { padding: 4px 0 !important; }
+  .test-row-widal td { padding: 5px 0 !important; }
+
+  /* Medium parameter tests */
+  .test-row-cbc td { padding: 10px 0 !important; }
+  .test-row-lft td { padding: 14px 0 !important; }
+  .test-row-kft td, .test-row-rft td { padding: 12px 0 !important; }
+  .test-row-stool td { padding: 10px 0 !important; }
+  .test-row-thyroid td { padding: 12px 0 !important; }
+
+  /* Few-parameter tests (Extra Spacing / Big Enter Gaps) */
+  .test-row-esr td { padding: 40px 0 !important; }
+  .test-row-sugar td { padding: 35px 0 !important; }
+  .test-row-bloodgroup td { padding: 25px 0 !important; }
+  .test-row-mantoux td { padding: 20px 0 !important; }
+  .test-row-lipid td { padding: 18px 0 !important; }
+  .test-row-semen td { padding: 15px 0 !important; }
+  .test-row-electrolytes td { padding: 20px 0 !important; }
 }
