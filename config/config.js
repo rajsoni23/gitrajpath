@@ -3,10 +3,10 @@ export const testCatalogue = {
     name: 'Erythrocyte Sedimentation Rate (ESR)',
     price: 100,
     params: [
-      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
-      { name: '', unit: '', range: '', defaultValue: '' }
-      { name: '', unit: '', range: '', defaultValue: '' }
-      { name: '', unit: '', range: '', defaultValue: '' }
+      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' },
+      { name: '', unit: '', range: '', defaultValue: '' },
+      { name: '', unit: '', range: '', defaultValue: '' },
+      { name: '', unit: '', range: '', defaultValue: '' },
       { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
       
     ]
