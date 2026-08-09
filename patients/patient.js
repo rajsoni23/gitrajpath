@@ -85,7 +85,6 @@ function getDefaultValue(param) {
     if (rangeStr === 'Absent' || rangeStr === 'ABSENT') return 'Absent';
     if (rangeStr === 'Not Seen' || rangeStr === 'NOT SEEN') return 'Not Seen';
 
-    // Single Numeric Range e.g. [70-140]
     const simpleMatch = rangeStr.match(/\[(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/);
     if (simpleMatch) {
         const min = parseFloat(simpleMatch[1]);
@@ -94,7 +93,6 @@ function getDefaultValue(param) {
         return Number.isInteger(mid) ? mid.toString() : mid.toFixed(1);
     }
 
-    // Gender Specific Range e.g. [M: 13.5-17.5]
     const genderMatch = rangeStr.match(/\[M:\s*(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)\]/);
     if (genderMatch) {
         const min = parseFloat(genderMatch[1]);
@@ -239,7 +237,7 @@ function renderBadges() {
 }
 
 // -------------------------------------------------------------
-// RENDER PARAMETER INPUTS (WITH CENTER ALIGNMENT & DEFAULT VALUES)
+// RENDER PARAMETER INPUTS
 // -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
@@ -273,7 +271,7 @@ function renderInputs() {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${rows.map((r) => `
+                                ${(param.rows || []).map((r) => `
                                     <tr>
                                         <td style="font-weight: bold; text-align: left !important; padding: 6px; border: 1px solid #475569;">${r.antigen}</td>
                                         ${(r.values || ["-","-","-","-","-"]).map((val, cIdx) => `
@@ -488,7 +486,7 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (CUSTOM SPACING PER TEST TYPE)
+// PRINT DIAGNOSTIC REPORT
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -517,7 +515,7 @@ window.openReportPrint = function(index) {
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
             
-            // 1. WIDAL / SLIDE AGGLUTINATION TABLE
+            // 1. WIDAL TABLE
             if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const savedTableData = t.tableData || {};
@@ -555,7 +553,7 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 2. STANDARD PARAMETER ROW WITH CONDITIONAL SPACING
+                // 2. STANDARD PARAMETER ROW (DYNAMIC CSS CLASS ATTACHED)
                 const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -599,29 +597,30 @@ window.openReportPrint = function(index) {
                         rangeDisplay = rangeDisplay ? `${rangeDisplay} ${unit}` : unit;
                     }
 
-                    // --- EXPLICIT CONDITIONAL SPACING LOGIC ---
-                    // WIDAL, URINE, aur SEROLOGY_PANEL ko COMPACT (4px) rakhein, baaki CBC/LFT/RFT/ESR/SUGAR/LIPID/SEMEN/MANTOUX/BLOODGROUP etc. me ENTER WAJA GAP (18px) dein
-                    const compactTests = ['WIDAL', 'URINE', 'SEROLOGY_PANEL'];
+                    // --- MATCHING TEST CODES / NAMES FOR COMPACT vs SPACED ---
+                    const denseTests = ['WIDAL', 'URINE', 'SEROLOGY_PANEL', 'SEROLOGY'];
                     const currentCode = (t.testCode || '').toUpperCase();
+                    const currentName = (t.testName || '').toUpperCase();
                     
-                    const paddingValue = compactTests.includes(currentCode) ? '4px 0' : '30px 0';
+                    const isDense = denseTests.some(code => currentCode.includes(code) || currentName.includes(code));
+                    const rowClass = isDense ? 'report-row-compact' : 'report-row-spaced';
 
                     tableRowsHtml += `
-                        <tr style="border: none !important;">
+                        <tr class="${rowClass}">
                             <!-- INVESTIGATION -->
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; padding: ${paddingValue}; width: 40%;">
+                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; width: 40%;">
                                 ${pName}
                             </td>
                             <!-- RESULT -->
-                            <td style="font-weight: normal; text-align: center !important; border: none !important; padding: ${paddingValue}; width: 20%;">
+                            <td style="font-weight: normal; text-align: center !important; width: 20%;">
                                 ${pVal}
                             </td>
-                            <!-- FLAG COLUMN (LOW / HIGH) -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: ${paddingValue}; width: 15%;">
+                            <!-- FLAG -->
+                            <td style="font-weight: bold; text-align: center !important; width: 15%;">
                                 ${flagStatus ? `<span>${flagStatus}</span>` : ''}
                             </td>
                             <!-- NORMAL RANGE + UNIT -->
-                            <td style="font-weight: bold; text-align: center !important; border: none !important; padding: ${paddingValue}; width: 25%;">
+                            <td style="font-weight: bold; text-align: center !important; width: 25%;">
                                 ${rangeDisplay}
                             </td>
                         </tr>
@@ -635,7 +634,6 @@ window.openReportPrint = function(index) {
         fullReportHtml += `
             <div class="report-page">
                 <div class="report-body-content">
-                    <!-- PATIENT INFORMATION HEADER WITH BOLD VALUES -->
                     <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <table style="width: 82%; font-size: 12px; border: none !important; border-collapse: collapse; line-height: 1.6; background: white;">
                             <tr style="border: none !important;">
@@ -659,13 +657,11 @@ window.openReportPrint = function(index) {
                         <div id="report-qr-${i}" style="width: 70px; height: 70px; margin-left: 10px;"></div>
                     </div>
 
-                    <!-- TEST TITLE WITH MARGIN SPACE ABOVE & BELOW -->
                     <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
                         ${t.testName} - REPORT
                     </div>
                     <br>
-                    <!-- TEST PARAMETERS TABLE WITH FLAG COLUMN -->
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
                                 <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding: 6px 0;">INVESTIGATION</th>
