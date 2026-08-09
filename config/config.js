@@ -3,7 +3,7 @@ export const testCatalogue = {
     name: 'Erythrocyte Sedimentation Rate (ESR)',
     price: 100,
     params: [
-      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' } 
+      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
     ]
   },
   'MANTOUX': {
@@ -12,8 +12,8 @@ export const testCatalogue = {
     params: [
       { name: 'Induration', unit: 'mm', range: '[0.4x0.2]', defaultValue: '0.4x0.2' },
       { name: 'Erythema', unit: 'mm', range: '[0.4x0.4]', defaultValue: '0.4x0.4' },
-      { name: 'Ulceration', unit: '', range: '[]', defaultValue: 'Absent' },
-      { name: 'Vesiculation', unit: '', range: '[]', defaultValue: 'Absent' },
+      { name: 'Ulceration', unit: '', range: '[Absent]', defaultValue: 'Absent' },
+      { name: 'Vesiculation', unit: '', range: '[Absent]', defaultValue: 'Absent' },
       { name: 'Result', unit: '', range: '[48 HOURS]', defaultValue: 'Negative' }
     ]
   },
@@ -73,7 +73,7 @@ export const testCatalogue = {
       { name: 'Direct Bilirubin', unit: 'mg/dL', range: '[0.0-0.3]', defaultValue: '0.2' },
       { name: 'Indirect Bilirubin', unit: 'mg/dL', range: '[0.2-0.9]', defaultValue: '0.6' },
       { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
-      { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-56]', defaultValue: '30' },
+      { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' },
       { name: 'S.Alkaline Phosphatase', unit: 'U/L', range: '[44-147]', defaultValue: '95' },
       { name: 'Total Protein', unit: 'g/dL', range: '[6.0-8.3]', defaultValue: '7.2' },
       { name: 'Albumin', unit: 'g/dL', range: '[3.5-5.0]', defaultValue: '4.2' },
@@ -123,25 +123,25 @@ export const testCatalogue = {
     name: 'Urine Analysis',
     price: 100,
     params: [
-      { name: 'Quantity', unit: 'mL', range: '[]', defaultValue: '30' },
-      { name: 'Colour', unit: '', range: '[]', defaultValue: 'Pale Yellow' },
-      { name: 'Deposit', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'Specific Gravity', unit: '', range: '[]', defaultValue: '1.020' },
+      { name: 'Quantity', unit: 'mL', range: '[20]', defaultValue: '30' },
+      { name: 'Colour', unit: '', range: '[Pale Yellow]', defaultValue: 'Pale Yellow' },
+      { name: 'Deposit', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'Specific Gravity', unit: '', range: '[1.020]', defaultValue: '1.020' },
       { name: 'pH', unit: '', range: '[4.5-8.0]', defaultValue: '6.0' },
-      { name: 'Blood', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'Nitrites', unit: '', range: '[]', defaultValue: 'Negative' },
-      { name: 'Leucocytes', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'Bilirubin (Bile)', unit: '', range: '[]', defaultValue: 'Absent' },
-      { name: 'Ketone Bodies', unit: '', range: '[]', defaultValue: 'Absent' },
-      { name: 'Reaction', unit: '', range: '[]', defaultValue: 'Acidic' },
-      { name: 'Protein', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'Sugar', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'RBC', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'Pus Cells', unit: '/HPF', range: '[]', defaultValue: '1-2' },
-      { name: 'Epithelial Cells', unit: '/HPF', range: '[]', defaultValue: '2-3' },
-      { name: 'Casts', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'Crystals', unit: '', range: '[]', defaultValue: 'Nil' },
-      { name: 'Bacteria', unit: '', range: '[]', defaultValue: 'Absent' }
+      { name: 'Blood', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'Nitrites', unit: '', range: '[Negative]', defaultValue: 'Negative' },
+      { name: 'Leucocytes', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'Bilirubin (Bile)', unit: '', range: '[Absent]', defaultValue: 'Absent' },
+      { name: 'Ketone Bodies', unit: '', range: '[Absent]', defaultValue: 'Absent' },
+      { name: 'Reaction', unit: '', range: '[Acidic]', defaultValue: 'Acidic' },
+      { name: 'Protein', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'Sugar', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'RBC', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'Pus Cells', unit: '/HPF', range: '[1-2]', defaultValue: '1-2' },
+      { name: 'Epithelial Cells', unit: '/HPF', range: '[2-3]', defaultValue: '2-3' },
+      { name: 'Casts', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'Crystals', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'Bacteria', unit: '', range: '[Absent]', defaultValue: 'Absent' }
     ]
   },
   'STOOL': {
@@ -167,16 +167,16 @@ export const testCatalogue = {
     name: 'Semen Analysis',
     price: 1000,
     params: [
-      { name: 'Quantity', unit: 'mL', range: '[]', defaultValue: '3.0' },
-      { name: 'Colour', unit: '', range: '[]', defaultValue: 'Greyish White' },
-      { name: 'Appearance', unit: '', range: '[]', defaultValue: 'Viscous' },
-      { name: 'Liquefaction Time', unit: 'Minutes', range: '[]', defaultValue: '30' },
+      { name: 'Quantity', unit: 'mL', range: '[3.0]', defaultValue: '3.0' },
+      { name: 'Colour', unit: '', range: '[Greyish White]', defaultValue: 'Greyish White' },
+      { name: 'Appearance', unit: '', range: '[Viscous]', defaultValue: 'Viscous' },
+      { name: 'Liquefaction Time', unit: 'Minutes', range: '[30]', defaultValue: '30' },
       { name: 'Motility', unit: '%', range: '[60-95%]', defaultValue: '75' },
       { name: 'Total Sperm Count', unit: 'Mill/mL', range: '[60-150Mill]', defaultValue: '80' },
       { name: 'pH', unit: '', range: '[7-8]', defaultValue: '7.5' },
-      { name: 'Reaction', unit: '', range: '[]', defaultValue: 'Alkaline' },
-      { name: 'Normal Sperms', unit: '%', range: '[]', defaultValue: '80' },
-      { name: 'Abnormal Sperms', unit: '%', range: '[]', defaultValue: '20' }
+      { name: 'Reaction', unit: '', range: '[Alkaline]', defaultValue: 'Alkaline' },
+      { name: 'Normal Sperms', unit: '%', range: '[80]', defaultValue: '80' },
+      { name: 'Abnormal Sperms', unit: '%', range: '[20]', defaultValue: '20' }
     ]
   },
   'BLOODGROUP': {
@@ -202,18 +202,24 @@ export const testCatalogue = {
     price: 300,
     params: [
       { name: 'Widal Result', unit: '', range: 'Negative', defaultValue: 'Negative' },
+      { name: 'MP', unit: '', range: '', defaultValue: 'NOT SEEN' },
+      { name: 'MP ANTIGENS', unit: 'Negative/Positive', range: 'Negative', defaultValue: 'Negative' },
+      { name: 'CRP', unit: 'Negative/Positive', range: 'Negative', defaultValue: 'Negative' },
       {
         name: 'WIDAL TEST',
         type: 'table',
         status: 'BORDER LINE',
         headers: ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'],
         rows: [
-          { antigen: "S.TYPHI 'O'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.TYPHI 'H'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "S.TYPHI 'O'", values: ['+', '+', '-', '-', '-'] },
+          { antigen: "S.TYPHI 'H'", values: ['+', '+', '-', '-', '-'] },
           { antigen: "S.PARATYPHI 'AH'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] }
+          { antigen: "S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] },
+
         ]
       }
+      { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
+      { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' }
     ]
   },
   'RFT': {
@@ -222,6 +228,7 @@ export const testCatalogue = {
     params: [
       { name: 'Blood Urea', unit: 'mg/dL', range: '[12.6-42.6]', defaultValue: '25.0' },
       { name: 'Serum Creatinine', unit: 'mg/dL', range: '[M: 0.7-1.3] [F: 0.6-1.1]', defaultValue: '0.9' },
+      { name: 'uric Acid', unit: 'mg/dL', range: '[M:2.4-7.0] [F:2.4-6.0]', defaultValue: '102' },
       { name: 'Blood Sugar Random', unit: 'mg/dL', range: '[70-140]', defaultValue: '100' },
       { name: 'Sodium', unit: 'mmol/L', range: '[136-145]', defaultValue: '140' },
       { name: 'Potassium', unit: 'mmol/L', range: '[3.5-5.2]', defaultValue: '4.2' },
@@ -240,8 +247,8 @@ export const testCatalogue = {
         status: 'BORDER LINE',
         headers: ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'],
         rows: [
-          { antigen: "S.TYPHI 'O'", values: ['-', '-', '-', '-', '-'] },
-          { antigen: "S.TYPHI 'H'", values: ['-', '-', '-', '-', '-'] },
+          { antigen: "S.TYPHI 'O'", values: ['+', '+', '-', '-', '-'] },
+          { antigen: "S.TYPHI 'H'", values: ['+', '+', '-', '-', '-'] },
           { antigen: "S.PARATYPHI 'AH'", values: ['-', '-', '-', '-', '-'] },
           { antigen: "S.PARATYPHI 'BH'", values: ['-', '-', '-', '-', '-'] }
         ]
@@ -260,7 +267,7 @@ export const testCatalogue = {
     ]
   },
   'GENETIC_PANEL': {
-    name: 'Genetic & Molecular Tests',
+    name: 'BT CT ABO Filaria',
     price: 900,
     params: [
       { name: 'Filaria Antibody', unit: '+/-', range: 'Negative', defaultValue: 'Negative' },
