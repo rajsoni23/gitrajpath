@@ -282,20 +282,20 @@ th {
      ------------------------------------------------------------- */
 
   /* Dense multi-parameter tests (Compact) */
-  .test-row-urine td { padding: 20px 0 !important; }
+  .test-row-urine td { padding: 10px 0 !important; }
   .test-row-serology_panel td { padding: 4px 0 !important; }
   .test-row-widal td { padding: 5px 0 !important; }
 
   /* Medium parameter tests */
-  .test-row-cbc td { padding: 10px 0 !important; }
-  .test-row-lft td { padding: 14px 0 !important; }
+  .test-row-cbc td { padding: 12px 0 !important; }
+  .test-row-lft td { padding: 16px 0 !important; }
   .test-row-kft td, .test-row-rft td { padding: 20px 0 !important; }
   .test-row-stool td { padding: 10px 0 !important; }
   .test-row-thyroid td { padding: 12px 0 !important; }
 
   /* Few-parameter tests (Extra Spacing / Big Enter Gaps) */
-  .test-row-esr td { padding: 40px 0 !important; }
-  .test-row-sugar td { padding: 35px 0 !important; }
+  .test-row-esr td { padding: 10px 0 !important; }
+  .test-row-sugar td { padding: 20px 0 !important; }
   .test-row-bloodgroup td { padding: 25px 0 !important; }
   .test-row-mantoux td { padding: 20px 0 !important; }
   .test-row-lipid td { padding: 18px 0 !important; }
