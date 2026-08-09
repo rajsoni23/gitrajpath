@@ -188,7 +188,7 @@ th {
   display: none;
 }
 
-/* CLEAN PRINT ENGINE WITH 4CM TOP AND BOTTOM GAPS */
+/* CLEAN PRINT ENGINE WITH CONTROLLED ROW SPACING */
 @media print {
   @page {
     size: A4 portrait;
@@ -255,7 +255,7 @@ th {
     flex: 1 1 auto !important;
   }
 
-  /* Table styling without global bold font */
+  /* Table styling */
   .report-page table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -274,5 +274,20 @@ th {
     color: #000 !important;
     padding: 6px 4px !important;
     background: transparent !important;
+  }
+
+  /* -------------------------------------------------------------
+     PARAMETER SPACING CONTROL VIA CSS
+     ------------------------------------------------------------- */
+  
+  /* Compact Tests (Widal, Urine, Serology) */
+  .report-row-compact td {
+    padding: 4px 0 !important;
+  }
+
+  /* Spaced Tests (CBC, LFT, RFT, Sugar, Lipid, etc.) */
+  /* Is 20px 0 value ko change karke aap print distance kam ya zyada kar sakte hain */
+  .report-row-spaced td {
+    padding: 20px 0 !important; 
   }
 }
