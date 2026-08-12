@@ -4,7 +4,7 @@ let doctorsDirectory = JSON.parse(localStorage.getItem('path_doctors')) || [];
 let allReportsData = JSON.parse(localStorage.getItem('path_reports')) || [];
 let activeTests = [];
 let currentSelectedReport = null;
-let editingReportId = null; // Track report being edited
+let editingReportId = null; 
 
 let currentDoctorFocusIndex = -1;
 let currentTestFocusIndex = -1;
@@ -13,6 +13,65 @@ const tabFiles = {
     'tab-register': '../components/register.html',
     'tab-doctors': '../components/doctors.html',
     'tab-billing': '../components/billing.html'
+};
+
+// Fallback HTML components if external files are missing
+const defaultTabTemplates = {
+    'tab-doctors': `
+        <div class="card">
+            <h3>👨‍⚕️ Doctor Referral Summary</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Doctor Name</th>
+                        <th>Total Patients</th>
+                        <th>Total Business</th>
+                    </tr>
+                </thead>
+                <tbody id="doctor-report-body"></tbody>
+            </table>
+        </div>
+    `,
+    'tab-billing': `
+        <div class="card">
+            <h3>🧾 Patient Billing & Reports Management</h3>
+            <div style="margin-bottom: 12px;">
+                <input type="text" id="search-bill-input" onkeyup="filterBillsTable()" placeholder="🔍 Search Patient Name or Report ID..." style="width: 100%; max-width: 350px;">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Patient Name</th>
+                        <th>Doctor</th>
+                        <th>Tests</th>
+                        <th>Amount</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="billing-table-body"></tbody>
+            </table>
+        </div>
+        <div id="bill-view-card" class="card" style="display: none; margin-top: 15px;">
+            <h3>🧾 Generate Invoice Receipt</h3>
+            <div class="grid-2">
+                <div>
+                    <p><b>Patient:</b> <span id="bill-patient-info"></span> (<span id="bill-age-gender"></span>)</p>
+                    <p><b>Doctor:</b> <span id="bill-doctor-info"></span></p>
+                    <div id="bill-tests-summary-box" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; margin-top: 10px;"></div>
+                </div>
+                <div>
+                    <label>Subtotal (₹)</label>
+                    <input type="number" id="bill-subtotal" readonly>
+                    <label style="margin-top: 8px;">Discount (₹)</label>
+                    <input type="number" id="bill-discount" value="0" oninput="calculateFinalBill()">
+                    <label style="margin-top: 8px;">Net Payable (₹)</label>
+                    <input type="number" id="bill-net" readonly style="color: #4ade80; font-weight: bold; font-size: 15px;">
+                    <button class="btn" style="margin-top: 15px; width: 100%; background: #10b981;" onclick="confirmAndSaveBill()">🖨️ Print Receipt</button>
+                </div>
+            </div>
+        </div>
+    `
 };
 
 // -------------------------------------------------------------
@@ -30,7 +89,6 @@ function autoPurgeOldReports() {
 
     if (allReportsData.length !== initialLength) {
         localStorage.setItem('path_reports', JSON.stringify(allReportsData));
-        console.log(`Auto-cleaned ${initialLength - allReportsData.length} report(s) older than 30 days.`);
     }
 }
 
@@ -51,12 +109,14 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.onload = async () => {
-    autoPurgeOldReports(); // Run 30-day cleanup on start
+    autoPurgeOldReports(); 
     await loadTabContent('tab-register');
 };
 
 async function loadTabContent(tabId) {
     const container = document.getElementById('tab-content-container');
+    if (!container) return;
+
     const filePath = tabFiles[tabId];
 
     try {
@@ -65,20 +125,23 @@ async function loadTabContent(tabId) {
 
         const html = await response.text();
         container.innerHTML = html;
-
-        if (tabId === 'tab-register') {
-            renderBadges();
-            renderInputs();
-        } else if (tabId === 'tab-doctors') {
-            updateDoctorReferralTable();
-        } else if (tabId === 'tab-billing') {
-            updateBillingTable();
-        }
     } catch (err) {
-        if (container) {
+        // Fallback layout when HTML component file is missing
+        if (defaultTabTemplates[tabId]) {
+            container.innerHTML = defaultTabTemplates[tabId];
+        } else {
             container.innerHTML = `<p style="color:red; text-align:center;">Error loading component template.</p>`;
         }
-        console.error("Tab Load Error:", err);
+    }
+
+    // Render tab specific dynamic data
+    if (tabId === 'tab-register') {
+        renderBadges();
+        renderInputs();
+    } else if (tabId === 'tab-doctors') {
+        updateDoctorReferralTable();
+    } else if (tabId === 'tab-billing') {
+        updateBillingTable();
     }
 }
 
@@ -347,29 +410,27 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// EDIT & DELETE REPORT FUNCTIONS (NEW)
+// EDIT & DELETE REPORT FUNCTIONS (WITHOUT POPUP ALERTS)
 // -------------------------------------------------------------
 window.deleteReport = function(index) {
     const r = allReportsData[index];
     if (!r) return;
 
-    if (confirm(`Are you sure you want to delete report for "${r.patientName}" (${r.id})?`)) {
-        allReportsData.splice(index, 1);
-        localStorage.setItem('path_reports', JSON.stringify(allReportsData));
-        updateBillingTable();
-    }
+    allReportsData.splice(index, 1);
+    localStorage.setItem('path_reports', JSON.stringify(allReportsData));
+    updateBillingTable();
 };
 
 window.editReport = async function(index) {
     const report = allReportsData[index];
     if (!report) return;
 
-    editingReportId = report.id; // Store current editing report ID
+    editingReportId = report.id;
 
-    // Switch to Register Tab first
+    // Switch to Register Tab
     await switchTab('tab-register');
 
-    // Fill Registration Details
+    // Fill Registration Details quietly
     setTimeout(() => {
         const nameEl = document.getElementById('p-name');
         const ageEl = document.getElementById('p-age');
@@ -381,12 +442,11 @@ window.editReport = async function(index) {
         if (genderEl) genderEl.value = report.gender;
         if (docEl) docEl.value = report.doctorName;
 
-        // Restore Selected Tests
         activeTests = report.tests.map(t => t.testCode).filter(Boolean);
         renderBadges();
         renderInputs();
 
-        // Restore Parameter Inputs
+        // Fill parameters values
         report.tests.forEach(t => {
             const code = t.testCode;
             if (t.values) {
@@ -408,13 +468,11 @@ window.editReport = async function(index) {
                 });
             }
         });
-
-        alert(`Loaded Report ${report.id} for Editing. Click "Save & Print" after making changes.`);
-    }, 150);
+    }, 100);
 };
 
 // -------------------------------------------------------------
-// SAVE PATIENT RECORD & REPORT (UPDATED FOR EDIT MODE)
+// SAVE PATIENT RECORD & REPORT
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -487,12 +545,10 @@ window.saveAndPrintReport = function() {
     });
 
     if (testDetails.length === 0) {
-        alert("Please fill at least one parameter value!");
         return;
     }
 
     if (editingReportId) {
-        // OVERWRITE EXISTING RECORD (EDIT MODE)
         const existingIdx = allReportsData.findIndex(r => r.id === editingReportId);
         if (existingIdx !== -1) {
             allReportsData[existingIdx] = {
@@ -506,9 +562,8 @@ window.saveAndPrintReport = function() {
                 netTotal: calculatedBaseTotal
             };
         }
-        editingReportId = null; // Clear edit state
+        editingReportId = null; 
     } else {
-        // CREATE NEW REPORT
         const newReport = {
             id: 'REP-' + Math.floor(100000 + Math.random() * 900000),
             patientName: name,
@@ -540,7 +595,29 @@ window.saveAndPrintReport = function() {
 window.savePatientRecord = window.saveAndPrintReport;
 
 // -------------------------------------------------------------
-// UPDATE BILLING TABLE WITH EDIT & DELETE BUTTONS
+// DOCTOR REFERRAL TABLE
+// -------------------------------------------------------------
+function updateDoctorReferralTable() {
+    const report = {};
+    allReportsData.forEach(r => {
+        if (!report[r.doctorName]) report[r.doctorName] = { count: 0, business: 0 };
+        report[r.doctorName].count += 1;
+        report[r.doctorName].business += (r.netTotal !== undefined ? r.netTotal : r.subtotal);
+    });
+
+    let html = "";
+    for (const [doc, data] of Object.entries(report)) {
+        html += `<tr><td><b>${doc}</b></td><td>${data.count}</td><td>₹${data.business}</td></tr>`;
+    }
+    if (Object.keys(report).length === 0) {
+        html = `<tr><td colspan="3" style="text-align: center; color: #94a3b8;">No records found.</td></tr>`;
+    }
+    const target = document.getElementById('doctor-report-body');
+    if (target) target.innerHTML = html;
+}
+
+// -------------------------------------------------------------
+// UPDATE BILLING TABLE
 // -------------------------------------------------------------
 function updateBillingTable(filteredList = null) {
     const list = filteredList || allReportsData;
@@ -580,6 +657,14 @@ function updateBillingTable(filteredList = null) {
     const target = document.getElementById('billing-table-body');
     if (target) target.innerHTML = html;
 }
+
+window.filterBillsTable = function() {
+    const query = document.getElementById('search-bill-input').value.toLowerCase().trim();
+    const filtered = allReportsData.filter(r => 
+        r.patientName.toLowerCase().includes(query) || r.id.toLowerCase().includes(query)
+    );
+    updateBillingTable(filtered);
+};
 
 // -------------------------------------------------------------
 // PRINT REPORT & BILLING UTILITIES
