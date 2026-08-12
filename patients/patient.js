@@ -105,7 +105,7 @@ function getDefaultValue(param) {
 }
 
 // -------------------------------------------------------------
-// KEYBOARD NAVIGATION HANDLER (UPDATED FOR DEFAULT 1ST SELECTION ON ENTER)
+// KEYBOARD NAVIGATION HANDLER
 // -------------------------------------------------------------
 function handleKeyboardNavigation(e, container, type) {
     const items = container.querySelectorAll('.autocomplete-item');
@@ -123,7 +123,6 @@ function handleKeyboardNavigation(e, container, type) {
         if (currentIndex < 0) currentIndex = items.length - 1;
     } else if (e.key === "Enter") {
         e.preventDefault();
-        // Agar arrow keys use nahi ki gayi h, toh pehla item (index 0) select hoga
         const indexToSelect = currentIndex > -1 ? currentIndex : 0;
         if (items[indexToSelect]) {
             items[indexToSelect].click();
@@ -162,7 +161,6 @@ window.handleDoctorSearch = function(e) {
     if (matches.length > 0) {
         let html = "";
         matches.forEach((d, idx) => {
-            // First item default active class ke sath highlight hoga
             const activeClass = idx === 0 ? 'active' : '';
             html += `<div class="autocomplete-item ${activeClass}" id="doc-item-${idx}" onclick="selectDoctor('${d}')">${d}</div>`;
         });
@@ -182,7 +180,7 @@ window.selectDoctor = function(name) {
 };
 
 // -------------------------------------------------------------
-// AUTOCOMPLETE (TEST SHORTCODES)
+// AUTOCOMPLETE & DESELECT TEST SHORTCODES
 // -------------------------------------------------------------
 window.handleTestSearch = function(e) {
     const listContainer = document.getElementById('test-suggestions');
@@ -205,7 +203,6 @@ window.handleTestSearch = function(e) {
     if (matches.length > 0) {
         let html = "";
         matches.forEach((code, idx) => {
-            // First item default active class ke sath highlight hoga
             const activeClass = idx === 0 ? 'active' : '';
             html += `<div class="autocomplete-item ${activeClass}" id="test-item-${idx}" onclick="selectTestCode('${code}')"><b>${code}</b> - ${testCatalogue[code].name}</div>`;
         });
@@ -231,11 +228,22 @@ window.selectTestCode = function(code) {
     currentTestFocusIndex = -1;
 };
 
+// BADGE DESELECT / REMOVE FUNCTION
+window.removeTestCode = function(code) {
+    activeTests = activeTests.filter(t => t !== code);
+    renderBadges();
+    renderInputs();
+};
+
 function renderBadges() {
     let html = "";
     activeTests.forEach(code => {
         if (testCatalogue[code]) {
-            html += `<span class="badge">${testCatalogue[code].name}</span>`;
+            html += `
+                <span class="badge" style="cursor: pointer; user-select: none;" title="Click to remove">
+                    ${testCatalogue[code].name} 
+                    <b onclick="removeTestCode('${code}')" style="margin-left: 6px; color: #fca5a5; font-size: 12px; font-weight: bold;">✕</b>
+                </span>`;
         }
     });
     const target = document.getElementById('selected-tests-container');
@@ -243,7 +251,7 @@ function renderBadges() {
 }
 
 // -------------------------------------------------------------
-// RENDER PARAMETER INPUTS (UPDATED FOR HEADER HANDLING)
+// RENDER PARAMETER INPUTS
 // -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
@@ -261,7 +269,6 @@ function renderInputs() {
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
 
             if (isSectionHeader) {
-                // Section Header span poori row cover karega and input nahi banega
                 containerHtml += `
                     <div style="grid-column: span 4; margin-top: 15px; margin-bottom: 5px; text-align: center;">
                         <h4 style="margin: 0; padding: 6px; color: #38bdf8; font-size: 14px; text-transform: uppercase; border-bottom: 1px dashed #38bdf8; display: inline-block;">
@@ -330,7 +337,7 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (HANDLES SECTION HEADER PRINTING)
+// PRINT DIAGNOSTIC REPORT (CONDITIONAL SECTION HEADER PRINTING)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -353,24 +360,43 @@ window.openReportPrint = function(index) {
 
         let tableRowsHtml = "";
 
-        catalogueParams.forEach(param => {
+        // Collect section header positions to check if following parameters have actual values
+        catalogueParams.forEach((param, pIdx) => {
             const pName = typeof param === 'object' ? param.name : param;
             const isSectionHeader = (typeof param === 'object') && 
                                    (param.type === 'sectionHeader' || param.isHeader);
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
             
-            // 1. SECTION HEADER (BIOCHEMISTRY REPORT)
+            // 1. CONDITIONAL SECTION HEADER
             if (isSectionHeader) {
-                tableRowsHtml += `
-                    <tr style="border: none !important;">
-                        <td colspan="4" style="padding-top: 15px; padding-bottom: 5px; border: none !important; text-align: center !important;">
-                            <span style="font-weight: bold; font-size: 12px; text-decoration: underline; text-transform: uppercase;">
-                                ${param.name}
-                            </span>
-                        </td>
-                    </tr>
-                `;
+                // Check if any subsequent parameter until the next header has a valid filled value
+                let hasValueUnderHeader = false;
+                for (let nextIdx = pIdx + 1; nextIdx < catalogueParams.length; nextIdx++) {
+                    const nextParam = catalogueParams[nextIdx];
+                    if (nextParam.type === 'sectionHeader' || nextParam.isHeader) break;
+
+                    const nextPName = typeof nextParam === 'object' ? nextParam.name : nextParam;
+                    const nextVal = (t.values && t.values[nextPName]) ? t.values[nextPName].trim() : '';
+
+                    if (nextVal !== "" && nextVal !== undefined) {
+                        hasValueUnderHeader = true;
+                        break;
+                    }
+                }
+
+                // Print section header only if at least 1 parameter under it has filled data
+                if (hasValueUnderHeader) {
+                    tableRowsHtml += `
+                        <tr style="border: none !important;">
+                            <td colspan="4" style="padding-top: 15px; padding-bottom: 5px; border: none !important; text-align: center !important;">
+                                <span style="font-weight: bold; font-size: 12px; text-decoration: underline; text-transform: uppercase;">
+                                    ${param.name}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }
             }
             // 2. WIDAL TABLE
             else if (isTableParam) {
@@ -411,7 +437,7 @@ window.openReportPrint = function(index) {
                 `;
             } else {
                 // 3. STANDARD PARAMETER ROW
-                const pVal = (t.values && t.values[pName]) ? t.values[pName] : '';
+                const pVal = (t.values && t.values[pName]) ? t.values[pName].trim() : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
                     const range = (typeof param === 'object' && param.range) ? param.range : '';
