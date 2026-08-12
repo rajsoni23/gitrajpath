@@ -4,6 +4,7 @@ let doctorsDirectory = JSON.parse(localStorage.getItem('path_doctors')) || [];
 let allReportsData = JSON.parse(localStorage.getItem('path_reports')) || [];
 let activeTests = [];
 let currentSelectedReport = null;
+let editingReportId = null; // Track report being edited
 
 let currentDoctorFocusIndex = -1;
 let currentTestFocusIndex = -1;
@@ -13,6 +14,25 @@ const tabFiles = {
     'tab-doctors': '../components/doctors.html',
     'tab-billing': '../components/billing.html'
 };
+
+// -------------------------------------------------------------
+// AUTO-DELETE REPORTS OLDER THAN 30 DAYS (CLEANUP ENGINE)
+// -------------------------------------------------------------
+function autoPurgeOldReports() {
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+    const now = new Date().getTime();
+
+    const initialLength = allReportsData.length;
+    allReportsData = allReportsData.filter(report => {
+        const reportTime = new Date(report.createdAt).getTime();
+        return (now - reportTime) < thirtyDaysInMs;
+    });
+
+    if (allReportsData.length !== initialLength) {
+        localStorage.setItem('path_reports', JSON.stringify(allReportsData));
+        console.log(`Auto-cleaned ${initialLength - allReportsData.length} report(s) older than 30 days.`);
+    }
+}
 
 // -------------------------------------------------------------
 // GLOBAL KEYBOARD SHORTCUTS (F3 & CTRL + B)
@@ -31,6 +51,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.onload = async () => {
+    autoPurgeOldReports(); // Run 30-day cleanup on start
     await loadTabContent('tab-register');
 };
 
@@ -141,7 +162,7 @@ function handleKeyboardNavigation(e, container, type) {
 }
 
 // -------------------------------------------------------------
-// AUTOCOMPLETE (DOCTOR)
+// AUTOCOMPLETE (DOCTOR & TEST)
 // -------------------------------------------------------------
 window.handleDoctorSearch = function(e) {
     const listContainer = document.getElementById('doctor-suggestions');
@@ -179,9 +200,6 @@ window.selectDoctor = function(name) {
     currentDoctorFocusIndex = -1;
 };
 
-// -------------------------------------------------------------
-// AUTOCOMPLETE & DESELECT TEST SHORTCODES
-// -------------------------------------------------------------
 window.handleTestSearch = function(e) {
     const listContainer = document.getElementById('test-suggestions');
     if (!listContainer) return;
@@ -228,7 +246,6 @@ window.selectTestCode = function(code) {
     currentTestFocusIndex = -1;
 };
 
-// BADGE DESELECT / REMOVE FUNCTION
 window.removeTestCode = function(code) {
     activeTests = activeTests.filter(t => t !== code);
     renderBadges();
@@ -278,13 +295,6 @@ function renderInputs() {
                 `;
             } else if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
-                const rows = param.rows || [
-                    { antigen: "S.TYPHI 'O'", values: ["-", "-", "-", "-", "-"] },
-                    { antigen: "S.TYPHI 'H'", values: ["-", "-", "-", "-", "-"] },
-                    { antigen: "S.PARATYPHI 'AH'", values: ["-", "-", "-", "-", "-"] },
-                    { antigen: "S.PARATYPHI 'BH'", values: ["-", "-", "-", "-", "-"] }
-                ];
-
                 containerHtml += `
                     <div style="grid-column: span 4; margin-top: 10px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid #334155;">
                         <label style="font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; color: #38bdf8; text-align: left;">🧪 ${param.name || 'WIDAL TEST SLIDE AGGLUTINATION'}</label>
@@ -337,7 +347,242 @@ function renderInputs() {
 }
 
 // -------------------------------------------------------------
-// PRINT DIAGNOSTIC REPORT (CONDITIONAL SECTION HEADER PRINTING)
+// EDIT & DELETE REPORT FUNCTIONS (NEW)
+// -------------------------------------------------------------
+window.deleteReport = function(index) {
+    const r = allReportsData[index];
+    if (!r) return;
+
+    if (confirm(`Are you sure you want to delete report for "${r.patientName}" (${r.id})?`)) {
+        allReportsData.splice(index, 1);
+        localStorage.setItem('path_reports', JSON.stringify(allReportsData));
+        updateBillingTable();
+    }
+};
+
+window.editReport = async function(index) {
+    const report = allReportsData[index];
+    if (!report) return;
+
+    editingReportId = report.id; // Store current editing report ID
+
+    // Switch to Register Tab first
+    await switchTab('tab-register');
+
+    // Fill Registration Details
+    setTimeout(() => {
+        const nameEl = document.getElementById('p-name');
+        const ageEl = document.getElementById('p-age');
+        const genderEl = document.getElementById('p-gender');
+        const docEl = document.getElementById('p-doctor');
+
+        if (nameEl) nameEl.value = report.patientName;
+        if (ageEl) ageEl.value = report.age;
+        if (genderEl) genderEl.value = report.gender;
+        if (docEl) docEl.value = report.doctorName;
+
+        // Restore Selected Tests
+        activeTests = report.tests.map(t => t.testCode).filter(Boolean);
+        renderBadges();
+        renderInputs();
+
+        // Restore Parameter Inputs
+        report.tests.forEach(t => {
+            const code = t.testCode;
+            if (t.values) {
+                Object.keys(t.values).forEach(paramName => {
+                    const safeParam = encodeURIComponent(paramName);
+                    const inp = document.querySelector(`input[data-test="${code}"][data-param="${safeParam}"]`);
+                    if (inp) inp.value = t.values[paramName];
+                });
+            }
+
+            if (t.tableData) {
+                Object.keys(t.tableData).forEach(antigen => {
+                    const safeAntigen = encodeURIComponent(antigen);
+                    const rowVals = t.tableData[antigen];
+                    rowVals.forEach((v, cIdx) => {
+                        const tInp = document.querySelector(`input[data-table-test="${code}"][data-antigen="${safeAntigen}"][data-col-idx="${cIdx}"]`);
+                        if (tInp) tInp.value = v;
+                    });
+                });
+            }
+        });
+
+        alert(`Loaded Report ${report.id} for Editing. Click "Save & Print" after making changes.`);
+    }, 150);
+};
+
+// -------------------------------------------------------------
+// SAVE PATIENT RECORD & REPORT (UPDATED FOR EDIT MODE)
+// -------------------------------------------------------------
+window.saveAndPrintReport = function() {
+    const nameEl = document.getElementById('p-name');
+    
+    if (!nameEl || !nameEl.value.trim()) { 
+        nameEl.style.border = "2px solid #ef4444";
+        nameEl.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+        nameEl.placeholder = "⚠️ Patient Name Required!";
+        nameEl.focus();
+
+        setTimeout(() => {
+            nameEl.style.border = "";
+            nameEl.style.backgroundColor = "";
+            nameEl.placeholder = "Enter Patient Name";
+        }, 3500);
+
+        return; 
+    }
+
+    const name = nameEl.value.trim();
+    const age = document.getElementById('p-age') ? document.getElementById('p-age').value || 0 : 0;
+    const gender = document.getElementById('p-gender') ? document.getElementById('p-gender').value : 'Male';
+    const docInput = (document.getElementById('p-doctor') && document.getElementById('p-doctor').value.trim()) || "Self";
+
+    if (!doctorsDirectory.includes(docInput)) {
+        doctorsDirectory.push(docInput);
+        localStorage.setItem('path_doctors', JSON.stringify(doctorsDirectory));
+    }
+
+    let testDetails = [];
+    let calculatedBaseTotal = 0;
+
+    activeTests.forEach(code => {
+        if (!testCatalogue[code]) return;
+
+        if (testCatalogue[code].price) {
+            calculatedBaseTotal += parseFloat(testCatalogue[code].price) || 0;
+        }
+
+        let paramValues = {};
+        let tableValues = {};
+
+        const inputs = document.querySelectorAll(`input[data-test="${code}"]`);
+        inputs.forEach(inp => {
+            const val = inp.value.trim();
+            if (val !== "" && val !== undefined) {
+                const originalParamName = decodeURIComponent(inp.dataset.param);
+                paramValues[originalParamName] = val;
+            }
+        });
+
+        const tableInputs = document.querySelectorAll(`input[data-table-test="${code}"]`);
+        tableInputs.forEach(tInp => {
+            const antigen = decodeURIComponent(tInp.dataset.antigen);
+            const colIdx = parseInt(tInp.dataset.colIdx);
+            const val = tInp.value.trim();
+
+            if (!tableValues[antigen]) tableValues[antigen] = ["-", "-", "-", "-", "-"];
+            tableValues[antigen][colIdx] = val || "-";
+        });
+
+        if (Object.keys(paramValues).length > 0 || Object.keys(tableValues).length > 0) {
+            testDetails.push({ 
+                testCode: code,
+                testName: testCatalogue[code].name, 
+                values: paramValues,
+                tableData: tableValues
+            });
+        }
+    });
+
+    if (testDetails.length === 0) {
+        alert("Please fill at least one parameter value!");
+        return;
+    }
+
+    if (editingReportId) {
+        // OVERWRITE EXISTING RECORD (EDIT MODE)
+        const existingIdx = allReportsData.findIndex(r => r.id === editingReportId);
+        if (existingIdx !== -1) {
+            allReportsData[existingIdx] = {
+                ...allReportsData[existingIdx],
+                patientName: name,
+                age: parseInt(age),
+                gender: gender,
+                doctorName: docInput,
+                tests: testDetails,
+                subtotal: calculatedBaseTotal,
+                netTotal: calculatedBaseTotal
+            };
+        }
+        editingReportId = null; // Clear edit state
+    } else {
+        // CREATE NEW REPORT
+        const newReport = {
+            id: 'REP-' + Math.floor(100000 + Math.random() * 900000),
+            patientName: name,
+            age: parseInt(age),
+            gender: gender,
+            doctorName: docInput,
+            tests: testDetails,
+            subtotal: calculatedBaseTotal,
+            discount: 0,
+            netTotal: calculatedBaseTotal,
+            createdAt: new Date().toISOString()
+        };
+        allReportsData.unshift(newReport);
+    }
+
+    localStorage.setItem('path_reports', JSON.stringify(allReportsData));
+
+    openReportPrint(0);
+
+    if (nameEl) nameEl.value = '';
+    if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
+    if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
+    
+    activeTests = [];
+    renderBadges();
+    renderInputs();
+};
+
+window.savePatientRecord = window.saveAndPrintReport;
+
+// -------------------------------------------------------------
+// UPDATE BILLING TABLE WITH EDIT & DELETE BUTTONS
+// -------------------------------------------------------------
+function updateBillingTable(filteredList = null) {
+    const list = filteredList || allReportsData;
+    let html = "";
+    list.forEach((r) => {
+        const index = allReportsData.indexOf(r);
+        const testNamesList = r.tests.map(t => t.testName).join(', ');
+        const displayTotal = r.netTotal !== undefined ? r.netTotal : r.subtotal;
+
+        html += `
+            <tr>
+                <td>${r.id}</td>
+                <td><b>${r.patientName}</b></td>
+                <td>${r.doctorName}</td>
+                <td>${testNamesList}</td>
+                <td>₹${displayTotal}</td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="btn" style="padding: 5px 8px; font-size: 11px; background: #0284c7; margin-right: 3px;" onclick="openReportPrint(${index})" title="Print Report">
+                        📄 Report
+                    </button>
+                    <button class="btn" style="padding: 5px 8px; font-size: 11px; background: #10b981; margin-right: 3px;" onclick="openBill(${index})" title="Generate Invoice">
+                        🧾 Bill
+                    </button>
+                    <button class="btn" style="padding: 5px 8px; font-size: 11px; background: #f59e0b; margin-right: 3px;" onclick="editReport(${index})" title="Edit Report">
+                        ✏️ Edit
+                    </button>
+                    <button class="btn" style="padding: 5px 8px; font-size: 11px; background: #ef4444;" onclick="deleteReport(${index})" title="Delete Report">
+                        🗑️ Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    if (list.length === 0) {
+        html = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No reports found.</td></tr>`;
+    }
+    const target = document.getElementById('billing-table-body');
+    if (target) target.innerHTML = html;
+}
+
+// -------------------------------------------------------------
+// PRINT REPORT & BILLING UTILITIES
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
@@ -360,7 +605,6 @@ window.openReportPrint = function(index) {
 
         let tableRowsHtml = "";
 
-        // Collect section header positions to check if following parameters have actual values
         catalogueParams.forEach((param, pIdx) => {
             const pName = typeof param === 'object' ? param.name : param;
             const isSectionHeader = (typeof param === 'object') && 
@@ -368,9 +612,7 @@ window.openReportPrint = function(index) {
             const isTableParam = (typeof param === 'object') && 
                                  (param.type === 'table' || param.isTable || param.rows !== undefined);
             
-            // 1. CONDITIONAL SECTION HEADER
             if (isSectionHeader) {
-                // Check if any subsequent parameter until the next header has a valid filled value
                 let hasValueUnderHeader = false;
                 for (let nextIdx = pIdx + 1; nextIdx < catalogueParams.length; nextIdx++) {
                     const nextParam = catalogueParams[nextIdx];
@@ -385,7 +627,6 @@ window.openReportPrint = function(index) {
                     }
                 }
 
-                // Print section header only if at least 1 parameter under it has filled data
                 if (hasValueUnderHeader) {
                     tableRowsHtml += `
                         <tr style="border: none !important;">
@@ -397,9 +638,7 @@ window.openReportPrint = function(index) {
                         </tr>
                     `;
                 }
-            }
-            // 2. WIDAL TABLE
-            else if (isTableParam) {
+            } else if (isTableParam) {
                 const headers = param.headers || ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'];
                 const savedTableData = t.tableData || {};
 
@@ -436,7 +675,6 @@ window.openReportPrint = function(index) {
                     </tr>
                 `;
             } else {
-                // 3. STANDARD PARAMETER ROW
                 const pVal = (t.values && t.values[pName]) ? t.values[pName].trim() : '';
                 if (pVal !== "" && pVal !== undefined) {
                     const unit = (typeof param === 'object' && param.unit) ? param.unit : '';
@@ -548,182 +786,6 @@ window.openReportPrint = function(index) {
     setTimeout(() => { window.print(); }, 300);
 };
 
-// -------------------------------------------------------------
-// SAVE PATIENT RECORD & REPORT
-// -------------------------------------------------------------
-window.saveAndPrintReport = function() {
-    const nameEl = document.getElementById('p-name');
-    
-    if (!nameEl || !nameEl.value.trim()) { 
-        nameEl.style.border = "2px solid #ef4444";
-        nameEl.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
-        nameEl.placeholder = "⚠️ Patient Name Required!";
-        nameEl.focus();
-
-        setTimeout(() => {
-            nameEl.style.border = "";
-            nameEl.style.backgroundColor = "";
-            nameEl.placeholder = "Enter Patient Name";
-        }, 3500);
-
-        return; 
-    }
-
-    const name = nameEl.value.trim();
-    const age = document.getElementById('p-age') ? document.getElementById('p-age').value || 0 : 0;
-    const gender = document.getElementById('p-gender') ? document.getElementById('p-gender').value : 'Male';
-    const docInput = (document.getElementById('p-doctor') && document.getElementById('p-doctor').value.trim()) || "Self";
-
-    if (!doctorsDirectory.includes(docInput)) {
-        doctorsDirectory.push(docInput);
-        localStorage.setItem('path_doctors', JSON.stringify(doctorsDirectory));
-    }
-
-    let testDetails = [];
-    let calculatedBaseTotal = 0;
-
-    activeTests.forEach(code => {
-        if (!testCatalogue[code]) return;
-
-        if (testCatalogue[code].price) {
-            calculatedBaseTotal += parseFloat(testCatalogue[code].price) || 0;
-        }
-
-        let paramValues = {};
-        let tableValues = {};
-
-        const inputs = document.querySelectorAll(`input[data-test="${code}"]`);
-        inputs.forEach(inp => {
-            const val = inp.value.trim();
-            if (val !== "" && val !== undefined) {
-                const originalParamName = decodeURIComponent(inp.dataset.param);
-                paramValues[originalParamName] = val;
-            }
-        });
-
-        const tableInputs = document.querySelectorAll(`input[data-table-test="${code}"]`);
-        tableInputs.forEach(tInp => {
-            const antigen = decodeURIComponent(tInp.dataset.antigen);
-            const colIdx = parseInt(tInp.dataset.colIdx);
-            const val = tInp.value.trim();
-
-            if (!tableValues[antigen]) tableValues[antigen] = ["-", "-", "-", "-", "-"];
-            tableValues[antigen][colIdx] = val || "-";
-        });
-
-        if (Object.keys(paramValues).length > 0 || Object.keys(tableValues).length > 0) {
-            testDetails.push({ 
-                testCode: code,
-                testName: testCatalogue[code].name, 
-                values: paramValues,
-                tableData: tableValues
-            });
-        }
-    });
-
-    if (testDetails.length === 0) {
-        alert("Please fill at least one parameter value!");
-        return;
-    }
-
-    const newReport = {
-        id: 'REP-' + Math.floor(100000 + Math.random() * 900000),
-        patientName: name,
-        age: parseInt(age),
-        gender: gender,
-        doctorName: docInput,
-        tests: testDetails,
-        subtotal: calculatedBaseTotal,
-        discount: 0,
-        netTotal: calculatedBaseTotal,
-        createdAt: new Date().toISOString()
-    };
-
-    allReportsData.unshift(newReport);
-    localStorage.setItem('path_reports', JSON.stringify(allReportsData));
-
-    openReportPrint(0);
-
-    if (nameEl) nameEl.value = '';
-    if (document.getElementById('p-age')) document.getElementById('p-age').value = '';
-    if (document.getElementById('p-doctor')) document.getElementById('p-doctor').value = '';
-    
-    activeTests = [];
-    renderBadges();
-    renderInputs();
-};
-
-window.savePatientRecord = window.saveAndPrintReport;
-
-// -------------------------------------------------------------
-// DOCTOR REFERRAL TABLE
-// -------------------------------------------------------------
-function updateDoctorReferralTable() {
-    const report = {};
-    allReportsData.forEach(r => {
-        if (!report[r.doctorName]) report[r.doctorName] = { count: 0, business: 0 };
-        report[r.doctorName].count += 1;
-        report[r.doctorName].business += (r.netTotal !== undefined ? r.netTotal : r.subtotal);
-    });
-
-    let html = "";
-    for (const [doc, data] of Object.entries(report)) {
-        html += `<tr><td><b>${doc}</b></td><td>${data.count}</td><td>₹${data.business}</td></tr>`;
-    }
-    if (Object.keys(report).length === 0) {
-        html = `<tr><td colspan="3" style="text-align: center; color: #94a3b8;">No records found.</td></tr>`;
-    }
-    const target = document.getElementById('doctor-report-body');
-    if (target) target.innerHTML = html;
-}
-
-// -------------------------------------------------------------
-// BILLING & PATIENT LIST
-// -------------------------------------------------------------
-function updateBillingTable(filteredList = null) {
-    const list = filteredList || allReportsData;
-    let html = "";
-    list.forEach((r) => {
-        const index = allReportsData.indexOf(r);
-        const testNamesList = r.tests.map(t => t.testName).join(', ');
-        const displayTotal = r.netTotal !== undefined ? r.netTotal : r.subtotal;
-
-        html += `
-            <tr>
-                <td>${r.id}</td>
-                <td><b>${r.patientName}</b></td>
-                <td>${r.doctorName}</td>
-                <td>${testNamesList}</td>
-                <td>₹${displayTotal}</td>
-                <td style="text-align: center; white-space: nowrap;">
-                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #0284c7; margin-right: 5px;" onclick="openReportPrint(${index})">
-                        📄 Print Report
-                    </button>
-                    <button class="btn" style="padding: 5px 10px; font-size: 11px; background: #10b981;" onclick="openBill(${index})">
-                        🧾 Generate Bill
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-    if (list.length === 0) {
-        html = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">No reports found.</td></tr>`;
-    }
-    const target = document.getElementById('billing-table-body');
-    if (target) target.innerHTML = html;
-}
-
-window.filterBillsTable = function() {
-    const query = document.getElementById('search-bill-input').value.toLowerCase().trim();
-    const filtered = allReportsData.filter(r => 
-        r.patientName.toLowerCase().includes(query) || r.id.toLowerCase().includes(query)
-    );
-    updateBillingTable(filtered);
-};
-
-// -------------------------------------------------------------
-// BILLING TAB FUNCTIONS
-// -------------------------------------------------------------
 window.openBill = function(index) {
     currentSelectedReport = allReportsData[index];
     const billCard = document.getElementById('bill-view-card');
