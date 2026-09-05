@@ -222,6 +222,7 @@ export const testCatalogue = {
       { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
       { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' },
       { name: 'Bilirubin', unit: 'mg/dL', range: '[0.2-0.9]', defaultValue: '0.6' },
+      { name: 'Fasting Blood Sugar (FBS)', unit: 'mg/dL', range: '[70-110]', defaultValue: '90' },
       { name: 'Random Blood Sugar (RBS)', unit: 'mg/dL', range: '[70-140]', defaultValue: '100' }
     ]
   },
