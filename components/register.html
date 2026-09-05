@@ -1,9 +1,12 @@
 <div class="card">
   <h3>Patient & Doctor Details</h3>
-  <div class="grid-4">
+  <!-- Grid layout updated to fit 5 items in a single row -->
+  <div style="display: grid; grid-template-columns: 110px 1.5fr 1.2fr 1.5fr 1.5fr; gap: 10px; align-items: start;">
+    
+    <!-- Title / Prefix (Chhota Size) -->
     <div>
-      <label>Title / Prefix</label>
-      <select id="p-title" onchange="window.handleTitleChange(this.value)">
+      <label>Prefix</label>
+      <select id="p-title" onchange="window.handleTitleChange(this.value)" style="width: 100%;">
         <option value="Mr.">Mr.</option>
         <option value="Mrs.">Mrs.</option>
         <option value="Miss">Miss</option>
@@ -11,14 +14,18 @@
         <option value="Babu of">Babu of</option>
       </select>
     </div>
+
+    <!-- Patient Name -->
     <div>
       <label>Patient Name</label>
-      <input type="text" id="p-name" placeholder="Full name..." autofocus>
+      <input type="text" id="p-name" placeholder="Full name..." autofocus style="width: 100%;">
     </div>
+
+    <!-- Age & Unit -->
     <div>
       <label>Age & Unit</label>
-      <div style="display: flex; gap: 5px;">
-        <input type="number" id="p-age" placeholder="Age" style="width: 80px;" min="1">
+      <div style="display: flex; gap: 4px;">
+        <input type="number" id="p-age" placeholder="Age" style="width: 55px;" min="1">
         <select id="p-age-unit" style="flex: 1;">
           <option value="Yrs">Yrs</option>
           <option value="Months">Months</option>
@@ -26,18 +33,23 @@
         </select>
       </div>
     </div>
+
+    <!-- Referred Doctor -->
     <div class="autocomplete-wrapper">
-      <label>Referred Doctor (Auto-Saves)</label>
-      <input type="text" id="p-doctor" placeholder="Search or type Dr. name" onkeyup="handleDoctorSearch(event)" onkeydown="if(event.key==='Enter') event.preventDefault();">
+      <label>Referred Doctor</label>
+      <input type="text" id="p-doctor" placeholder="Search Dr. name" onkeyup="handleDoctorSearch(event)" onkeydown="if(event.key==='Enter') event.preventDefault();" style="width: 100%;">
       <div id="doctor-suggestions" class="autocomplete-list"></div>
     </div>
+
+    <!-- Test Shortcode (Ab ek hi line me aayega) -->
     <div>
-      <label>Test Shortcode (CBC / KFT / LFT)</label>
+      <label>Test Shortcode</label>
       <div class="autocomplete-wrapper">
-        <input type="text" id="test-code-input" placeholder="Type code (e.g. CBC)..." onkeyup="handleTestSearch(event)" onkeydown="handleTestCode(event)">
+        <input type="text" id="test-code-input" placeholder="CBC / KFT / LFT..." onkeyup="handleTestSearch(event)" onkeydown="handleTestCode(event)" style="width: 100%;">
         <div id="test-suggestions" class="autocomplete-list"></div>
       </div>
     </div>
+
   </div>
   <div id="selected-tests-container" style="margin-top: 10px;"></div>
 </div>
