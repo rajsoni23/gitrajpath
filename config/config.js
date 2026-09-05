@@ -29,7 +29,7 @@ export const testCatalogue = {
       { name: 'Monocytes', unit: '%', range: '[2-8%]', defaultValue: '5' },
       { name: 'Basophils', unit: '%', range: '[0-2%]', defaultValue: '0' },
       { name: 'RBC Count', unit: 'million/µL', range: '[M: 4.5-5.9] [F: 4.1-5.1]', defaultValue: '4.8' },
-      { name: 'Platelet Count', unit: '/µL', range: '[150000-450000]', defaultValue: '250000' },
+      { name: 'Platelet Count', unit: '/µL', range: '[1.5-4.5 Lakh]', defaultValue: '2.5' },
       { name: 'HCT(PCV)', unit: '%', range: '[M: 40-45] [F: 37-47]', defaultValue: '42' },
       { name: 'MCV', unit: 'fL', range: '[80-100]', defaultValue: '90' },
       { name: 'MCH', unit: 'pg', range: '[25-32]', defaultValue: '28.5' },
