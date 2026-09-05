@@ -800,7 +800,8 @@ window.openReportPrint = function(index) {
             }
         });
 
-        const essentialQrContent = `Report ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nReff Doctor: ${reportData.doctorName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
+        // LAB NAME INCLUDED HERE
+        const essentialQrContent = `Lab: SINGH PATHOLOGY LAB\nReport ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nReff Doctor: ${reportData.doctorName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
 
         fullReportHtml += `
             <div class="report-page">
@@ -1018,7 +1019,9 @@ window.confirmAndSaveBill = function() {
     const qrContainer = document.getElementById('bill-qr-container');
     if (qrContainer && window.QRCode) {
         const testsList = currentSelectedReport.tests.map(t => t.testName).join(', ');
-        const billPayload = `Receipt: ${receiptId}\nPatient: ${currentSelectedReport.patientName}\nReff Doctor: ${currentSelectedReport.doctorName}\nTests: ${testsList}\nSubtotal: Rs.${sub}\nDiscount: Rs.${disc}\nNet Amount: Rs.${net}\nDate: ${formattedDate}`;
+        
+        // LAB NAME INCLUDED HERE
+        const billPayload = `Lab: SINGH PATHOLOGY LAB\nReceipt: ${receiptId}\nPatient: ${currentSelectedReport.patientName}\nReff Doctor: ${currentSelectedReport.doctorName}\nTests: ${testsList}\nSubtotal: Rs.${sub}\nDiscount: Rs.${disc}\nNet Amount: Rs.${net}\nDate: ${formattedDate}`;
 
         try {
             new window.QRCode(qrContainer, {
