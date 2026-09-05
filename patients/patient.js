@@ -10,26 +10,30 @@ let currentDoctorFocusIndex = -1;
 let currentTestFocusIndex = -1;
 
 // -------------------------------------------------------------
-// DYNAMIC GENDER GETTER (TITLE SE AUTO-DERIVE)
+// DYNAMIC GENDER & AGE UNIT RESOLVER FROM TITLE
 // -------------------------------------------------------------
-function getGenderFromTitle(title) {
-    if (title === 'Mr.' || title === 'Babu of') {
-        return 'Male';
-    } else if (title === 'Mrs.' || title === 'Baby of') {
-        return 'Female';
+function getGenderAndUnitFromTitle(title) {
+    switch (title) {
+        case 'Mr.':
+            return { gender: 'Male', unit: 'Yrs' };
+        case 'Mrs.':
+        case 'Miss':
+            return { gender: 'Female', unit: 'Yrs' };
+        case 'Babu of':
+            return { gender: 'Male', unit: 'Days' };
+        case 'Baby of':
+            return { gender: 'Female', unit: 'Days' };
+        default:
+            return { gender: 'Male', unit: 'Yrs' };
     }
-    return 'Male'; // Default Fallback
 }
 
-// Live Age Unit Update based on Title
 window.handleTitleChange = function(selectedTitle) {
     const ageUnitSelect = document.getElementById('p-age-unit');
-    if (!ageUnitSelect) return;
+    const { unit } = getGenderAndUnitFromTitle(selectedTitle);
 
-    if (selectedTitle === 'Mr.' || selectedTitle === 'Mrs.') {
-        ageUnitSelect.value = 'Yrs';
-    } else if (selectedTitle === 'Babu of' || selectedTitle === 'Baby of') {
-        ageUnitSelect.value = 'Days';
+    if (ageUnitSelect) {
+        ageUnitSelect.value = unit;
     }
 };
 
@@ -444,7 +448,7 @@ window.editReport = async function(index) {
         const docEl = document.getElementById('p-doctor');
 
         if (titleEl) titleEl.value = report.title || 'Mr.';
-        if (nameEl) nameEl.value = report.patientName.replace(/^(Mr\.|Mrs\.|Babu of|Baby of)\s+/i, '');
+        if (nameEl) nameEl.value = report.patientName ? report.patientName.replace(/^(Mr\.|Mrs\.|Miss|Babu of|Baby of)\s+/i, '') : '';
         if (ageEl) ageEl.value = report.age;
         if (ageUnitEl) ageUnitEl.value = report.ageUnit || 'Yrs';
         if (docEl) docEl.value = report.doctorName;
@@ -478,7 +482,7 @@ window.editReport = async function(index) {
 };
 
 // -------------------------------------------------------------
-// SAVE PATIENT RECORD & REPORT (GENDER AUTO DERIVED FROM TITLE)
+// SAVE PATIENT RECORD & REPORT (AUTO-RESOLVED GENDER)
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -503,12 +507,11 @@ window.saveAndPrintReport = function() {
     const rawName = nameEl.value.trim();
     const fullPatientName = `${title} ${rawName}`;
 
-    // Auto-calculate gender based on title
-    const computedGender = getGenderFromTitle(title);
+    const { gender, unit: defaultUnit } = getGenderAndUnitFromTitle(title);
 
     const age = document.getElementById('p-age') ? document.getElementById('p-age').value || 0 : 0;
     const ageUnitEl = document.getElementById('p-age-unit');
-    const ageUnit = ageUnitEl ? ageUnitEl.value : 'Yrs';
+    const ageUnit = ageUnitEl ? ageUnitEl.value : defaultUnit;
 
     const docInput = (document.getElementById('p-doctor') && document.getElementById('p-doctor').value.trim()) || "Self";
 
@@ -572,7 +575,7 @@ window.saveAndPrintReport = function() {
                 title: title,
                 age: parseInt(age),
                 ageUnit: ageUnit,
-                gender: computedGender,
+                gender: gender,
                 doctorName: docInput,
                 tests: testDetails,
                 subtotal: calculatedBaseTotal,
@@ -587,7 +590,7 @@ window.saveAndPrintReport = function() {
             title: title,
             age: parseInt(age),
             ageUnit: ageUnit,
-            gender: computedGender,
+            gender: gender,
             doctorName: docInput,
             tests: testDetails,
             subtotal: calculatedBaseTotal,
@@ -679,16 +682,12 @@ window.filterBillsTable = function() {
     updateBillingTable(filtered);
 };
 
-// -------------------------------------------------------------
-// PRINT REPORT & BILLING UTILITIES
-// -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
     if (!reportData) return;
 
     const formattedDate = new Date(reportData.createdAt).toLocaleDateString('en-GB');
     const ageDisplay = `${reportData.age} ${reportData.ageUnit || 'YRS'}`;
-    const displayGender = reportData.gender || getGenderFromTitle(reportData.title);
     let fullReportHtml = "";
 
     reportData.tests.forEach((t, i) => {
@@ -813,7 +812,7 @@ window.openReportPrint = function(index) {
                                    <strong>Patient's Name</strong> : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    <strong>AGE/SEX</strong> : <span style="font-weight: bold; text-transform: uppercase;">${ageDisplay} / ${displayGender}</span>
+                                    <strong>AGE/SEX</strong> : <span style="font-weight: bold; text-transform: uppercase;">${ageDisplay} / ${reportData.gender}</span>
                                 </td>
                             </tr>
                             <tr style="border: none !important;">
@@ -892,10 +891,9 @@ window.openBill = function(index) {
     if (billCard) billCard.style.display = 'block';
 
     const ageDisplay = `${currentSelectedReport.age} ${currentSelectedReport.ageUnit || 'Yrs'}`;
-    const displayGender = currentSelectedReport.gender || getGenderFromTitle(currentSelectedReport.title);
 
     document.getElementById('bill-patient-info').innerText = currentSelectedReport.patientName;
-    document.getElementById('bill-age-gender').innerText = `${ageDisplay} / ${displayGender}`;
+    document.getElementById('bill-age-gender').innerText = `${ageDisplay} / ${currentSelectedReport.gender}`;
     document.getElementById('bill-doctor-info').innerText = currentSelectedReport.doctorName;
 
     let summaryHtml = "";
@@ -938,7 +936,6 @@ window.confirmAndSaveBill = function() {
     const formattedDate = new Date().toLocaleDateString('en-GB');
     const receiptId = 'INV-' + Math.floor(100000 + Math.random() * 900000);
     const ageDisplay = `${currentSelectedReport.age} ${currentSelectedReport.ageUnit || 'Yrs'}`;
-    const displayGender = currentSelectedReport.gender || getGenderFromTitle(currentSelectedReport.title);
 
     const billHtml = `
         <div style="padding: 10px; font-family: Arial, sans-serif;">
@@ -950,7 +947,7 @@ window.confirmAndSaveBill = function() {
                 <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                     <tr style="border: none !important;">
                         <td style="width: 55%; padding: 2px 0; border: none !important;">Patient Name: <span style="text-transform: uppercase;">${currentSelectedReport.patientName}</span></td>
-                        <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex: ${ageDisplay} / ${displayGender}</td>
+                        <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex: ${ageDisplay} / ${currentSelectedReport.gender}</td>
                     </tr>
                     <tr style="border: none !important;">
                         <td style="width: 55%; padding: 2px 0; border: none !important;">Referred By: ${currentSelectedReport.doctorName}</td>
