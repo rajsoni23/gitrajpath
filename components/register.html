@@ -6,6 +6,7 @@
       <select id="p-title" onchange="window.handleTitleChange(this.value)">
         <option value="Mr.">Mr.</option>
         <option value="Mrs.">Mrs.</option>
+        <option value="Miss">Miss</option>
         <option value="Baby of">Baby of</option>
         <option value="Babu of">Babu of</option>
       </select>
@@ -15,17 +16,13 @@
       <input type="text" id="p-name" placeholder="Full name..." autofocus>
     </div>
     <div>
-      <label>Age / Gender</label>
+      <label>Age & Unit</label>
       <div style="display: flex; gap: 5px;">
-        <input type="number" id="p-age" placeholder="Age" style="width: 60px;" min="1">
-        <select id="p-age-unit" style="width: 75px;">
+        <input type="number" id="p-age" placeholder="Age" style="width: 80px;" min="1">
+        <select id="p-age-unit" style="flex: 1;">
           <option value="Yrs">Yrs</option>
           <option value="Months">Months</option>
           <option value="Days">Days</option>
-        </select>
-        <select id="p-gender">
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
         </select>
       </div>
     </div>
