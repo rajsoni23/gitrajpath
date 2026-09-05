@@ -29,7 +29,7 @@ export const testCatalogue = {
       { name: 'Monocytes', unit: '%', range: '[2-8%]', defaultValue: '5' },
       { name: 'Basophils', unit: '%', range: '[0-2%]', defaultValue: '0' },
       { name: 'RBC Count', unit: 'million/µL', range: '[M: 4.5-5.9] [F: 4.1-5.1]', defaultValue: '4.8' },
-      { name: 'Platelet Count', unit: '/µL', range: '[1.5-4.5 Lakh]', defaultValue: '2.5' },
+      { name: 'Platelet Count', unit: '/µL', range: '[1.5-4.5]', defaultValue: '2.5' },
       { name: 'HCT(PCV)', unit: '%', range: '[M: 40-45] [F: 37-47]', defaultValue: '42' },
       { name: 'MCV', unit: 'fL', range: '[80-100]', defaultValue: '90' },
       { name: 'MCH', unit: 'pg', range: '[25-32]', defaultValue: '28.5' },
@@ -219,7 +219,9 @@ export const testCatalogue = {
       },
       { name: 'BIOCHEMISTRY REPORT', type: 'sectionHeader' },
       { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
-      { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' }
+      { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' },
+      { name: 'Bilirubin', unit: 'mg/dL', range: '[0.2-0.9]', defaultValue: '0.6' },
+      { name: 'Random Blood Sugar (RBS)', unit: 'mg/dL', range: '[70-140]', defaultValue: '100' }
     ]
   },
   'RFT': {
