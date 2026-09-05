@@ -2,28 +2,46 @@
   <h3>Patient & Doctor Details</h3>
   <div class="grid-4">
     <div>
+      <label>Title / Prefix</label>
+      <select id="p-title" onchange="handleTitleChange(this.value)">
+        <option value="Mr.">Mr.</option>
+        <option value="Mrs.">Mrs.</option>
+        <option value="Baby of">Baby of</option>
+        <option value="Babu of">Babu of</option>
+      </select>
+    </div>
+    <div>
       <label>Patient Name</label>
       <input type="text" id="p-name" placeholder="Full name..." autofocus>
     </div>
     <div>
       <label>Age / Gender</label>
       <div style="display: flex; gap: 5px;">
-        <input type="number" id="p-age" placeholder="Age" style="width: 70px;">
-        <select id="p-gender"><option>Male</option><option>Female</option></select>
+        <input type="number" id="p-age" placeholder="Age" style="width: 60px;" min="1">
+        <select id="p-age-unit" style="width: 75px;">
+          <option value="Yrs">Yrs</option>
+          <option value="Months">Months</option>
+          <option value="Days">Days</option>
+        </select>
+        <select id="p-gender">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
       </div>
     </div>
-   <div class="autocomplete-wrapper">
-    <label>Referred Doctor (Auto-Saves)</label>
-    <input type="text" id="p-doctor" placeholder="Search or type Dr. name" onkeyup="handleDoctorSearch(event)" onkeydown="if(event.key==='Enter') event.preventDefault();">
-    <div id="doctor-suggestions" class="autocomplete-list"></div>
-</div>
+    <div class="autocomplete-wrapper">
+      <label>Referred Doctor (Auto-Saves)</label>
+      <input type="text" id="p-doctor" placeholder="Search or type Dr. name" onkeyup="handleDoctorSearch(event)" onkeydown="if(event.key==='Enter') event.preventDefault();">
+      <div id="doctor-suggestions" class="autocomplete-list"></div>
+    </div>
     <div>
-  <label>Test Shortcode (CBC / KFT / LFT)</label>
-  <div class="autocomplete-wrapper">
-    <input type="text" id="test-code-input" placeholder="Type code (e.g. CBC)..." onkeyup="handleTestSearch(event)" onkeydown="handleTestCode(event)">
-    <div id="test-suggestions" class="autocomplete-list"></div>
+      <label>Test Shortcode (CBC / KFT / LFT)</label>
+      <div class="autocomplete-wrapper">
+        <input type="text" id="test-code-input" placeholder="Type code (e.g. CBC)..." onkeyup="handleTestSearch(event)" onkeydown="handleTestCode(event)">
+        <div id="test-suggestions" class="autocomplete-list"></div>
+      </div>
+    </div>
   </div>
-</div>
   <div id="selected-tests-container" style="margin-top: 10px;"></div>
 </div>
 
@@ -31,6 +49,6 @@
   <h3>Parameter Values Entry</h3>
   <div id="test-inputs-container" style="max-height: 400px; overflow-y: auto;"></div>
   <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
-  <button class="btn" onclick="saveAndPrintReport()">🖨️ Save & Print Report</button>
-</div>
+    <button class="btn" onclick="saveAndPrintReport()">🖨️ Save & Print Report</button>
+  </div>
 </div>
