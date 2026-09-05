@@ -2,8 +2,8 @@
   <h3>Patient & Doctor Details</h3>
   <div class="grid-4">
     <div>
-      <label>Title</label>
-      <select id="p-title" onchange="handleTitleChange(this.value)">
+      <label>Title / Prefix</label>
+      <select id="p-title" onchange="window.handleTitleChange(this.value)">
         <option value="Mr.">Mr.</option>
         <option value="Mrs.">Mrs.</option>
         <option value="Baby of">Baby of</option>
@@ -43,4 +43,12 @@
     </div>
   </div>
   <div id="selected-tests-container" style="margin-top: 10px;"></div>
+</div>
+
+<div class="card">
+  <h3>Parameter Values Entry</h3>
+  <div id="test-inputs-container" style="max-height: 400px; overflow-y: auto;"></div>
+  <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+    <button class="btn" onclick="saveAndPrintReport()">🖨️ Save & Print Report</button>
+  </div>
 </div>
