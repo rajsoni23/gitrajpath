@@ -33,7 +33,8 @@ export const testCatalogue = {
       { name: 'HCT(PCV)', unit: '%', range: '[M: 40-45] [F: 37-47]', defaultValue: '42' },
       { name: 'MCV', unit: 'fL', range: '[80-100]', defaultValue: '90' },
       { name: 'MCH', unit: 'pg', range: '[25-32]', defaultValue: '28.5' },
-      { name: 'MCHC', unit: 'g/dL', range: '[20-40]', defaultValue: '32' }
+      { name: 'MCHC', unit: 'g/dL', range: '[20-40]', defaultValue: '32' },
+      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
     ]
   },
   'SUGAR': {
