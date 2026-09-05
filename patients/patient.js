@@ -9,6 +9,37 @@ let editingReportId = null;
 let currentDoctorFocusIndex = -1;
 let currentTestFocusIndex = -1;
 
+// -------------------------------------------------------------
+// LIVE TITLE & GENDER HANDLER (AUTO UPDATE)
+// -------------------------------------------------------------
+window.handleTitleChange = function(selectedTitle) {
+    const genderSelect = document.getElementById('p-gender');
+    const ageUnitSelect = document.getElementById('p-age-unit');
+
+    if (!genderSelect) return;
+
+    if (selectedTitle === 'Mr.') {
+        genderSelect.value = 'Male';
+        if (ageUnitSelect) ageUnitSelect.value = 'Yrs';
+    } else if (selectedTitle === 'Mrs.') {
+        genderSelect.value = 'Female';
+        if (ageUnitSelect) ageUnitSelect.value = 'Yrs';
+    } else if (selectedTitle === 'Babu of') {
+        genderSelect.value = 'Male';
+        if (ageUnitSelect) ageUnitSelect.value = 'Days';
+    } else if (selectedTitle === 'Baby of') {
+        genderSelect.value = 'Female';
+        if (ageUnitSelect) ageUnitSelect.value = 'Days';
+    }
+};
+
+// Global Event Delegation for dynamically injected forms
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'p-title') {
+        window.handleTitleChange(e.target.value);
+    }
+});
+
 const tabFiles = {
     'tab-register': '../components/register.html',
     'tab-doctors': '../components/doctors.html',
@@ -126,7 +157,6 @@ async function loadTabContent(tabId) {
         const html = await response.text();
         container.innerHTML = html;
     } catch (err) {
-        // Fallback layout when HTML component file is missing
         if (defaultTabTemplates[tabId]) {
             container.innerHTML = defaultTabTemplates[tabId];
         } else {
@@ -134,7 +164,6 @@ async function loadTabContent(tabId) {
         }
     }
 
-    // Render tab specific dynamic data
     if (tabId === 'tab-register') {
         renderBadges();
         renderInputs();
@@ -157,9 +186,6 @@ window.switchTab = async function(tabId, evt) {
     await loadTabContent(tabId);
 };
 
-// -------------------------------------------------------------
-// HELPER TO DYNAMICALLY DERIVE DEFAULT NORMAL VALUES
-// -------------------------------------------------------------
 function getDefaultValue(param) {
     if (param.defaultValue !== undefined) return param.defaultValue;
     if (!param.range) return '';
@@ -188,9 +214,6 @@ function getDefaultValue(param) {
     return rangeStr.replace(/[\[\]]/g, '');
 }
 
-// -------------------------------------------------------------
-// KEYBOARD NAVIGATION HANDLER
-// -------------------------------------------------------------
 function handleKeyboardNavigation(e, container, type) {
     const items = container.querySelectorAll('.autocomplete-item');
     if (!items.length) return;
@@ -224,9 +247,6 @@ function handleKeyboardNavigation(e, container, type) {
     else currentTestFocusIndex = currentIndex;
 }
 
-// -------------------------------------------------------------
-// AUTOCOMPLETE (DOCTOR & TEST)
-// -------------------------------------------------------------
 window.handleDoctorSearch = function(e) {
     const listContainer = document.getElementById('doctor-suggestions');
     if (!listContainer) return;
@@ -330,9 +350,6 @@ function renderBadges() {
     if (target) target.innerHTML = html;
 }
 
-// -------------------------------------------------------------
-// RENDER PARAMETER INPUTS
-// -------------------------------------------------------------
 function renderInputs() {
     let containerHtml = "";
 
@@ -409,9 +426,6 @@ function renderInputs() {
     if (target) target.innerHTML = containerHtml;
 }
 
-// -------------------------------------------------------------
-// EDIT & DELETE REPORT FUNCTIONS (WITHOUT POPUP ALERTS)
-// -------------------------------------------------------------
 window.deleteReport = function(index) {
     const r = allReportsData[index];
     if (!r) return;
@@ -427,18 +441,20 @@ window.editReport = async function(index) {
 
     editingReportId = report.id;
 
-    // Switch to Register Tab
     await switchTab('tab-register');
 
-    // Fill Registration Details quietly
     setTimeout(() => {
+        const titleEl = document.getElementById('p-title');
         const nameEl = document.getElementById('p-name');
         const ageEl = document.getElementById('p-age');
+        const ageUnitEl = document.getElementById('p-age-unit');
         const genderEl = document.getElementById('p-gender');
         const docEl = document.getElementById('p-doctor');
 
+        if (titleEl) titleEl.value = report.title || 'Mr.';
         if (nameEl) nameEl.value = report.patientName;
         if (ageEl) ageEl.value = report.age;
+        if (ageUnitEl) ageUnitEl.value = report.ageUnit || 'Yrs';
         if (genderEl) genderEl.value = report.gender;
         if (docEl) docEl.value = report.doctorName;
 
@@ -446,7 +462,6 @@ window.editReport = async function(index) {
         renderBadges();
         renderInputs();
 
-        // Fill parameters values
         report.tests.forEach(t => {
             const code = t.testCode;
             if (t.values) {
@@ -472,7 +487,7 @@ window.editReport = async function(index) {
 };
 
 // -------------------------------------------------------------
-// SAVE PATIENT RECORD & REPORT
+// SAVE PATIENT RECORD & REPORT (UPDATED WITH TITLE & AGE UNIT)
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -492,8 +507,15 @@ window.saveAndPrintReport = function() {
         return; 
     }
 
-    const name = nameEl.value.trim();
+    const titleEl = document.getElementById('p-title');
+    const title = titleEl ? titleEl.value : 'Mr.';
+    const rawName = nameEl.value.trim();
+    const fullPatientName = `${title} ${rawName}`;
+
     const age = document.getElementById('p-age') ? document.getElementById('p-age').value || 0 : 0;
+    const ageUnitEl = document.getElementById('p-age-unit');
+    const ageUnit = ageUnitEl ? ageUnitEl.value : 'Yrs';
+
     const gender = document.getElementById('p-gender') ? document.getElementById('p-gender').value : 'Male';
     const docInput = (document.getElementById('p-doctor') && document.getElementById('p-doctor').value.trim()) || "Self";
 
@@ -553,8 +575,10 @@ window.saveAndPrintReport = function() {
         if (existingIdx !== -1) {
             allReportsData[existingIdx] = {
                 ...allReportsData[existingIdx],
-                patientName: name,
+                patientName: fullPatientName,
+                title: title,
                 age: parseInt(age),
+                ageUnit: ageUnit,
                 gender: gender,
                 doctorName: docInput,
                 tests: testDetails,
@@ -566,8 +590,10 @@ window.saveAndPrintReport = function() {
     } else {
         const newReport = {
             id: 'REP-' + Math.floor(100000 + Math.random() * 900000),
-            patientName: name,
+            patientName: fullPatientName,
+            title: title,
             age: parseInt(age),
+            ageUnit: ageUnit,
             gender: gender,
             doctorName: docInput,
             tests: testDetails,
@@ -594,9 +620,6 @@ window.saveAndPrintReport = function() {
 
 window.savePatientRecord = window.saveAndPrintReport;
 
-// -------------------------------------------------------------
-// DOCTOR REFERRAL TABLE
-// -------------------------------------------------------------
 function updateDoctorReferralTable() {
     const report = {};
     allReportsData.forEach(r => {
@@ -616,9 +639,6 @@ function updateDoctorReferralTable() {
     if (target) target.innerHTML = html;
 }
 
-// -------------------------------------------------------------
-// UPDATE BILLING TABLE
-// -------------------------------------------------------------
 function updateBillingTable(filteredList = null) {
     const list = filteredList || allReportsData;
     let html = "";
@@ -667,13 +687,14 @@ window.filterBillsTable = function() {
 };
 
 // -------------------------------------------------------------
-// PRINT REPORT & BILLING UTILITIES
+// PRINT REPORT & BILLING UTILITIES (DYNAMIC AGE UNIT INCLUDED)
 // -------------------------------------------------------------
 window.openReportPrint = function(index) {
     const reportData = allReportsData[index];
     if (!reportData) return;
 
     const formattedDate = new Date(reportData.createdAt).toLocaleDateString('en-GB');
+    const ageDisplay = `${reportData.age} ${reportData.ageUnit || 'YRS'}`;
     let fullReportHtml = "";
 
     reportData.tests.forEach((t, i) => {
@@ -798,7 +819,7 @@ window.openReportPrint = function(index) {
                                    <strong>Patient's Name</strong> : <span style="text-transform: uppercase; font-weight: bold;">${reportData.patientName}</span>
                                 </td>
                                 <td style="width: 50%; padding: 2px 0; border: none !important; text-align: right !important; color: #000;">
-                                    <strong>AGE/SEX</strong> : <span style="font-weight: bold;">${reportData.age} YRS / ${reportData.gender}</span>
+                                    <strong>AGE/SEX</strong> : <span style="font-weight: bold; text-transform: uppercase;">${ageDisplay} / ${reportData.gender}</span>
                                 </td>
                             </tr>
                             <tr style="border: none !important;">
@@ -817,7 +838,7 @@ window.openReportPrint = function(index) {
                     <div style="text-align: center; font-weight: bold; margin-top: 35px; margin-bottom: 25px; text-decoration: underline; font-size: 13px; text-transform: uppercase;">
                         ${t.testName} - REPORT
                     </div>
-                    <br>
+                    
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
@@ -876,8 +897,10 @@ window.openBill = function(index) {
     const billCard = document.getElementById('bill-view-card');
     if (billCard) billCard.style.display = 'block';
 
+    const ageDisplay = `${currentSelectedReport.age} ${currentSelectedReport.ageUnit || 'Yrs'}`;
+
     document.getElementById('bill-patient-info').innerText = currentSelectedReport.patientName;
-    document.getElementById('bill-age-gender').innerText = `${currentSelectedReport.age} Yrs / ${currentSelectedReport.gender}`;
+    document.getElementById('bill-age-gender').innerText = `${ageDisplay} / ${currentSelectedReport.gender}`;
     document.getElementById('bill-doctor-info').innerText = currentSelectedReport.doctorName;
 
     let summaryHtml = "";
@@ -919,18 +942,19 @@ window.confirmAndSaveBill = function() {
 
     const formattedDate = new Date().toLocaleDateString('en-GB');
     const receiptId = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+    const ageDisplay = `${currentSelectedReport.age} ${currentSelectedReport.ageUnit || 'Yrs'}`;
 
     const billHtml = `
         <div style="padding: 10px; font-family: Arial, sans-serif;">
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-                <h2 style="margin: 0; text-transform: uppercase;">RAJ PATHOLOGY PAYMENT RECEIPT</h2>
+                <h2 style="margin: 0; text-transform: uppercase;">ARYA PATHOLOGY PAYMENT RECEIPT</h2>
             </div>
             
             <div style="border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                 <table style="width: 80%; font-size: 13px; font-weight: bold; border: none !important; border-collapse: collapse; line-height: 1.6;">
                     <tr style="border: none !important;">
                         <td style="width: 55%; padding: 2px 0; border: none !important;">Patient Name: <span style="text-transform: uppercase;">${currentSelectedReport.patientName}</span></td>
-                        <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex: ${currentSelectedReport.age} Yrs / ${currentSelectedReport.gender}</td>
+                        <td style="width: 45%; padding: 2px 0; border: none !important; text-align: right;">Age/Sex: ${ageDisplay} / ${currentSelectedReport.gender}</td>
                     </tr>
                     <tr style="border: none !important;">
                         <td style="width: 55%; padding: 2px 0; border: none !important;">Referred By: ${currentSelectedReport.doctorName}</td>
@@ -980,8 +1004,8 @@ window.confirmAndSaveBill = function() {
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px;">
                 <div style="text-align: right;">
                     <p style="margin: 0; font-weight: bold; font-size: 12px;">Authorized Signatory</p>
-                    <p style="margin: 3px 0; font-size: 11px;">RAJ Pathology Lab</p>
-                    <p style="margin: 3px 0; font-size: 11px;">Mo n. 9919678133</p>
+                    <p style="margin: 3px 0; font-size: 11px;">ARYA Pathology Lab</p>
+                    <p style="margin: 3px 0; font-size: 11px;">Mo n. 9621211901</p>
                 </div>
             </div>
 
