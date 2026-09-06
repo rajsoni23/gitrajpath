@@ -745,7 +745,7 @@ window.openReportPrint = function(index) {
                     <tr style="border: none !important;">
                         <td colspan="4" style="padding: 8px 0; border: none !important; text-align: left !important;">
                             <div class="report-table-title">
-                                ${param.name || 'WIDAL TEST'}
+                                ${param.name || '.'}
                             </div>
                             <table border="1" class="widal-table" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
                                 <thead>
