@@ -291,7 +291,7 @@ th {
      ------------------------------------------------------------- */
   .report-investigation-header,
   .report-param-name {
-    padding-left: 35px !important; /* Clean indent center ki taraf */
+    padding-left: 50px !important; /* Clean indent center ki taraf */
     text-align: left !important;
     font-weight: bold !important;
   }
