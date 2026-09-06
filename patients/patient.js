@@ -482,7 +482,7 @@ window.editReport = async function(index) {
 };
 
 // -------------------------------------------------------------
-// SAVE PATIENT RECORD & REPORT (AUTO-RESOLVED GENDER)
+// SAVE PATIENT RECORD & REPORT
 // -------------------------------------------------------------
 window.saveAndPrintReport = function() {
     const nameEl = document.getElementById('p-name');
@@ -744,7 +744,7 @@ window.openReportPrint = function(index) {
                 tableRowsHtml += `
                     <tr style="border: none !important;">
                         <td colspan="4" style="padding: 8px 0; border: none !important; text-align: left !important;">
-                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; text-transform: uppercase; padding-left: 15px;">
+                            <div class="report-table-title">
                                 ${param.name || 'WIDAL TEST'}
                             </div>
                             <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
@@ -782,7 +782,7 @@ window.openReportPrint = function(index) {
 
                     tableRowsHtml += `
                         <tr class="${dynamicTestClass}" style="border: none !important;">
-                            <td style="font-weight: bold; text-transform: uppercase; text-align: left !important; border: none !important; width: 40%; padding-left: 15px;">
+                            <td class="report-param-name">
                                 ${pName}
                             </td>
                             <td style="font-weight: normal; text-align: center !important; border: none !important; width: 20%;">
@@ -800,7 +800,6 @@ window.openReportPrint = function(index) {
             }
         });
 
-        // LAB NAME INCLUDED HERE
         const essentialQrContent = `Lab: SINGH PATHOLOGY LAB\nReport ID: ${reportData.id}\nPatient Name: ${reportData.patientName}\nReff Doctor: ${reportData.doctorName}\nDate: ${formattedDate}\nTest Name: ${t.testName}`;
 
         fullReportHtml += `
@@ -836,7 +835,7 @@ window.openReportPrint = function(index) {
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: none !important; background: white;">
                         <thead>
                             <tr style="border-bottom: 1px solid #000; border-top: 1px solid #000; background: white;">
-                                <th style="width: 40%; background: white !important; font-weight: bold; text-align: left !important; padding-left: 15px;">INVESTIGATION</th>
+                                <th class="report-investigation-header">INVESTIGATION</th>
                                 <th style="width: 20%; background: white !important; font-weight: bold; text-align: center !important;">RESULT</th>
                                 <th style="width: 15%; background: white !important; font-weight: bold; text-align: center !important;">UNIT</th>
                                 <th style="width: 25%; background: white !important; font-weight: bold; text-align: center !important;">NORMAL RANGE</th>
@@ -1020,7 +1019,6 @@ window.confirmAndSaveBill = function() {
     if (qrContainer && window.QRCode) {
         const testsList = currentSelectedReport.tests.map(t => t.testName).join(', ');
         
-        // LAB NAME INCLUDED HERE
         const billPayload = `Lab: SINGH PATHOLOGY LAB\nReceipt: ${receiptId}\nPatient: ${currentSelectedReport.patientName}\nReff Doctor: ${currentSelectedReport.doctorName}\nTests: ${testsList}\nSubtotal: Rs.${sub}\nDiscount: Rs.${disc}\nNet Amount: Rs.${net}\nDate: ${formattedDate}`;
 
         try {
