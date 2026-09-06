@@ -11,6 +11,9 @@ body {
   font-size: 13px; 
 }
 
+/* -------------------------------------------------------------
+   APP UI COMPONENTS
+   ------------------------------------------------------------- */
 .app-header { 
   background: #0284c7; 
   color: white; 
@@ -188,7 +191,9 @@ th {
   display: none;
 }
 
-/* CLEAN PRINT ENGINE WITH INDIVIDUAL TEST SPACING CONTROL */
+/* -------------------------------------------------------------
+   CLEAN PRINT ENGINE WITH DYNAMIC SPACING & ALIGNMENT
+   ------------------------------------------------------------- */
 @media print {
   @page {
     size: A4 portrait;
@@ -261,7 +266,6 @@ th {
     border-collapse: collapse !important;
   }
 
-  /* Fixed TH padding to 0 on left/right for strict vertical alignment with TD */
   .report-page th {
     color: #000 !important;
     border-top: 1.5px solid #000 !important;
@@ -273,14 +277,41 @@ th {
 
   .report-page td {
     color: #000 !important;
-    padding: 12px 0 !important; /* Default spacing fallback for any unspecified test */
+    padding: 12px 0 !important; /* Default spacing fallback */
     background: transparent !important;
+  }
+
+  /* -------------------------------------------------------------
+     investigation column update
+     ------------------------------------------------------------- */
+  .report-investigation-header {
+    width: 40% !important;
+    background: transparent !important;
+    font-weight: bold !important;
+    text-align: left !important;
+    padding-left: 30px !important;
+  }
+
+  .report-param-name {
+    width: 40% !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    text-align: left !important;
+    border: none !important;
+    padding-left: 30px !important;
+  }
+
+  .report-table-title {
+    font-weight: bold !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    margin-bottom: 6px !important;
+    padding-left: 30px !important;
   }
 
   /* -------------------------------------------------------------
      PER-TEST DYNAMIC SPACING CONTROL
      ------------------------------------------------------------- */
-
   /* Dense multi-parameter tests (Compact) */
   .test-row-urine td { padding: 5px 0 !important; }
   .test-row-serology_panel td { padding: 4px 0 !important; }
