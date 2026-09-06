@@ -1,198 +1,5 @@
-* { 
-  box-sizing: border-box; 
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-}
-
-body { 
-  background: #0f172a; 
-  color: #f8fafc; 
-  margin: 0; 
-  padding: 15px; 
-  font-size: 13px; 
-}
-
 /* -------------------------------------------------------------
-   APP UI COMPONENTS
-   ------------------------------------------------------------- */
-.app-header { 
-  background: #0284c7; 
-  color: white; 
-  padding: 10px 15px; 
-  border-radius: 6px; 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  font-weight: bold; 
-  margin-bottom: 10px; 
-}
-
-.nav-tabs { 
-  display: flex; 
-  gap: 5px; 
-  margin-bottom: 15px; 
-  border-bottom: 2px solid #334155; 
-  padding-bottom: 10px; 
-}
-
-.tab-btn { 
-  background: #1e293b; 
-  color: #94a3b8; 
-  border: 1px solid #475569; 
-  padding: 8px 16px; 
-  border-radius: 4px; 
-  cursor: pointer; 
-  font-weight: bold; 
-  font-size: 13px; 
-}
-
-.tab-btn.active { 
-  background: #0284c7; 
-  color: white; 
-  border-color: #0284c7; 
-}
-
-.card { 
-  background: #1e293b; 
-  padding: 15px; 
-  border-radius: 8px; 
-  border: 1px solid #334155; 
-  margin-bottom: 15px; 
-}
-
-h3 { 
-  color: #38bdf8; 
-  margin-top: 0; 
-  border-bottom: 1px solid #334155; 
-  padding-bottom: 6px; 
-  font-size: 14px; 
-}
-
-.section-title { 
-  color: #facc15; 
-  font-size: 12px; 
-  font-weight: bold; 
-  margin: 15px 0 5px 0; 
-  text-transform: uppercase; 
-  border-left: 3px solid #facc15; 
-  padding-left: 6px; 
-}
-
-.grid-4 { 
-  display: grid; 
-  grid-template-columns: repeat(4, 1fr); 
-  gap: 10px; 
-}
-
-.grid-2 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 15px; 
-}
-
-label { 
-  font-size: 11px; 
-  font-weight: bold; 
-  color: #94a3b8; 
-  display: block; 
-  margin-bottom: 4px; 
-}
-
-input, select { 
-  width: 100%; 
-  padding: 8px; 
-  background: #0f172a; 
-  border: 1px solid #475569; 
-  color: #fff; 
-  border-radius: 4px; 
-  font-size: 13px; 
-}
-
-input:focus, select:focus { 
-  border-color: #38bdf8; 
-  outline: none; 
-  background: #1e293b; 
-}
-
-.badge { 
-  display: inline-block; 
-  padding: 3px 8px; 
-  background: #0284c7; 
-  color: white; 
-  border-radius: 4px; 
-  font-size: 11px; 
-  margin-right: 5px; 
-  margin-top: 5px; 
-}
-
-.autocomplete-wrapper { 
-  position: relative; 
-}
-
-.autocomplete-list { 
-  position: absolute; 
-  top: 100%; 
-  left: 0; 
-  right: 0; 
-  background: #1e293b; 
-  border: 1px solid #38bdf8; 
-  border-radius: 0 0 4px 4px; 
-  max-height: 150px; 
-  overflow-y: auto; 
-  z-index: 100; 
-  display: none; 
-}
-
-.autocomplete-item { 
-  padding: 8px; 
-  cursor: pointer; 
-  border-bottom: 1px solid #334155; 
-}
-
-.autocomplete-item.active,
-.autocomplete-item:hover { 
-  background: #0284c7; 
-  color: white; 
-}
-
-table { 
-  width: 100%; 
-  border-collapse: collapse; 
-  margin-top: 10px; 
-}
-
-th, td { 
-  padding: 8px 10px; 
-  border-bottom: 1px solid #334155; 
-  text-align: left; 
-  font-size: 12px; 
-}
-
-th { 
-  background: #0f172a; 
-  color: #94a3b8; 
-}
-
-.btn { 
-  background: #0284c7; 
-  color: white; 
-  border: none; 
-  padding: 8px 16px; 
-  border-radius: 4px; 
-  font-weight: bold; 
-  cursor: pointer; 
-}
-
-.btn:hover { 
-  background: #0369a1; 
-}
-
-/* Hidden by default on normal screen */
-#print-template-container, #printable-report {
-  display: none;
-}
-
-/* -------------------------------------------------------------
-   CLEAN PRINT ENGINE WITH EXACT BOLD & NO-UNDERLINE FIXES
+   CLEAN PRINT ENGINE WITH EXACT TARGETED INDENTATION
    ------------------------------------------------------------- */
 @media print {
   @page {
@@ -209,7 +16,7 @@ th {
     background-color: #ffffff !important;
     color: #000000 !important;
     box-shadow: none !important;
-    text-decoration: none !important; /* Extra underlines remove karne ke liye */
+    text-decoration: none !important;
   }
 
   body {
@@ -261,7 +68,7 @@ th {
     flex: 1 1 auto !important;
   }
 
-  /* Table styling */
+  /* Table base styling */
   .report-page table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -275,53 +82,74 @@ th {
     padding: 6px 0 !important;
     background: transparent !important;
     font-weight: bold !important;
-    text-decoration: none !important;
   }
 
-  /* Normal Row Cells - Kisi Cell Ke Niche Line/Underline Nahi Ayegi */
+  /* Normal Row Cells - Plain Borderless */
   .report-page td {
     color: #000 !important;
     padding: 12px 0 !important; 
     background: transparent !important;
     border: none !important;
-    border-bottom: none !important;
-    text-decoration: none !important;
   }
 
   /* -------------------------------------------------------------
-     INVESTIGATION COLUMN PUSH TO CENTER + BOLD ENFORCEMENT
+     ONLY TARGET MAIN INVESTIGATION HEADERS & PARAMETERS
+     (Inner grid tables like Widal will stay untouched)
      ------------------------------------------------------------- */
   .report-investigation-header,
-  .report-param-name,
-  .report-table-title,
-  .report-page table th:first-child,
-  .report-page table td:first-child {
-    padding-left: 55px !important; /* Middle ki taraf shift */
+  .report-param-name {
+    padding-left: 35px !important; /* Thoda clean indent center ki taraf */
     text-align: left !important;
-    font-weight: bold !important; /* Explicitly forced bold */
+    font-weight: bold !important;
+  }
+
+  .report-table-title {
+    font-weight: bold !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    margin-bottom: 6px !important;
+    padding-left: 35px !important;
+  }
+
+  /* Widal Grid / Inner tables Reset (Isse inner table ka border aur padding kharab nahi hoga) */
+  .widal-table, 
+  .report-page table table {
+    margin-top: 5px !important;
+  }
+
+  .widal-table th, 
+  .widal-table td,
+  .report-page table table th,
+  .report-page table table td {
+    padding-left: 0 !important; /* Widal inner table borders ko kharab nahi hone dega */
+    border: 1px solid #000 !important; /* Retains Widal grid lines properly */
+    text-align: center !important;
+  }
+
+  .widal-table th:first-child,
+  .widal-table td:first-child {
+    text-align: left !important;
+    padding-left: 5px !important;
   }
 
   /* -------------------------------------------------------------
      PER-TEST DYNAMIC SPACING CONTROL
      ------------------------------------------------------------- */
-  /* Dense multi-parameter tests (Compact) */
   .test-row-urine td { padding: 5px 0 !important; }
   .test-row-serology_panel td { padding: 4px 0 !important; }
   .test-row-widal td { padding: 5px 0 !important; }
 
-  /* Medium parameter tests */
-  .test-row-cbc td { padding: 13px 0 !important; }
-  .test-row-lft td { padding: 16px 0 !important; }
-  .test-row-kft td, .test-row-rft td { padding: 22px 0 !important; }
+  .test-row-cbc td { padding: 8px 0 !important; }
+  .test-row-lft td { padding: 12px 0 !important; }
+  .test-row-kft td, .test-row-rft td { padding: 15px 0 !important; }
   .test-row-stool td { padding: 10px 0 !important; }
-  .test-row-thyroid td { padding: 12px 0 !important; }
+  .test-row-thyroid td { padding: 10px 0 !important; }
 
-  /* Few-parameter tests (Extra Spacing / Big Enter Gaps) */
   .test-row-esr td { padding: 10px 0 !important; }
-  .test-row-sugar td { padding: 20px 0 !important; }
-  .test-row-bloodgroup td { padding: 25px 0 !important; }
-  .test-row-mantoux td { padding: 20px 0 !important; }
-  .test-row-lipid td { padding: 20px 0 !important; }
+  .test-row-sugar td { padding: 15px 0 !important; }
+  .test-row-bloodgroup td { padding: 20px 0 !important; }
+  .test-row-mantoux td { padding: 15px 0 !important; }
+  .test-row-lipid td { padding: 15px 0 !important; }
   .test-row-semen td { padding: 15px 0 !important; }
-  .test-row-electrolytes td { padding: 20px 0 !important; }
+  .test-row-electrolytes td { padding: 15px 0 !important; }
 }
