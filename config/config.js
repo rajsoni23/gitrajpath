@@ -3,7 +3,7 @@ export const testCatalogue = {
     name: 'Erythrocyte Sedimentation Rate (ESR)',
     price: 100,
     params: [
-      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
+      { name: 'ESR(Erythrocyte Sedimentation Rate)', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
     ]
   },
   'MANTOUX': {
@@ -22,19 +22,19 @@ export const testCatalogue = {
     price: 350,
     params: [
       { name: 'Hemoglobin', unit: 'g/dL', range: '[M: 13.5-17.5] [F: 12.0-15.5]', defaultValue: '14.5' },
-      { name: 'Total WBC Count', unit: '/µL', range: '[4000-11000]', defaultValue: '7500' },
+      { name: 'Total WBC(White Blood Cells) Count', unit: '/µL', range: '[4000-11000]', defaultValue: '7500' },
       { name: 'Total Polymorphous', unit: '%', range: '[55-70%]', defaultValue: '65' },
       { name: 'Lymphocytes', unit: '%', range: '[20-40%]', defaultValue: '30' },
       { name: 'Eosinophils', unit: '%', range: '[1-6%]', defaultValue: '3' },
       { name: 'Monocytes', unit: '%', range: '[2-8%]', defaultValue: '5' },
       { name: 'Basophils', unit: '%', range: '[0-2%]', defaultValue: '0' },
-      { name: 'RBC Count', unit: 'million/µL', range: '[M: 4.5-5.9] [F: 4.1-5.1]', defaultValue: '4.8' },
+      { name: 'RBC(Random Blood Cells) Count', unit: 'million/µL', range: '[M: 4.5-5.9] [F: 4.1-5.1]', defaultValue: '4.8' },
       { name: 'Platelet Count', unit: '/µL', range: '[1.5-4.5]', defaultValue: '2.5' },
-      { name: 'HCT(PCV)', unit: '%', range: '[M: 40-45] [F: 37-47]', defaultValue: '42' },
-      { name: 'MCV', unit: 'fL', range: '[80-100]', defaultValue: '90' },
-      { name: 'MCH', unit: 'pg', range: '[25-32]', defaultValue: '28.5' },
-      { name: 'MCHC', unit: 'g/dL', range: '[20-40]', defaultValue: '32' },
-      { name: 'ESR', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
+     { name: 'HCT (PCV - Hematocrit / Packed Cell Volume)', unit: '%', range: '[M: 40-45] [F: 37-47]', defaultValue: '42' },
+{ name: 'MCV (Mean Corpuscular Volume)', unit: 'fL', range: '[80-100]', defaultValue: '90' },
+{ name: 'MCH (Mean Corpuscular Hemoglobin)', unit: 'pg', range: '[25-32]', defaultValue: '28.5' },
+{ name: 'MCHC (Mean Corpuscular Hemoglobin Concentration)', unit: 'g/dL', range: '[20-40]', defaultValue: '32' },
+{ name: 'ESR (Erythrocyte Sedimentation Rate)', unit: 'mm/hr', range: '[M: 0-15] [F: 0-20]', defaultValue: '10' }
     ]
   },
   'SUGAR': {
@@ -59,11 +59,11 @@ export const testCatalogue = {
       { name: 'Blood Sugar Random', unit: 'mg/dL', range: '[70-140]', defaultValue: '100' },
       { name: 'ABO', unit: '', range: '[]', defaultValue: 'O Positive' },
       { name: 'BT', unit: 'Minutes', range: '[2-8]', defaultValue: '3' },
-      { name: 'CT', unit: 'Minutes', range: '[5-9]', defaultValue: '6' },
+      { name: 'CT (Clotting Time)', unit: 'Minutes', range: '[5-9]', defaultValue: '6' },
       { name: 'VDRL', unit: '', range: '[Negative]', defaultValue: 'Negative' },
-      { name: 'HIV', unit: '', range: '[Negative]', defaultValue: 'Negative' },
-      { name: 'HBsAg', unit: '', range: '[Negative]', defaultValue: 'Negative' },
-      { name: 'HCV', unit: '', range: '[Negative]', defaultValue: 'Negative' }
+      { name: 'HIV (Human Immunodeficiency Virus)', unit: '', range: '[Negative]', defaultValue: 'Negative' },
+{ name: 'HBsAg (Hepatitis B Surface Antigen)', unit: '', range: '[Negative]', defaultValue: 'Negative' },
+{ name: 'HCV (Hepatitis C Virus)', unit: '', range: '[Negative]', defaultValue: 'Negative' }
     ]
   },
   'LFT': {
@@ -137,7 +137,7 @@ export const testCatalogue = {
       { name: 'Reaction', unit: '', range: '[Acidic]', defaultValue: 'Acidic' },
       { name: 'Protein', unit: '', range: '[Nil]', defaultValue: 'Nil' },
       { name: 'Sugar', unit: '', range: '[Nil]', defaultValue: 'Nil' },
-      { name: 'RBC', unit: '', range: '[Nil]', defaultValue: 'Nil' },
+      { name: 'RBC(Random Blood Cells)', unit: '', range: '[Nil]', defaultValue: 'Nil' },
       { name: 'Pus Cells', unit: '/HPF', range: '[1-2]', defaultValue: '1-2' },
       { name: 'Epithelial Cells', unit: '/HPF', range: '[2-3]', defaultValue: '2-3' },
       { name: 'Casts', unit: '', range: '[Nil]', defaultValue: 'Nil' },
@@ -156,7 +156,7 @@ export const testCatalogue = {
       { name: 'Occult Blood', unit: '', range: 'Negative', defaultValue: 'Negative' },
       { name: 'Reducing Sugar', unit: '', range: 'Negative', defaultValue: 'Negative' },
       { name: 'Fat Globules', unit: '', range: 'Absent', defaultValue: 'Absent' },
-      { name: 'RBC', unit: '/HPF', range: 'Absent', defaultValue: 'Absent' },
+      { name: 'RBC(Random Blood Cells)', unit: '/HPF', range: 'Absent', defaultValue: 'Absent' },
       { name: 'Pus Cells', unit: '/HPF', range: '[0-2]', defaultValue: '0-1' },
       { name: 'Ova', unit: '', range: 'Not Seen', defaultValue: 'Not Seen' },
       { name: 'Cysts', unit: '', range: 'Not Seen', defaultValue: 'Not Seen' },
@@ -219,8 +219,8 @@ export const testCatalogue = {
         ]
       },
       { name: 'BIOCHEMISTRY REPORT', type: 'sectionHeader' },
-      { name: 'SGOT (AST)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
-      { name: 'SGPT (ALT)', unit: 'U/L', range: '[7-40]', defaultValue: '30' },
+     { name: 'SGOT (AST - Serum Glutamic Oxaloacetic Transaminase)', unit: 'U/L', range: '[10-40]', defaultValue: '25' },
+{ name: 'SGPT (ALT - Serum Glutamic Pyruvic Transaminase)', unit: 'U/L', range: '[7-40]', defaultValue: '30' },
       { name: 'Bilirubin', unit: 'mg/dL', range: '[0.2-0.9]', defaultValue: '0.6' },
       { name: 'Fasting Blood Sugar (FBS)', unit: 'mg/dL', range: '[70-110]', defaultValue: '90' },
       { name: 'Random Blood Sugar (RBS)', unit: 'mg/dL', range: '[70-140]', defaultValue: '100' }
@@ -265,10 +265,10 @@ export const testCatalogue = {
       { name: 'CHIKUNGUNYA IgM', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
       { name: 'TYPHIDOT IgG', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
       { name: 'TYPHIDOT IgM', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
-      { name: 'HIV', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
-      { name: 'HBS/AG', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
-      { name: 'HCV', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
-      { name: 'VDRL', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' }
+      { name: 'HIV (Human Immunodeficiency Virus)', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
+{ name: 'HBsAg (Hepatitis B Surface Antigen)', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
+{ name: 'HCV (Hepatitis C Virus)', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' },
+{ name: 'VDRL (Venereal Disease Research Laboratory)', unit: '', range: 'NEGATIVE', defaultValue: 'NEGATIVE' }
     ]
   },
   'GENETIC_PANEL': {
@@ -277,8 +277,9 @@ export const testCatalogue = {
     params: [
       { name: 'Filaria Antibody', unit: '+/-', range: 'Negative', defaultValue: 'Negative' },
       { name: 'ABO Group', unit: '', range: 'A / B / AB / O', defaultValue: 'O' },
-      { name: 'BT', unit: 'MIN', range: '2-8', defaultValue: '3' },
-      { name: 'CT', unit: 'MIN', range: '5-9', defaultValue: '6' }
+      { name: 'BT (Break Time)', unit: 'MIN', range: '2-8', defaultValue: '3' },
+      { name: 'CT (Cycle Time)', unit: 'MIN', range: '5-9', defaultValue: '6' }
+
     ]
   }
 };
