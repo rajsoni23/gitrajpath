@@ -192,15 +192,15 @@ th {
 }
 
 /* -------------------------------------------------------------
-   CLEAN PRINT ENGINE WITH DYNAMIC SPACING & EXACT ALIGNMENT
+   PERFECTED PRINT ENGINE (SOLVES CBC & TABLE OVERLAP ISSUES)
    ------------------------------------------------------------- */
 @media print {
   @page {
     size: A4 portrait;
     margin-top: 4.5cm !important;    
     margin-bottom: 3cm !important; 
-    margin-left: 1.8cm;
-    margin-right: 1.8cm;
+    margin-left: 1.5cm !important;
+    margin-right: 1.5cm !important;
   }
 
   /* Pure clean white background everywhere */
@@ -260,11 +260,11 @@ th {
     flex: 1 1 auto !important;
   }
 
-  /* Enforce fixed layout so percentage widths work strictly */
+  /* Table layout enforce */
   .report-page table {
     width: 100% !important;
     border-collapse: collapse !important;
-    table-layout: fixed !important; /* Fixes browser column auto-squeeze issue */
+    table-layout: fixed !important; /* Strict column width distribution */
   }
 
   .report-page th {
@@ -278,43 +278,45 @@ th {
 
   .report-page td {
     color: #000 !important;
-    padding: 12px 0 !important; /* Default spacing fallback */
+    padding: 10px 0 !important; /* Default spacing fallback */
     background: transparent !important;
   }
 
   /* -------------------------------------------------------------
-     STRICT COLUMN WIDTH & ALIGNMENT CONTROLS
+     EXACT 4-COLUMN ALIGNMENT FOR CBC & GENERAL REPORTS
      ------------------------------------------------------------- */
-  /* Column 1: INVESTIGATION (Stretches test name properly) */
+  /* Column 1: INVESTIGATION */
   .report-page table th:nth-child(1),
-  .report-page table td:nth-child(1) {
-    width: 45% !important;
+  .report-page table td:nth-child(1),
+  .report-investigation-header,
+  .report-param-name {
+    width: 40% !important;
     text-align: left !important;
-    padding-left: 15px !important; /* Subtle indent to align clean with top line */
+    padding-left: 5px !important;
   }
 
   /* Column 2: RESULT */
   .report-page table th:nth-child(2),
   .report-page table td:nth-child(2) {
     width: 20% !important;
-    text-align: left !important;
+    text-align: center !important;
   }
 
   /* Column 3: UNIT */
   .report-page table th:nth-child(3),
   .report-page table td:nth-child(3) {
     width: 15% !important;
-    text-align: left !important;
+    text-align: center !important;
   }
 
   /* Column 4: NORMAL RANGE */
   .report-page table th:nth-child(4),
   .report-page table td:nth-child(4) {
-    width: 20% !important;
-    text-align: left !important;
+    width: 25% !important;
+    text-align: center !important;
   }
 
-  /* Special handling for multi-column grids (e.g., Widal titer table) */
+  /* Exception for multi-cell grids (like Widal Titer matrix) */
   .widal-table, 
   .report-page table.widal-table {
     table-layout: auto !important;
@@ -325,30 +327,30 @@ th {
     font-size: 11px !important;
     text-transform: uppercase !important;
     margin-bottom: 6px !important;
-    padding-left: 15px !important;
+    padding-left: 5px !important;
   }
 
   /* -------------------------------------------------------------
      PER-TEST DYNAMIC SPACING CONTROL
      ------------------------------------------------------------- */
-  /* Dense multi-parameter tests (Compact) */
-  .test-row-urine td { padding-top: 5px !important; padding-bottom: 5px !important; }
+  /* Dense multi-parameter tests */
+  .test-row-urine td { padding-top: 4px !important; padding-bottom: 4px !important; }
   .test-row-serology_panel td { padding-top: 4px !important; padding-bottom: 4px !important; }
-  .test-row-widal td { padding-top: 5px !important; padding-bottom: 5px !important; }
+  .test-row-widal td { padding-top: 4px !important; padding-bottom: 4px !important; }
 
-  /* Medium parameter tests */
-  .test-row-cbc td { padding-top: 13px !important; padding-bottom: 13px !important; }
-  .test-row-lft td { padding-top: 16px !important; padding-bottom: 16px !important; }
-  .test-row-kft td, .test-row-rft td { padding-top: 22px !important; padding-bottom: 22px !important; }
-  .test-row-stool td { padding-top: 10px !important; padding-bottom: 10px !important; }
-  .test-row-thyroid td { padding-top: 12px !important; padding-bottom: 12px !important; }
+  /* Medium parameter tests (CBC, LFT, KFT) */
+  .test-row-cbc td { padding-top: 7px !important; padding-bottom: 7px !important; }
+  .test-row-lft td { padding-top: 8px !important; padding-bottom: 8px !important; }
+  .test-row-kft td, .test-row-rft td { padding-top: 10px !important; padding-bottom: 10px !important; }
+  .test-row-stool td { padding-top: 8px !important; padding-bottom: 8px !important; }
+  .test-row-thyroid td { padding-top: 8px !important; padding-bottom: 8px !important; }
 
-  /* Few-parameter tests (Extra Spacing / Big Enter Gaps) */
+  /* Small/Single parameter tests */
   .test-row-esr td { padding-top: 10px !important; padding-bottom: 10px !important; }
-  .test-row-sugar td { padding-top: 20px !important; padding-bottom: 20px !important; }
-  .test-row-bloodgroup td { padding-top: 25px !important; padding-bottom: 25px !important; }
-  .test-row-mantoux td { padding-top: 20px !important; padding-bottom: 20px !important; }
-  .test-row-lipid td { padding-top: 20px !important; padding-bottom: 20px !important; }
-  .test-row-semen td { padding-top: 15px !important; padding-bottom: 15px !important; }
-  .test-row-electrolytes td { padding-top: 20px !important; padding-bottom: 20px !important; }
+  .test-row-sugar td { padding-top: 15px !important; padding-bottom: 15px !important; }
+  .test-row-bloodgroup td { padding-top: 20px !important; padding-bottom: 20px !important; }
+  .test-row-mantoux td { padding-top: 15px !important; padding-bottom: 15px !important; }
+  .test-row-lipid td { padding-top: 12px !important; padding-bottom: 12px !important; }
+  .test-row-semen td { padding-top: 12px !important; padding-bottom: 12px !important; }
+  .test-row-electrolytes td { padding-top: 15px !important; padding-bottom: 15px !important; }
 }
