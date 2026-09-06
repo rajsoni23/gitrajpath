@@ -267,7 +267,7 @@ th {
     border-collapse: collapse !important;
   }
 
-  /* Table Header - Faqat Header Ke Upar Aur Niche Solid Line Hogi */
+  /* Table Header - Solid line on top and bottom */
   .report-page th {
     color: #000 !important;
     border-top: 1.5px solid #000 !important;
@@ -287,13 +287,18 @@ th {
 
   /* -------------------------------------------------------------
      ONLY TARGET MAIN INVESTIGATION HEADERS & PARAMETERS
-     (Inner grid tables like Widal will stay untouched)
      ------------------------------------------------------------- */
   .report-investigation-header,
   .report-param-name {
     padding-left: 50px !important; /* Clean indent center ki taraf */
     text-align: left !important;
     font-weight: bold !important;
+  }
+
+  /* Section Headers Center Align Keep Intact */
+  .report-section-header {
+    padding-left: 0 !important;
+    text-align: center !important;
   }
 
   .report-table-title {
@@ -304,7 +309,7 @@ th {
     padding-left: 35px !important;
   }
 
-  /* Widal Grid / Inner tables Reset (Isse inner table ka border aur padding kharab nahi hoga) */
+  /* Widal Grid / Inner tables Reset */
   .widal-table, 
   .report-page table table {
     margin-top: 5px !important;
@@ -314,8 +319,8 @@ th {
   .widal-table td,
   .report-page table table th,
   .report-page table table td {
-    padding-left: 0 !important; /* Widal inner table borders ko align rakhega */
-    border: 1px solid #000 !important; /* Retains Widal grid lines properly */
+    padding-left: 0 !important;
+    border: 1px solid #000 !important;
     text-align: center !important;
   }
 
