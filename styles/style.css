@@ -192,7 +192,7 @@ th {
 }
 
 /* -------------------------------------------------------------
-   CLEAN PRINT ENGINE WITH DYNAMIC SPACING & ALIGNMENT
+   CLEAN PRINT ENGINE WITH EXACT BOLD & NO-UNDERLINE FIXES
    ------------------------------------------------------------- */
 @media print {
   @page {
@@ -209,6 +209,7 @@ th {
     background-color: #ffffff !important;
     color: #000000 !important;
     box-shadow: none !important;
+    text-decoration: none !important; /* Extra underlines remove karne ke liye */
   }
 
   body {
@@ -266,6 +267,7 @@ th {
     border-collapse: collapse !important;
   }
 
+  /* Table Header - Faqat Header Ke Upar Aur Niche Solid Line Hogi */
   .report-page th {
     color: #000 !important;
     border-top: 1.5px solid #000 !important;
@@ -273,24 +275,30 @@ th {
     padding: 6px 0 !important;
     background: transparent !important;
     font-weight: bold !important;
+    text-decoration: none !important;
   }
 
+  /* Normal Row Cells - Kisi Cell Ke Niche Line/Underline Nahi Ayegi */
   .report-page td {
     color: #000 !important;
-    padding: 12px 0 !important; /* Default spacing fallback */
+    padding: 12px 0 !important; 
     background: transparent !important;
+    border: none !important;
+    border-bottom: none !important;
+    text-decoration: none !important;
   }
 
   /* -------------------------------------------------------------
-     INVESTIGATION COLUMN PUSH TO CENTER
+     INVESTIGATION COLUMN PUSH TO CENTER + BOLD ENFORCEMENT
      ------------------------------------------------------------- */
   .report-investigation-header,
   .report-param-name,
   .report-table-title,
   .report-page table th:first-child,
   .report-page table td:first-child {
-    padding-left: 55px !important; /* Isse Investigation aur sub-tests bich ki taraf khisak jayenge */
+    padding-left: 55px !important; /* Middle ki taraf shift */
     text-align: left !important;
+    font-weight: bold !important; /* Explicitly forced bold */
   }
 
   /* -------------------------------------------------------------
