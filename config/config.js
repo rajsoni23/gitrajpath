@@ -199,7 +199,7 @@ export const testCatalogue = {
     ]
   },
   'WIDAL': {
-    name: 'WIDAL TESTS ',
+    name: 'WIDAL TEST ',
     price: 300,
     params: [
       { name: 'CRP', unit: 'Negative/Positive', range: 'Negative', defaultValue: 'Negative' },
