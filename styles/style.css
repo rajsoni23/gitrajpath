@@ -192,7 +192,7 @@ th {
 }
 
 /* -------------------------------------------------------------
-   CLEAN PRINT ENGINE WITH DYNAMIC SPACING & ALIGNMENT
+   CLEAN PRINT ENGINE WITH DYNAMIC SPACING & EXACT ALIGNMENT
    ------------------------------------------------------------- */
 @media print {
   @page {
@@ -260,10 +260,11 @@ th {
     flex: 1 1 auto !important;
   }
 
-  /* Table styling */
+  /* Enforce fixed layout so percentage widths work strictly */
   .report-page table {
     width: 100% !important;
     border-collapse: collapse !important;
+    table-layout: fixed !important; /* Fixes browser column auto-squeeze issue */
   }
 
   .report-page th {
@@ -282,23 +283,41 @@ th {
   }
 
   /* -------------------------------------------------------------
-     investigation column update
+     STRICT COLUMN WIDTH & ALIGNMENT CONTROLS
      ------------------------------------------------------------- */
-  .report-investigation-header {
-    width: 40% !important;
-    background: transparent !important;
-    font-weight: bold !important;
+  /* Column 1: INVESTIGATION (Stretches test name properly) */
+  .report-page table th:nth-child(1),
+  .report-page table td:nth-child(1) {
+    width: 45% !important;
     text-align: left !important;
-    padding-left: 30px !important;
+    padding-left: 15px !important; /* Subtle indent to align clean with top line */
   }
 
-  .report-param-name {
-    width: 40% !important;
-    font-weight: bold !important;
-    text-transform: uppercase !important;
+  /* Column 2: RESULT */
+  .report-page table th:nth-child(2),
+  .report-page table td:nth-child(2) {
+    width: 20% !important;
     text-align: left !important;
-    border: none !important;
-    padding-left: 30px !important;
+  }
+
+  /* Column 3: UNIT */
+  .report-page table th:nth-child(3),
+  .report-page table td:nth-child(3) {
+    width: 15% !important;
+    text-align: left !important;
+  }
+
+  /* Column 4: NORMAL RANGE */
+  .report-page table th:nth-child(4),
+  .report-page table td:nth-child(4) {
+    width: 20% !important;
+    text-align: left !important;
+  }
+
+  /* Special handling for multi-column grids (e.g., Widal titer table) */
+  .widal-table, 
+  .report-page table.widal-table {
+    table-layout: auto !important;
   }
 
   .report-table-title {
@@ -306,30 +325,30 @@ th {
     font-size: 11px !important;
     text-transform: uppercase !important;
     margin-bottom: 6px !important;
-    padding-left: 30px !important;
+    padding-left: 15px !important;
   }
 
   /* -------------------------------------------------------------
      PER-TEST DYNAMIC SPACING CONTROL
      ------------------------------------------------------------- */
   /* Dense multi-parameter tests (Compact) */
-  .test-row-urine td { padding: 5px 0 !important; }
-  .test-row-serology_panel td { padding: 4px 0 !important; }
-  .test-row-widal td { padding: 5px 0 !important; }
+  .test-row-urine td { padding-top: 5px !important; padding-bottom: 5px !important; }
+  .test-row-serology_panel td { padding-top: 4px !important; padding-bottom: 4px !important; }
+  .test-row-widal td { padding-top: 5px !important; padding-bottom: 5px !important; }
 
   /* Medium parameter tests */
-  .test-row-cbc td { padding: 13px 0 !important; }
-  .test-row-lft td { padding: 16px 0 !important; }
-  .test-row-kft td, .test-row-rft td { padding: 22px 0 !important; }
-  .test-row-stool td { padding: 10px 0 !important; }
-  .test-row-thyroid td { padding: 12px 0 !important; }
+  .test-row-cbc td { padding-top: 13px !important; padding-bottom: 13px !important; }
+  .test-row-lft td { padding-top: 16px !important; padding-bottom: 16px !important; }
+  .test-row-kft td, .test-row-rft td { padding-top: 22px !important; padding-bottom: 22px !important; }
+  .test-row-stool td { padding-top: 10px !important; padding-bottom: 10px !important; }
+  .test-row-thyroid td { padding-top: 12px !important; padding-bottom: 12px !important; }
 
   /* Few-parameter tests (Extra Spacing / Big Enter Gaps) */
-  .test-row-esr td { padding: 10px 0 !important; }
-  .test-row-sugar td { padding: 20px 0 !important; }
-  .test-row-bloodgroup td { padding: 25px 0 !important; }
-  .test-row-mantoux td { padding: 20px 0 !important; }
-  .test-row-lipid td { padding: 20px 0 !important; }
-  .test-row-semen td { padding: 15px 0 !important; }
-  .test-row-electrolytes td { padding: 20px 0 !important; }
+  .test-row-esr td { padding-top: 10px !important; padding-bottom: 10px !important; }
+  .test-row-sugar td { padding-top: 20px !important; padding-bottom: 20px !important; }
+  .test-row-bloodgroup td { padding-top: 25px !important; padding-bottom: 25px !important; }
+  .test-row-mantoux td { padding-top: 20px !important; padding-bottom: 20px !important; }
+  .test-row-lipid td { padding-top: 20px !important; padding-bottom: 20px !important; }
+  .test-row-semen td { padding-top: 15px !important; padding-bottom: 15px !important; }
+  .test-row-electrolytes td { padding-top: 20px !important; padding-bottom: 20px !important; }
 }
