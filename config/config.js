@@ -202,12 +202,12 @@ export const testCatalogue = {
     name: 'WIDAL TEST ',
     price: 300,
     params: [
-      { name: 'Widal Result', unit: '', range: 'Negative', defaultValue: 'Negative' },
+      { name: 'CRP', unit: 'Negative/Positive', range: 'Negative', defaultValue: 'Negative' },
       { name: 'MP', unit: '', range: '', defaultValue: 'NOT SEEN' },
       { name: 'MP ANTIGENS', unit: 'Negative/Positive', range: 'Negative', defaultValue: 'Negative' },
-      { name: 'CRP', unit: 'Negative/Positive', range: 'Negative', defaultValue: 'Negative' },
+      { name: 'Widal Result', unit: '', range: 'Negative', defaultValue: 'Negative' },
       {
-        name: 'WIDAL TEST',
+        name: '',
         type: 'table',
         status: 'BORDER LINE',
         headers: ['ANTIGENS', '1/20', '1/40', '1/80', '1/160', '1/320'],
