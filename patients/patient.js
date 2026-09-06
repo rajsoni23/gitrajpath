@@ -729,7 +729,7 @@ window.openReportPrint = function(index) {
                 if (hasValueUnderHeader) {
                     tableRowsHtml += `
                         <tr style="border: none !important;">
-                            <td colspan="4" style="padding-top: 15px; padding-bottom: 5px; border: none !important; text-align: center !important;">
+                            <td colspan="4" class="report-section-header" style="padding-top: 15px; padding-bottom: 5px; border: none !important; text-align: center !important;">
                                 <span style="font-weight: bold; font-size: 12px; text-decoration: underline; text-transform: uppercase;">
                                     ${param.name}
                                 </span>
@@ -747,7 +747,7 @@ window.openReportPrint = function(index) {
                             <div class="report-table-title">
                                 ${param.name || 'WIDAL TEST'}
                             </div>
-                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
+                            <table border="1" class="widal-table" style="width: 100%; border-collapse: collapse; font-size: 10px; background: white; font-weight: normal; margin: 0 auto; text-align: center !important;">
                                 <thead>
                                     <tr>
                                         ${headers.map((h, idx) => `
